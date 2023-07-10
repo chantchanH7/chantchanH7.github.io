@@ -29,7 +29,7 @@
 <meta property="og:site_name" content="master haodong">
 <meta property="og:description" content="不舍昼夜">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:author" content="浩东">
+<meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/">
@@ -168,7 +168,7 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="浩东">
+      <meta itemprop="name" content="theLonging">
       <meta itemprop="description" content="不舍昼夜">
     </span>
 
@@ -187,8 +187,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2023-07-10 20:42:34" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
+              <time title="创建时间：2023-07-10 20:42:34 / 修改时间：23:13:07" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
             </span>
 
           <br>
@@ -197,7 +198,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
+              <span>321</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -216,7 +217,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h1 id="1-using-gdb"><a href="#1-using-gdb" class="headerlink" title="1.using gdb"></a>1.using gdb</h1><ol>
+<li>layout命令展示gdb目前位于代码的什么位置，该命令会将窗口分割</li>
+<li>backtrace 命令简介：<br>backtrace命令用于打印当前调试环境中所有栈帧信息：<br><code>backtrace [-full] [n]</code>.  <ul>
+<li><pre><code>n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈帧的信息；
+</code></pre>
+</li>
+<li><pre><code>-full：打印栈帧信息的同时，打印出局部变量的值。
+</code></pre>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="First-question"><a href="#First-question" class="headerlink" title="First question"></a>First question</h2><p> <code>Looking at the backtrace output, which function called syscall</code>  </p>
+<p>   <img src="/Lab_system_calls_image/backtrace.png" alt="backtrace"></p>
+<p>  from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67  </p>
+
       
     </div>
 
@@ -239,7 +255,7 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="浩东">
+      <meta itemprop="name" content="theLonging">
       <meta itemprop="description" content="不舍昼夜">
     </span>
 
@@ -336,7 +352,7 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="浩东">
+      <meta itemprop="name" content="theLonging">
       <meta itemprop="description" content="不舍昼夜">
     </span>
 
@@ -477,9 +493,9 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="浩东"
+    <img class="site-author-image" itemprop="image" alt="theLonging"
       src="/images/touxiang.JPG">
-  <p class="site-author-name" itemprop="name">浩东</p>
+  <p class="site-author-name" itemprop="name">theLonging</p>
   <div class="site-description" itemprop="description">不舍昼夜</div>
 </div>
 <div class="site-state-wrap motion-element">
@@ -527,7 +543,7 @@
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">浩东</span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
