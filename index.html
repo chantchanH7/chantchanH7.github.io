@@ -189,7 +189,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-07-10 20:42:34 / 修改时间：23:13:07" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
+              <time title="创建时间：2023-07-10 20:42:34 / 修改时间：23:26:06" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
             </span>
 
           <br>
@@ -198,7 +198,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>321</span>
+              <span>484</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -217,21 +217,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="1-using-gdb"><a href="#1-using-gdb" class="headerlink" title="1.using gdb"></a>1.using gdb</h1><ol>
-<li>layout命令展示gdb目前位于代码的什么位置，该命令会将窗口分割</li>
-<li>backtrace 命令简介：<br>backtrace命令用于打印当前调试环境中所有栈帧信息：<br><code>backtrace [-full] [n]</code>.  <ul>
-<li><pre><code>n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈帧的信息；
+          <h1 id="1-using-gdb"><a href="#1-using-gdb" class="headerlink" title="1.using gdb"></a>1.using gdb</h1><p>​		1. layout命令展示gdb目前位于代码的什么位置，该命令会将窗口分割</p>
+<p>​		2. backtrace 命令简介：  </p>
+<p>​		backtrace命令用于打印当前调试环境中所有栈帧信息：<br>​       <code>backtrace [-full] [n]</code>. </p>
+<p>​		· n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈帧的信息；</p>
+<p>​		· -full：打印栈帧信息的同时，打印出局部变量的值。  </p>
+<h2 id="·-First-question"><a href="#·-First-question" class="headerlink" title="· First question"></a>· First question</h2><pre><code> `Looking at the backtrace output, which function called syscall`  
 </code></pre>
-</li>
-<li><pre><code>-full：打印栈帧信息的同时，打印出局部变量的值。
-</code></pre>
-</li>
-</ul>
-</li>
-</ol>
-<h2 id="First-question"><a href="#First-question" class="headerlink" title="First question"></a>First question</h2><p> <code>Looking at the backtrace output, which function called syscall</code>  </p>
-<p>   <img src="/Lab_system_calls_image/backtrace.png" alt="backtrace"></p>
-<p>  from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67  </p>
+<p><img src="/Lab_system_calls_image/backtrace.png" alt="backtrace"></p>
+<p>from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67. Now, follow the trace we open file kernel&#x2F;trap.c. </p>
+<p><img src="/Lab_system_calls_image/trap.png" alt="trap"></p>
+<p>At this time we find out that the syscall() is called in funtion usertrap() and this is the answer for the first question.</p>
 
       
     </div>
