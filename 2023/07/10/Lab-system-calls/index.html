@@ -29,13 +29,13 @@
 <meta property="og:site_name" content="master haodong">
 <meta property="og:description" content="1.using gdb​		1. layout命令展示gdb目前位于代码的什么位置，该命令会将窗口分割 ​		2. backtrace 命令简介：   ​		backtrace命令用于打印当前调试环境中所有栈帧信息：​       backtrace [-full] [n].  ​		· n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/.com//backtrace.png">
-<meta property="og:image" content="http://example.com/.com//trap.png">
+<meta property="og:image" content="http://example.com/pic/backtrace.png">
+<meta property="og:image" content="http://example.com/pic/trap.png">
 <meta property="article:published_time" content="2023-07-10T12:42:34.000Z">
 <meta property="article:modified_time" content="2023-07-10T15:35:45.322Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/.com//backtrace.png">
+<meta name="twitter:image" content="http://example.com/pic/backtrace.png">
 
 <link rel="canonical" href="http://example.com/2023/07/10/Lab-system-calls/">
 
@@ -210,7 +210,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>484</span>
+              <span>574</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -236,9 +236,9 @@
 <p>​		· -full：打印栈帧信息的同时，打印出局部变量的值。  </p>
 <h2 id="·-First-question"><a href="#·-First-question" class="headerlink" title="· First question"></a>· First question</h2><pre><code> `Looking at the backtrace output, which function called syscall`  
 </code></pre>
-<p><img src="/.com//backtrace.png" alt="backtrace"></p>
+<p><img src="/pic/backtrace.png" alt="backtrace"></p>
 <p>from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67. Now, follow the trace we open file kernel&#x2F;trap.c. </p>
-<p><img src="/.com//trap.png" alt="trap"></p>
+<p><img src="/pic/trap.png" alt="trap"></p>
 <p>At this time we find out that the syscall() is called in funtion usertrap() and this is the answer for the first question.</p>
 
     </div>
@@ -381,7 +381,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">1k</span>
+    <span title="站点总字数">2k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
