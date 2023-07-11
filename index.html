@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-07-11 16:51:20" itemprop="dateModified" datetime="2023-07-11T16:51:20+08:00">2023-07-11</time>
+                <time title="修改时间：2023-07-11 17:51:56" itemprop="dateModified" datetime="2023-07-11T17:51:56+08:00">2023-07-11</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.1k</span>
+              <span>6.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -231,7 +231,9 @@
 <h2 id="·-Question-1"><a href="#·-Question-1" class="headerlink" title="· Question 1"></a>· Question 1</h2><pre><code> `Looking at the backtrace output, which function called syscall`  
 </code></pre>
 <p><img src="/../images/Lab-system-calls/backtrace.png" alt="backtrace"></p>
-<p>from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67. Now, follow the trace we open file kernel&#x2F;trap.c.<br>     <img src="/../images/Lab-system-calls/trap.png" alt="trap"></p>
+<pre><code>from the output, we find the trace frame usertrap() at kernel/trap.c :67. Now, follow the trace we open file kernel/trap.c. 
+![trap](../images/Lab-system-calls/trap.png)
+</code></pre>
 <p>At this time we find out that the syscall() is called in funtion usertrap() and this is the answer for the first question.</p>
 <h2 id="·-Question-2"><a href="#·-Question-2" class="headerlink" title="· Question 2"></a>· Question 2</h2><pre><code> `What is the value of `p-&gt;trapframe-&gt;a7` and what does that value represent? (Hint: look `user/initcode.S`, the first user program xv6 starts.)`
 </code></pre>
@@ -281,13 +283,15 @@
 
 &#125;;
 </code></pre>
-<p>观察到 trapframe 的地址为0x87f74000 且可以知道我们要找的值 <code>*p-&gt;trapframe-&gt;a7</code> 是在 trapframe中，尝试输入 <code>p /x *p-&gt;trapframe</code> 得到输出.  </p>
+<p>​	观察到 trapframe 的地址为0x87f74000 且可以知道我们要找的值 <code>*p-&gt;trapframe-&gt;a7</code> 是在 trapframe中，尝试输入 <code>p /x *p-&gt;trapframe</code> 得到输出.  </p>
 <p><img src="/../images/Lab-system-calls/p-%3Etrapframe-9054502-9054503-9054504.png" alt="p-&gt;trapframe"></p>
-<p>如图所示，<code>*p-&gt;trapframe-&gt;a7 = 0x7</code> 那么这个数字7代表的是什么意思呢？通过对 <code>struct trapframe</code> 的解释，我们大概(<strong>可能有错</strong>)了解到该结构的作用是在user process 将user mode 中的寄存器存储的地方，方便之后重新载入时将存储的值重新加载到寄存器中。接着，跟随文档中的提示，我们打开<code>initcode.S</code>文件：  </p>
+<p>​	如图所示，<code>*p-&gt;trapframe-&gt;a7 = 0x7</code> 那么这个数字7代表的是什么意思呢？通过对 <code>struct trapframe</code> 的解释，我们大概(<strong>可能有错</strong>)了解到该结构的作用是在user process 将user mode 中的寄存器存储的地方，方便之后重新载入时将存储的值重新加载到寄存器中。接着，跟随文档中的提示，我们打开<code>initcode.S</code>文件：  </p>
 <p><img src="/../images/Lab-system-calls/initcodes-9056225-9056228.png" alt="initcodes"></p>
-<p>既然<code>a7</code>是一个寄存器，代码中将<code>SYS_exec</code> 加载到 <code>a7</code>中去，查阅文档，其中有一句提到：</p>
-<p><code>The kernel uses the number in register a7 in syscall (kernel/syscall.c:133) to call the desired system call. The system call table (kernel/syscall.c:108) maps SYS_EXEC to sys_exec, which the kernel invokes. As we saw in Chapter 1, exec replaces the memory and registers of the current process with a new program (in this case, /init).</code>  </p>
-<p>至此，我们知道了<code>a7</code> 中存储的是当前进程想要使用的系统调用(<code>system call</code>) ，继续翻阅代码<code>kernel/syscall.c :108</code></p>
+<p>​	既然<code>a7</code>是一个寄存器，代码中将<code>SYS_exec</code> 加载到 <code>a7</code>中去，查阅文档，其中有一句提到：</p>
+<blockquote>
+<p>​	The kernel uses the number in register a7 in syscall (kernel&#x2F;syscall.c:133) to call the desired system call. The system call table (kernel&#x2F;syscall.c:108) maps SYS_EXEC to sys_exec, which the kernel invokes. As we saw in Chapter 1, exec replaces the memory and registers of the current process with a new program (in this case, &#x2F;init).&#96; </p>
+</blockquote>
+<p>​	至此，我们知道了<code>a7</code> 中存储的是当前进程想要使用的系统调用(<code>system call</code>) ，继续翻阅代码<code>kernel/syscall.c :108</code></p>
 <p><img src="/../images/Lab-system-calls/sycscall-9056869.png" alt="sycscall"></p>
 <p>7 表示SYS_exec 系统调用，至此我们终于得到答案，a7中存储的值表示进程想唤醒的系统调用<code>SYS_exec</code>。</p>
 <h2 id="·-Question-3"><a href="#·-Question-3" class="headerlink" title="· Question 3"></a>· Question 3</h2><p>​	<code>What was the previous mode that the CPU was in?</code></p>
@@ -296,10 +300,13 @@
 <p>​	阅读文档<code>riscv-privileged-20211203</code>，我们知道 <code>sstatus register keeps track of theprocessor&#39;s current operating state</code> </p>
 <p>​	每位表示的信息如下图所示:</p>
 <p><img src="/../images/Lab-system-calls/sstatus64-9058263.png" alt="sstatus64"></p>
-<p><code>0x200000022</code> 换成二进制表示为<code>0010 0000 0000 0000 0000 0000 0000 0010 0010</code></p>
-<p>文档指出：<code>The SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode.</code></p>
-<p>因此我们知道当前SSP位为 0, <code>SSP is set to 0 if the trap originated from user mode</code></p>
-<p>至此，我们可以回答<code>Question 3</code>, <code>the previous mode that the CPU was in user mode</code></p>
+<p>​	<code>0x200000022</code> 换成二进制表示为<code>0010 0000 0000 0000 0000 0000 0000 0010 0010</code></p>
+<p>​	文档指出:</p>
+<blockquote>
+<p>The SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode.</p>
+</blockquote>
+<p>​	因此我们知道当前SSP位为 0, <code>SSP is set to 0 if the trap originated from user mode</code></p>
+<p>​	至此，我们可以回答<code>Question 3</code>, <code>the previous mode that the CPU was in user mode</code></p>
 <h2 id="·-Question-4"><a href="#·-Question-4" class="headerlink" title="· Question 4"></a>· Question 4</h2><p>​	<code>Write down the assembly instruction the kernel is panicing at. Which register corresponds to the varialable </code>num<code>?</code></p>
 <p>​	在这个lab中我们需要更改源码，要记住修改的地方 ，</p>
 <p>​	在<code>kernel/syscall.c:137</code> 中修改如下:</p>
@@ -307,23 +314,40 @@
 <p>​	<code>make qemu</code> 后输出如下</p>
 <p>​	<img src="/../images/Lab-system-calls/num=0-9059807.png" alt="num=0"></p>
 <p>​	查阅文档<code>riscv-privileged-20211203</code> 可知 <code>sepc</code> 是 <code>Supervisor Exception Program Counter</code> 的缩写。</p>
-<p>​	<code>sepc is a WARL register that must be able to hold all valid virtual addresses.</code></p>
+<blockquote>
+<p>​	<code>sepc</code> is a WARL register that must be able to hold all valid virtual addresses.</p>
+</blockquote>
 <p>​	这句话比较重要：</p>
-<p>​	<code>When a trap is taken into S-mode, sepc is written with the virtual address of the instruction that was interrupted or that encountered the exception. Otherwise, sepc is never written by the implementation, though it may be explicitly written by software.</code> </p>
+<blockquote>
+<p>​	When a trap is taken into S-mode, sepc is written with the virtual address of the instruction that was interrupted or that encountered the exception. Otherwise, sepc is never written by the implementation, though it may be explicitly written by software.</p>
+</blockquote>
 <p>​	大意是当在<code>supervisor mode</code>中如果有一个<code>trap</code>, <code>sepc</code> 只会写入被中断或遇到异常指令的虚拟地址。上图<code>sepc=0x0000000080001ff8</code> 反映了内核在虚拟地址为<code>0x0000000080001ff8</code>的地方发生了<code>panic</code>。</p>
 <p>​	知道了虚拟地址后，我们寻找汇编码。</p>
-<p>​	<code>To track down the source of a kernel page-fault panic, search for the </code>sepc<code>value printed for the panic you just saw in the file</code>kernel&#x2F;kernel.asm<code>, which contains the assembly for the compiled kernel.</code></p>
+<blockquote>
+<p>​	To track down the source of a kernel page-fault panic, search for the <code>sepc</code> value printed for the panic you just saw in the file <code>kernel/kernel.asm</code>, which contains the assembly for the compiled kernel.</p>
+</blockquote>
 <p>​	跟随文档提示，我们打开<code>kernel/kernel.asm</code>，查找<code>80001ff8</code></p>
 <p>​	<img src="/../images/Lab-system-calls/80001ff8-9061766.png" alt="80001ff8"></p>
 <p>​	图中给出了发生<code>panic</code>的位置,</p>
 <p>​	<code>the assembly instruction the kernel is pannicing at</code> :  <code>lw a3, 0(zero)</code></p>
 <p>​	该 <code>assembly code</code> 向 <code>register a3</code> 中载入 <code>0</code>，<code>so the register corresponds to the variable is a3</code>.</p>
 <p>​	以上是我们人工的推测，现在尝试通过<code>gdb</code>验证我们的推测是否正确。</p>
-<p>​	<code>To inspect the state of the processor and the kernel at the faulting instruction, fire up gdb, and set a breakpoint at the faulting </code>epc</p>
+<blockquote>
+<p>​	To inspect the state of the processor and the kernel at the faulting instruction, fire up gdb, and set a breakpoint at the faulting <code>epc</code></p>
+</blockquote>
 <p>​	<img src="/../images/Lab-system-calls/80001ff8%E9%AA%8C%E8%AF%81-9064072.png" alt="80001ff8验证"></p>
 <p>​	事实证明我们的推测是正确的，因为在达到断点处继续输入n之后，gdb无法继续运行下去，并且程序窗口(而不是gdb窗口)，输出：</p>
 <p>​	<img src="/../images/Lab-system-calls/gdb-80001ff8.png" alt="gdb-80001ff8"></p>
-<h2 id="·-Question-3-1"><a href="#·-Question-3-1" class="headerlink" title="· Question 3"></a>· Question 3</h2><p>​	 <code>Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in </code>scause<code>above? (See description of</code>scause<code> in [RISC-V privileged instructions]: https://pdos.csail.mit.edu/6.828/2022/labs/n//github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf)</code></p>
+<h2 id="·-Question-5"><a href="#·-Question-5" class="headerlink" title="· Question 5"></a>· Question 5</h2><p>​	 <code>Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in </code>scause<code>above? (See description of</code>scause<code> in [RISC-V privileged instructions]: https://pdos.csail.mit.edu/6.828/2022/labs/n//github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf)</code></p>
+<p>​	刚看到这个问题我没有什么头绪，试试在文档中查找<code>scause</code>:</p>
+<h4 id="Supervisor-Cause-Register"><a href="#Supervisor-Cause-Register" class="headerlink" title="Supervisor Cause Register :"></a><code>Supervisor Cause Register</code> :</h4><blockquote>
+<p>​	The scause register is an SXLEN-bit read-write register formatted as shown in Figure 4.11. When a trap is taken into S-mode, scause is written with a code indicating the event that caused the trap. Otherwise, scause is never written by the implementation, though it may be explicitly written by software.</p>
+<p>​	The Interrupt bit in the scause register is set if the trap was caused by an interrupt. The Exception Code field contains a code identifying the last exception or interrupt. Table 4.2 lists the possible exception codes for the current supervisor ISAs. The Exception Code is a WLRL field. It is required to hold the values 0–31 (i.e., bits 4–0 must be implemented), but otherwise it is only guaranteed to hold supported exception codes.</p>
+</blockquote>
+<p>​	<img src="/../images/Lab-system-calls/scause-9066981-9066982.png" alt="scause"></p>
+<p>​		<code>interrupt</code>位为<code>1</code>时，表示当前<code>trap</code>是由<code>interrupt</code>引起的，<code>Exception Code</code>用于定位最后一个<code>exception</code> 或<code>interrupt</code>，<code>table 4.2</code> 列出了可能的<code>exception code</code>。</p>
+<p>​		<img src="/../images/Lab-system-calls/table%204.2-9068017.png" alt="table 4.2"></p>
+<p>​	现在我们知道，<code>scause</code>是用于定位中断和异常的，回顾<code>make qemu failed</code> in Question 4, 我们发现终端窗口中输出的<code>scause = 0x000000000000000d</code> ，查表可知，当前错误是由于 <code>LOAD page fault</code> 产生的，</p>
 
       
     </div>
@@ -640,12 +664,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">6k</span>
+    <span title="站点总字数">7k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6 分钟</span>
+    <span title="站点阅读时长">7 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
