@@ -164,79 +164,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/10/test/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不舍昼夜">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="master haodong">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/10/test/" class="post-title-link" itemprop="url">test</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2023-07-10 23:38:49 / 修改时间：23:56:37" itemprop="dateCreated datePublished" datetime="2023-07-10T23:38:49+08:00">2023-07-10</time>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/../images/test/backtrace.png" alt="backtrace"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/10/Lab-system-calls/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -260,10 +187,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-07-10 20:42:34 / 修改时间：23:35:45" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
+              <time title="创建时间：2023-07-10 20:42:34" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-07-11 12:29:44" itemprop="dateModified" datetime="2023-07-11T12:29:44+08:00">2023-07-11</time>
+              </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -271,7 +204,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>574</span>
+              <span>578</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -297,9 +230,8 @@
 <p>​		· -full：打印栈帧信息的同时，打印出局部变量的值。  </p>
 <h2 id="·-First-question"><a href="#·-First-question" class="headerlink" title="· First question"></a>· First question</h2><pre><code> `Looking at the backtrace output, which function called syscall`  
 </code></pre>
-<p><img src="/pic/backtrace.png" alt="backtrace"></p>
-<p>from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67. Now, follow the trace we open file kernel&#x2F;trap.c. </p>
-<p><img src="/pic/trap.png" alt="trap"></p>
+<p><img src="/../images/Lab-system-calls/backtrace.png" alt="backtrace"></p>
+<p>from the output, we find the trace frame usertrap() at kernel&#x2F;trap.c :67. Now, follow the trace we open file kernel&#x2F;trap.c.<br>     <img src="/../images/Lab-system-calls/trap.png" alt="trap"></p>
 <p>At this time we find out that the syscall() is called in funtion usertrap() and this is the answer for the first question.</p>
 
       
@@ -572,7 +504,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
