@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-07-12 23:21:58" itemprop="dateModified" datetime="2023-07-12T23:21:58+08:00">2023-07-12</time>
+                <time title="修改时间：2023-07-13 22:56:46" itemprop="dateModified" datetime="2023-07-13T22:56:46+08:00">2023-07-13</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.9k</span>
+              <span>11k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>10 分钟</span>
             </span>
 
         </div>
@@ -359,7 +359,78 @@
 <p>​	教程告诉我们，仅仅通过<code>scause</code>所能知道的信息是有限的，我们需要知道更多的信息去追踪是什么导致程序终端。例如，通过打印进程名字，<code>p p-&gt;name</code>。</p>
 <p>​	<img src="/../images/Lab-system-calls/QQ20230712-202342.png" alt="QQ20230712-202342"></p>
 <p>​	我们现在知道程序在运行 initcode函数的二进制文件时导致了内存崩溃。打印<code>p p-&gt;pid</code> 知道程序的pid是1。</p>
-<h1 id="2-System-call-tracing"><a href="#2-System-call-tracing" class="headerlink" title="2. System call tracing"></a>2. System call tracing</h1>
+<h1 id="2-System-call-tracing"><a href="#2-System-call-tracing" class="headerlink" title="2. System call tracing"></a>2. System call tracing</h1><blockquote>
+<p>​	In this assignment you will add a system call tracing feature that may help you when debugging later labs. You’ll create a new <code>trace</code> system call that will control tracing. It should take one argument, an integer “mask”, whose bits specify which system calls to trace. For example, to trace the fork system call, a program calls <code>trace(1 &lt;&lt; SYS_fork)</code>, where <code>SYS_fork</code> is a syscall number from <code>kernel/syscall.h</code>. You have to modify the xv6 kernel to print out a line when each system call is about to return, if the system call’s number is set in the mask. The line should contain the process id, the name of the system call and the return value; you don’t need to print the system call arguments. The <code>trace</code> system call should enable tracing for the process that calls it and any children that it subsequently forks, but should not affect other processes.</p>
+</blockquote>
+<p>​	这个实验要实现一个<code>trace</code>系统调用。该系统调用传入一个int 类型的参数,我们称该参数为mask, 该参数的二进制形式用来确定<code>trace</code>追踪哪个系统调用。确定的方法是对1做左移位运算，例如 <code>SYS_read = 5</code>，追踪 SYS_read 的命令为<code>trace 32</code>，这是因为32的二进制表示为<code>100000</code>，同时 32 &#x3D; 1 &lt;&lt; 5。</p>
+<p>​	那就先跟着hints一步一步走。首先看一看一开始提到的<code>user/user.S</code>和<code>user/usys.pl</code>。<code>.S</code>文件是汇编代码文件，<code>.pl</code>文件是一种脚本文件。在这个项目中，<code>user.S</code>文件是在<code>make</code>时通过<code>usys.pl</code>产生的。在阅读<code>usys.pl</code> 文档时我们顺带学习一些perl语法。</p>
+<ul>
+<li>sub <function_name>&#96; 用于定义函数。</li>
+<li><code>my $name</code>用于定义局部变量标准关键字，标准关键字以<code>$</code>开头。</li>
+<li><code>shift ARRAY</code>:  这个函数把数组的第一个值移出并且返回它，然后把数组长度减一并且把所有的东西都顺移。如果在数组中不再存在元素，它返回 undef。如果省略了 ARRAY，那么该函数在子过程和格式的词法范围里移动 @_；它在文件范围（通常是主程序）里移动 @ARGV。</li>
+<li>向子程序传递参数时，子程序参数使用特殊数组<code>@_</code>标明，因此子程序第一个参数为 <code>$_[0]</code>, 第二个参数为 <code>$_[1]</code>, 以此类推。</li>
+</ul>
+<p>​	现在我们通过对比 <code>usys.S</code> 和 <code>usys,pl</code>发现，<code>usys.S</code>正好是通过该脚本语言产生的。把系统调用路由到内核的用户空间“存根”位于<code>user/usys.S</code>中。将系统调用路由到实现它的内核函数的内核空间代码位于<code>kernel/syscall.c</code>和<code>kernel/syscall.h</code>中。进程相关的代码在<code>kernel/pro.h</code> 和 <code>kernel/proc.c</code>中。</p>
+<p>​	现在可以开始尝试更改代码。</p>
+<ul>
+<li><blockquote>
+<p>​	Add <code>$U/_trace</code> to UPROGS in Makefile.</p>
+</blockquote>
+<p><img src="/../images/Lab-system-calls/_trace-9239764.png" alt="_trace"></p>
+</li>
+<li><blockquote>
+<p>Run make qemu and you will see that the compiler cannot compile <code>user/trace.c</code>, because the user-space stubs for the system call don’t exist yet: add a prototype for the system call to <code>user/user.h</code>, a stub to <code>user/usys.pl</code>, and a syscall number to <code>kernel/syscall.h</code>. The Makefile invokes the perl script <code>user/usys.pl</code>, which produces <code>user/usys.S</code>, the actual system call stubs, which use the RISC-V <code>ecall</code> instruction to transition to the kernel. Once you fix the compilation issues, run trace 32 grep hello README; it will fail because you haven’t implemented the system call in the kernel yet.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	In<code> user.h</code>,</p>
+<p><img src="/../images/Lab-system-calls/int%20trace-9240023.png" alt="int trace"></p>
+<p>​		这里要说明一下传参的问题，使用int类型是因为上文提到<code>trace(1 &lt;&lt; SYS_fork)</code>，这说明trace函数的参数是一个int类型，第二个地方能证明传入是int类型位于<code>user.c/trace.c</code>, <code>atoi()</code>函数将字符转换为<code>int</code>，也证明了参数类型为int。</p>
+<p><img src="/../images/Lab-system-calls/7819266e33873c6ad8a1865dd10afa30-9247771.png" alt="7819266e33873c6ad8a1865dd10afa30"></p>
+<p>​	In <code>usys.pl</code>,</p>
+<p><img src="/../images/Lab-system-calls/entry_trace.png" alt="entry_trace"></p>
+<p>​	In <code>syscall.h</code>, add a syscall number,</p>
+<p><img src="/../images/Lab-system-calls/SYS_trace.png" alt="SYS_trace"></p>
+<ul>
+<li><blockquote>
+<p>Add a <code>sys_trace()</code> function in <code>kernel/sysproc.c</code> that implements the new system call by remembering its argument in a new variable in the <code>proc</code> structure (see <code>kernel/proc.h</code>). The functions to retrieve system call arguments from user space are in <code>kernel/syscall.c</code>, and you can see examples of their use in <code>kernel/sysproc.c</code>.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	In <code>kernel/sysproc.c</code>, add a <code>sys_trace()</code>, </p>
+<p><img src="/../images/Lab-system-calls/856d5a80fff400209485597fb245a98f-9247005.png" alt="856d5a80fff400209485597fb245a98f"></p>
+<p>​	这里能看出来在代码<code>syscall.c</code>中是实现系统调用的地方，此时我们在这个新加的函数中尝试打印一些信息来证明我们的猜想。下图证明猜想正确。</p>
+<p><img src="/../images/Lab-system-calls/54da95c980228341e338d4d5a666ba61.png" alt="54da95c980228341e338d4d5a666ba61"></p>
+<p>​	根据提示 by remembreing its argument in a new variable in the <code>proc</code> structure. 这里让我们在 <code>pro </code>struct 里面添加一个变量用来存储<code>mask</code>值。</p>
+<p>​	In <code>kernel/pro.h</code>,</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.15.28-9254153-9254155.png" alt="截屏2023-07-13 21.15.28"></p>
+<p>​	增加进程结构变量后，我们需要在初始进程的时候给定变量一个初始值，查看<code>allocproc(void)</code>函数后我们知道，该函数通过调用<code>freeproc()</code>清空已经存在的进程内容，我们在<code>freeproc()</code>函数中要将增加的变量赋值为0，即<code>p-&gt;trace_mask = 0</code>。</p>
+<p>​	In <code>proc.c</code>,</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.18.00.png" alt="截屏2023-07-13 22.18.00"></p>
+<p>​	</p>
+<p>​	在<code>sys_trace</code>函数中，我们首先需要将终端输入的<code>mask</code>值读取并存储到，看一看别的系统调用是怎么做的：</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.27.50-9254881-9254955.png" alt="截屏2023-07-13 21.27.50"></p>
+<p>​	我们发现在<code>sys_sleep</code>函数中使用<code>argint(0, &amp;n)</code>将参数读入n中。<code>mypro()</code>函数 返回当前的进程结构。依葫芦画瓢，修改<code>sys_trace()</code>函数。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.39.50-9255595-9255597.png" alt="截屏2023-07-13 21.39.50"></p>
+<p>​	现在我们应该思考的问题是在哪里打印输出内容，既然是追踪系统调用，那我们在调用的时候打印信息是最好的，程序在什么地方实现的系统调用呢？那当然是在<code>kernel/syscall.c</code>中。</p>
+<blockquote>
+<p>​	The functions to retrieve system call arguments from user space are in <code>kernel/syscall.c</code>, </p>
+</blockquote>
+<p>​	修改<code>syscall(void)</code>函数：</p>
+<p><img src="/../images/Lab-system-calls/043d4c827b9d9ab26bc1527d0164ccb1.png" alt="043d4c827b9d9ab26bc1527d0164ccb1"></p>
+<p>​	首先声明数存储系统调用函数的名称，接着用位运算<code>(p-&gt;trace_mask &gt;&gt; num) &amp; 1</code> 当掩码位和当前系统调用的为相与不为0时，输出进程序号<code>p-&gt;pid</code>，系统调用名称<code>syscall_names[nums-1]</code>，返回值<code>p-&gt;trapframe-&gt;a0</code>。</p>
+<ul>
+<li><blockquote>
+<p>Modify <code>fork()</code> (see <code>kernel/proc.c</code>) to copy the trace mask from the parent to the child process.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	最后，为了将掩码mask传递给子进程，要修改<code>fork()</code>。观察<code>fork()</code>函数可知，该函数将进程p的内容全部复制给进程np，最后返回进程np的pid，由此我们可以知道np就是子进程。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.30.49.png" alt="截屏2023-07-13 22.30.49"></p>
+<p>​	现在测试是否正确。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.54.14-9260059.png" alt="截屏2023-07-13 22.54.14"></p>
+<p>​	恭喜，我们终于完成了这项实验！！！</p>
+
       
     </div>
 
@@ -675,12 +746,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">8k</span>
+    <span title="站点总字数">12k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7 分钟</span>
+    <span title="站点阅读时长">11 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
