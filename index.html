@@ -164,6 +164,128 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/10/regularExpression/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="master haodong">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/08/10/regularExpression/" class="post-title-link" itemprop="url">regularExpression</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-10 13:54:58 / 修改时间：15:58:48" itemprop="dateCreated datePublished" datetime="2023-08-10T13:54:58+08:00">2023-08-10</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a><strong>正则表达式</strong></h1><h2 id="课程"><a href="#课程" class="headerlink" title="课程"></a>课程</h2><h2 id="课程-1：简介和字母-ABCs"><a href="#课程-1：简介和字母-ABCs" class="headerlink" title="课程 1：简介和字母 ABCs"></a>课程 1：简介和字母 ABCs</h2><p>​	abc就匹配abc</p>
+<h2 id="课程-1½：数字-123s"><a href="#课程-1½：数字-123s" class="headerlink" title="课程 1½：数字 123s"></a>课程 1½：数字 123s</h2><p>​	123就匹配123</p>
+<h2 id="课程-2：点-Dot"><a href="#课程-2：点-Dot" class="headerlink" title="课程 2：点 Dot"></a>课程 2：点 Dot</h2><p>​	<code>.</code>	匹配任意字符(包括字母，数字，空格等)</p>
+<p>​	匹配点需要加转义字符<code>\</code> ，即<code>\.</code></p>
+<h2 id="课程-3：匹配特定字符"><a href="#课程-3：匹配特定字符" class="headerlink" title="课程 3：匹配特定字符"></a>课程 3：匹配特定字符</h2><p>​	<code>[abc]</code>匹配字符串，a或b或c</p>
+<h2 id="课程-4：排除特定字符"><a href="#课程-4：排除特定字符" class="headerlink" title="课程 4：排除特定字符"></a>课程 4：排除特定字符</h2><p>​	<code>[^abc]</code> 将匹配除<code>abc</code>外任意单个字符</p>
+<h2 id="课程-5：字符范围"><a href="#课程-5：字符范围" class="headerlink" title="课程 5：字符范围"></a>课程 5：字符范围</h2><p>​	字母数字 (alphanumeric) 元字符<code>\w</code> 相当于字符范围 <code>[A-Za-z0-9_]</code></p>
+<h2 id="课程-6：匹配重复字符-注意：有的正则表达式实现不支持下文重复语法的某些部分。"><a href="#课程-6：匹配重复字符-注意：有的正则表达式实现不支持下文重复语法的某些部分。" class="headerlink" title="课程 6：匹配重复字符(注意：有的正则表达式实现不支持下文重复语法的某些部分。)"></a>课程 6：匹配重复字符(<em>注意：有的正则表达式实现不支持下文重复语法的某些部分。</em>)</h2><ul>
+<li><p>使用花括号表示法指定要匹配多少个字符，<code>a&#123;3&#125;</code>将匹配a字符正好三次，a{1,3}将匹配a字符至少1次，至多3次。</p>
+</li>
+<li><p>这个量词</u> (quantifier) 可以与任意字符或特殊的元字符一起使用，例如 <strong><code>w&#123;3&#125;</code></strong> (三个 w)、**<code>[wxy]&#123;5&#125;</code>** (五个字符，每个字符可以是 w、x 或 y) 和 <strong><code>.&#123;2,6&#125;</code></strong> (两到六个<strong>任意</strong>字符)。</p>
+</li>
+<li><p>花括号中的最大重复次数也可以省略：**<code>&#123;n,&#125;</code>** 表示重复至少 n 次，至多无限制。</p>
+</li>
+</ul>
+<h2 id="课程-7：Kleene-操作符"><a href="#课程-7：Kleene-操作符" class="headerlink" title="课程 7：Kleene 操作符"></a>课程 7：Kleene 操作符</h2><ul>
+<li><code>\d*</code>来匹配任意数量的数字</li>
+<li><code>\d+</code>确保输入的字符串至少有一个数字</li>
+<li>这些量词 (quantifiers) 可以与任意字符或特殊的元字符一起使用，例如 <strong><code>a+</code></strong> (一个或多个 a)、**<code>[abc]+</code><strong>(一个或多个字符 a、b 或 c) 和 <strong><code>.\*</code></strong> (零个或多个</strong>任意**字符)。</li>
+</ul>
+<h2 id="课程-8：可选字符"><a href="#课程-8：可选字符" class="headerlink" title="课程 8：可选字符"></a>课程 8：可选字符</h2><ul>
+<li><strong><code>?</code></strong> (问号) 元字符表示<strong>可选性</strong>。这个元字符允许您匹配前面的零个或一个字符或组。</li>
+<li>例如，模式 <strong><code>ab?c</code></strong> 将匹配字符串 “abc” 或 “ac”，因为 b 被认为是可选的。</li>
+<li>问号是一个特殊字符，您必须使用斜杠 <strong><code>\?</code></strong> 匹配字符串中的普通问号字符。</li>
+</ul>
+<h2 id="课程-9：空白字符"><a href="#课程-9：空白字符" class="headerlink" title="课程 9：空白字符"></a>课程 9：空白字符</h2><ul>
+<li><strong><code>\s</code></strong> 能够匹配上面的<strong>任意</strong>空白符，包括<strong>空格 (␣)<strong>、</strong>制表符 (\t)<strong>、</strong>换行 (\n)</strong> 和<strong>回车 (\r)</strong></li>
+</ul>
+<h2 id="课程-10：开始与结束"><a href="#课程-10：开始与结束" class="headerlink" title="课程 10：开始与结束"></a>课程 10：开始与结束</h2><ul>
+<li><strong><code>^</code> (hat)</strong> 和 <strong><code>$</code> (美元符号)</strong> 来描述一行的开始和结束。</li>
+<li>模式 <strong><code>^success</code></strong> 来<strong>只</strong>匹配以单词 “success” 开头的行，而不匹配 “Error: unsuccessful operation”。如果我们把 <code>^</code> 和 <code>$</code> 结合起来，就能实现一个匹配从开头到结尾一整行的模式。</li>
+<li>请注意，**<code>^</code>** 和方括号 <strong><code>[^...]</code></strong> 中用于排除字符的 hat 不同，这在读取正则表达式时容易混淆。</li>
+</ul>
+<h2 id="课程-11：捕获组"><a href="#课程-11：捕获组" class="headerlink" title="课程 11：捕获组"></a>课程 11：捕获组</h2><ul>
+<li>正则表达式不仅允许我们匹配文本，还允许我们提取信息以便进一步处理。这是通过定义<strong>字符组 (groups of characters)</strong> 并使用特殊的圆括号 <strong>(</strong> 和 <strong>)</strong> 元字符捕获它们来实现的。一对括号内的任何子模式 (subpattern) 都将被<strong>捕获</strong> (capture) 为一个组 (group)。<img src="/../images/regularExpression/%E6%88%AA%E5%B1%8F2023-08-10%2015.38.16.png" alt="截屏2023-08-10 15.38.16"></li>
+</ul>
+<h2 id="课程-12：嵌套组"><a href="#课程-12：嵌套组" class="headerlink" title="课程 12：嵌套组"></a>课程 12：嵌套组</h2><ul>
+<li>如果每个图像文件的文件名中都有一个连续的图片编号，我们可以通过编写 <strong><code>^(IMG(\d+))\.png$</code></strong> 之类的表达式 (使用嵌套的括号来捕获数字)，使用同一个模式同时提取文件名和图片编号。</li>
+<li>在模式中，嵌套组按照从左到右的<em>左括号</em>出现的顺序定义，第一个捕获组是第一个括号里的内容，以此类推。捕获的结果也按照这个顺序排列。</li>
+</ul>
+<h2 id="课程-13：关于分组的更多内容"><a href="#课程-13：关于分组的更多内容" class="headerlink" title="课程 13：关于分组的更多内容"></a>课程 13：关于分组的更多内容</h2><ul>
+<li>所有的量词 (quantifiers) ——包括星号 **<code>\*</code>**、加号 **<code>+</code>**、重复 <strong><code>&#123;m，n&#125;</code></strong> 和问号 <strong><code>?</code></strong> ——都可以在捕获组模式中使用。</li>
+<li>例如，如果我们知道一个电话号码可能包含区号，也可能不包含区号，那么正确的模式是测试整个数字组是否存在 **<code>(\d&#123;3&#125;)?</code>**，而不是测试单个字符本身 (这是错误的)。</li>
+</ul>
+<h2 id="课程-14：条件"><a href="#课程-14：条件" class="headerlink" title="课程 14：条件"></a>课程 14：条件</h2><ul>
+<li>使用 <strong><code>|</code> (逻辑或 locigal OR，也就是管道 pipe)</strong> 来表示<strong>可能的不同的字符集</strong>，尤其是在使用组的时候。</li>
+</ul>
+<h2 id="课程-15：其他元字符"><a href="#课程-15：其他元字符" class="headerlink" title="课程 15：其他元字符"></a>课程 15：其他元字符</h2><ul>
+<li>元字符 **<code>\b</code>**，它匹配单词和非单词字符之间的边界。它在捕获整个单词时最有用，例如模式 **<code>\w+\b</code>**。</li>
+</ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h2 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h2>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/23/missing-semester/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -853,7 +975,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -898,12 +1020,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">16k</span>
+    <span title="站点总字数">18k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">15 分钟</span>
+    <span title="站点阅读时长">16 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
