@@ -189,7 +189,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-08-15 13:41:34 / 修改时间：16:33:30" itemprop="dateCreated datePublished" datetime="2023-08-15T13:41:34+08:00">2023-08-15</time>
+              <time title="创建时间：2023-08-15 13:41:34 / 修改时间：16:53:22" itemprop="dateCreated datePublished" datetime="2023-08-15T13:41:34+08:00">2023-08-15</time>
             </span>
 
           <br>
@@ -223,7 +223,10 @@
 <li><p>或与范式</p>
 </li>
 <li><p>等式化简，展开一个蕴含式:</p>
-<p><img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2014.27.49-2080877.png" alt="截屏2023-08-15 14.27.49"></p>
+</li>
+<li><img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2014.27.49-2080877-2089511.png" alt="截屏2023-08-15 14.27.49-2080877" style="zoom:50%;" />
+
+
 </li>
 <li><p>原理图</p>
 <ul>
@@ -242,7 +245,7 @@
 </ol>
 </li>
 </ul>
-<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.00.08-2082815.png" alt="截屏2023-08-15 15.00.08" style="zoom:50%;" />
+<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.00.08-2082815-2089536.png" alt="截屏2023-08-15 15.00.08-2082815" style="zoom:50%;" />
 
 <ul>
 <li><code>X</code>和<code>Z</code>：布尔代数局限于0和1.然而，真实的电路中会出现非法值和浮空现象，分别用<code>X</code>和<code>Z</code>表示。<ul>
@@ -257,7 +260,7 @@
 </ul>
 </li>
 </ul>
-<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.13.21-2083606.png" alt="截屏2023-08-15 15.13.21" style="zoom:50%;" />
+<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.13.21-2083606-2089571.png" alt="截屏2023-08-15 15.13.21-2083606" style="zoom:50%;" />
 
 <ul>
 <li><p>卡诺图：一个图形化的化简布尔表达式方法</p>
@@ -268,7 +271,7 @@
 <li>每个圈必须尽可能大；</li>
 <li>圈可以环绕卡诺图的边界；</li>
 <li>如果可以使用更少数量的圈，卡诺图中一个为1的方格可以被多次圈住；</li>
-<li>如0果可以用较少和较大的圈覆盖1，这些无关项也可以被圈起来。<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.35.01-2084907.png" alt="截屏2023-08-15 15.35.01" style="zoom:50%;" /></li>
+<li>如0果可以用较少和较大的圈覆盖1，这些无关项也可以被圈起来。<img src="../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.35.01-2084907-2089594.png" alt="截屏2023-08-15 15.35.01-2084907" style="zoom:50%;" /></li>
 </ol>
 </li>
 <li><p>多路选择器，可用于实现逻辑，真值表中的每一行和多路选择器的一个输入相对应。</p>
@@ -530,7 +533,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-11 09:40:43" itemprop="dateModified" datetime="2023-08-11T09:40:43+08:00">2023-08-11</time>
+                <time title="修改时间：2023-08-15 16:50:13" itemprop="dateModified" datetime="2023-08-15T16:50:13+08:00">2023-08-15</time>
               </span>
 
           <br>
@@ -539,7 +542,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1k</span>
+              <span>1.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -604,9 +607,19 @@
 <li><p>获取字符串长度</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">string=&quot;abcd&quot;</span><br><span class="line">echo $&#123;#string&#125;   # 输出 4</span><br><span class="line"># 变量为字符串时$&#123;#string&#125; 等价于 $&#123;#string[0]&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li></li>
-</ul>
+<li><p>提取字符串</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">string=&quot;runoob is a great site&quot;</span><br><span class="line">echo $&#123;string:1:4&#125; # 输出 unoo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Shell数组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">array_name=(value0 value1 value2 value3)</span><br></pre></td></tr></table></figure>
 
+<p>读取数组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">valuen=$&#123;array_name[n]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <strong>@</strong> 符号可以获取数组中的所有元素，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $&#123;array_name[@]&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Shell传递参数"><a href="#Shell传递参数" class="headerlink" title="Shell传递参数"></a>Shell传递参数</h2>
       
     </div>
 
