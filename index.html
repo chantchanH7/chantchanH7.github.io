@@ -533,7 +533,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-15 16:50:13" itemprop="dateModified" datetime="2023-08-15T16:50:13+08:00">2023-08-15</time>
+                <time title="修改时间：2023-08-15 16:57:31" itemprop="dateModified" datetime="2023-08-15T16:57:31+08:00">2023-08-15</time>
               </span>
 
           <br>
@@ -542,7 +542,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.3k</span>
+              <span>1.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -619,7 +619,48 @@
 <p>使用 <strong>@</strong> 符号可以获取数组中的所有元素，例如：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $&#123;array_name[@]&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h2 id="Shell传递参数"><a href="#Shell传递参数" class="headerlink" title="Shell传递参数"></a>Shell传递参数</h2>
+<h2 id="Shell传递参数"><a href="#Shell传递参数" class="headerlink" title="Shell传递参数"></a>Shell传递参数</h2><ul>
+<li><p>脚本内获取参数的格式为：<code>$n</code>，n代表一个数字，1为第一个参数，以此类推</p>
+</li>
+<li><table>
+<thead>
+<tr>
+<th>参数处理</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$#</td>
+<td>传递到脚本的参数个数</td>
+</tr>
+<tr>
+<td>$*</td>
+<td>以一个单字符串显示所有向脚本传递的参数。如”$*”用「”」括起来的情况、以”$1 $2 … $n”的形式输出所有参数。</td>
+</tr>
+<tr>
+<td>$$</td>
+<td>脚本运行的当前进程ID号</td>
+</tr>
+<tr>
+<td>$!</td>
+<td>后台运行的最后一个进程的ID号</td>
+</tr>
+<tr>
+<td>$@</td>
+<td>与$*相同，但是使用时加引号，并在引号中返回每个参数。<br/>如”$@”用「”」括起来的情况、以”$1” “$2” … “$n” 的形式输出所有参数。</td>
+</tr>
+<tr>
+<td>$-</td>
+<td>显示Shell使用的当前选项，与<a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-comm-set.html">set命令</a>功能相同。</td>
+</tr>
+<tr>
+<td>$?</td>
+<td>显示最后命令的退出状态。0表示没有错误，其他任何值表明有错误。</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+
       
     </div>
 
