@@ -189,7 +189,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-08-21 13:21:14 / 修改时间：15:22:18" itemprop="dateCreated datePublished" datetime="2023-08-21T13:21:14+08:00">2023-08-21</time>
+              <time title="创建时间：2023-08-21 13:21:14 / 修改时间：15:48:18" itemprop="dateCreated datePublished" datetime="2023-08-21T13:21:14+08:00">2023-08-21</time>
             </span>
 
           <br>
@@ -198,14 +198,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6k</span>
+              <span>7.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -296,6 +296,26 @@
 <p>​	这部分是关于Makefile的学习，推荐看<a target="_blank" rel="noopener" href="https://www.itsembedded.com/dhd/vivado_sim_3/">itsembedded的教程</a>进行学习。笔者将自己的简易实现放在这里。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">all:</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">sim:</span><br><span class="line">	$(call git_commit, &quot;sim RTL&quot;) # DO NOT REMOVE THIS LINE!!!</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">	verilator -Wall csrc/main.cpp vsrc/example.v --cc --trace --exe --build</span><br><span class="line">include ../Makefile</span><br></pre></td></tr></table></figure>
 
+<h2 id="接入NVBOARD"><a href="#接入NVBOARD" class="headerlink" title="接入NVBOARD"></a>接入NVBOARD</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/NJU-ProjectN/nvboard.git">NVBoard</a>(NJU Virtual Board)是南京大学开发的, 用于教学的虚拟FPGA板卡项目, 可以在RTL仿真环境中提供一个虚拟板卡的界面, 支持拨码开关, LED灯, VGA显示等功能, 在速度要求不高的场景下可完全替代真实的FPGA板卡(毕竟不是每人身边都有一块FPGA). 通过以下命令获取NVBoard的代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ysyx-workbench</span><br><span class="line">bash init.sh nvboard</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="任务：运行NVBoard示例"><a href="#任务：运行NVBoard示例" class="headerlink" title="任务：运行NVBoard示例"></a>任务：运行NVBoard示例</h2><blockquote>
+<p>阅读NVBoard项目的介绍, 尝试运行NVBoard项目中提供的示例.</p>
+</blockquote>
+<p>​	浏览器可以直接搜到nvboard的github，阅读readme，并运行example里的实例</p>
+<h2 id="任务：在NVBoard上实现双控开关"><a href="#任务：在NVBoard上实现双控开关" class="headerlink" title="任务：在NVBoard上实现双控开关"></a>任务：在NVBoard上实现双控开关</h2><blockquote>
+<p>阅读NVBoard项目的说明, 然后仿照该示例下的C++文件和Makefile, 修改你的C++文件, 为双控开关的输入输出分配引脚, 并修改<code>npc/Makefile</code>使其接入NVBoard.</p>
+</blockquote>
+<p>​	双控开关的verilog 文件不需要更改，仿照<code>NVboard/example</code>的testbench文件修改C++文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;nvboard.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">static TOP_NAME dut;</span><br><span class="line">void nvboard_bind_all_pins(Vtop* top);</span><br><span class="line">int main() &#123;</span><br><span class="line">	nvboard_bind_all_pins(&amp;dut);</span><br><span class="line">	nvboard_init();</span><br><span class="line">	while(1) &#123;</span><br><span class="line">		dut.eval();</span><br><span class="line">		nvboard_update();</span><br><span class="line">	&#125;</span><br><span class="line">	nvboard_quit();</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	TOP_NAME 实例化一个top模块dut，<code>nvboard_bind_all_pins(Vtop* top);</code>将模块上的引脚按照<code>constr/top.nxdc</code>中描述的方式连接。<code>nvboard_init();</code>初始化nvboard，通过<code>while(1)</code>循环等待鼠标事件发生。<code>dut.eval() nvboard_update();</code>用于更新模块和nvboard。<code>nvboard_quit();</code>退出nvboard。</p>
+<p>​	NVBoard的引脚名字在<code>nvboard/board/N4</code>中。top.nxdc文件中给出连接方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line"></span><br><span class="line">a SW0</span><br><span class="line">b SW1</span><br><span class="line">f LD0</span><br></pre></td></tr></table></figure>
+
+<p>​	top &#x3D; top_modulename, 顶层模块名，<code>a SW0</code>表示a 连接到SW0上。makefile文件仿照nvboard示例即可。 效果如下：</p>
+<p><img src="../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.47.08-2604032.png" alt="截屏2023-08-21 15.47.08" style="zoom:50%;" /><img src="../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.46.29-2603999-2604016.png" alt="截屏2023-08-21 15.46.29" style="zoom:50%;" /><img src="../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.47.26-2604052.png" alt="截屏2023-08-21 15.47.26" style="zoom:50%;" /><img src="../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.46.52.png" alt="截屏2023-08-21 15.46.52" style="zoom:50%;" /></p>
 
       
     </div>
@@ -1688,12 +1708,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">31k</span>
+    <span title="站点总字数">32k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">28 分钟</span>
+    <span title="站点阅读时长">29 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
