@@ -30,8 +30,11 @@
 <meta property="og:description" content="南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验实验一 选择器任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。 用选择器模板实现一个2位4选1的选择器，如下图所示，选择器有5个2位输入端，分别为X0, X1, X2, X3和Y，输出端为F；X0, X1, X2, X3是四个2位的输入变量。输出F端受控制端Y的控制，选择其中的一个X输出，当Y &#x3D; 0">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.30.30.png">
+<meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.55.17-2690921.png">
+<meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2016.41.08-2693675-2693707.png">
+<meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2017.02.57-2694983.png">
 <meta property="article:published_time" content="2023-08-22T07:13:02.000Z">
-<meta property="article:modified_time" content="2023-08-22T07:30:54.118Z">
+<meta property="article:modified_time" content="2023-08-22T09:10:05.938Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.30.30.png">
@@ -193,7 +196,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-08-22 15:13:02 / 修改时间：15:30:54" itemprop="dateCreated datePublished" datetime="2023-08-22T15:13:02+08:00">2023-08-22</time>
+              <time title="创建时间：2023-08-22 15:13:02 / 修改时间：17:10:05" itemprop="dateCreated datePublished" datetime="2023-08-22T15:13:02+08:00">2023-08-22</time>
             </span>
 
           
@@ -209,14 +212,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>444</span>
+              <span>4.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -233,7 +236,58 @@
 <p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.30.30.png" alt="截屏2023-08-22 15.30.30"></p>
 <p>选择开发板上的SW0和SW1作为控制端Y，SW2—SW9作为四个两位数据输入端X0–X3，将两位的输出端F接到发光二极管LEDR0和LEDR1上显示输出，完成设计，对自己的设计进行功能仿真，并下载到开发板上验证电路性能。</p>
 </blockquote>
-<p>​	简单的二位四选一选择器实现比较简单，参照讲义上 <em>Listing 5</em> <em>4选1选择器case语句实现</em> 使用<code>case</code>语句实现即可。但是选择器模版</p>
+<p>​	简单的二位四选一选择器实现比较简单，参照讲义上 <em>Listing 5</em> <em>4选1选择器case语句实现</em> 使用<code>case</code>语句实现即可。但是选择器模版应该如何使用呢？阅读并观察讲义中<em>Listing 8</em> <em>使用选择器模板实现选择器</em>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">module mux21e(a,b,s,y);</span><br><span class="line">  input   a,b,s;</span><br><span class="line">  output  y;</span><br><span class="line">  MuxKey #(2, 1, 1) i0 (y, s, &#123;</span><br><span class="line">    1&#x27;b0, a,</span><br><span class="line">    1&#x27;b1, b</span><br><span class="line">  &#125;);</span><br><span class="line">endmodule</span><br><span class="line"></span><br><span class="line">module mux41b(a,s,y);</span><br><span class="line">  input  [3:0] a;</span><br><span class="line">  input  [1:0] s;</span><br><span class="line">  output y;</span><br><span class="line">  MuxKeyWithDefault #(4, 2, 1) i0 (y, s, 1&#x27;b0, &#123;</span><br><span class="line">    2&#x27;b00, a[0],</span><br><span class="line">    2&#x27;b01, a[1],</span><br><span class="line">    2&#x27;b10, a[2],</span><br><span class="line">    2&#x27;b11, a[3]</span><br><span class="line">  &#125;);</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">module MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (</span><br><span class="line">  output [DATA_LEN-1:0] out,</span><br><span class="line">  input [KEY_LEN-1:0] key,</span><br><span class="line">  input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>​	<code>MuxKey</code>接受6个参数，三个一组，<code>#(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1)</code>前三个参数以#开始在()内，分别为键值对的数量，键值的位宽，数据的位宽 ，后三个参数为引脚名称，分别为输出引脚out，给定的键值和<code>(键值，数据)</code> 的列表 <code>lut</code>。</p>
+<p>​	现在我们可以编写用选择器模板实现的一个2位4选1的选择器，键值对的数量为4，键值的位宽，数据的位宽均为2。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">module top(X0, X1, X2, X3, Y, F);</span><br><span class="line">	input [1:0] X0, X1, X2, X3, Y;</span><br><span class="line">	output [1:0] F;</span><br><span class="line">	MuxKey #(4, 2, 2) i0 (F, Y, &#123;</span><br><span class="line">		2&#x27;b00, X0,</span><br><span class="line">		2&#x27;b01, X1,</span><br><span class="line">		2&#x27;b10, X2,</span><br><span class="line">		2&#x27;b11, X3	</span><br><span class="line">		&#125;);</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	此时编译未成功，提示缺少模块<code>MuxKey</code>。如何结构化模块？首先寻找示例代码中是否有相关的例子。观察到<code>nvboard/example/vsrc</code>中有多个<code>.v</code>文件，且<code>top.v</code>中有实例化模块的例子，这说明该示例使用了结构化模块，阅读<code>Makefile</code>文件发现，编译时使用–top-module指出顶层模块名。我们仿照示例编写<code>Makefile</code>文件，并在目录中添加<code>MuxKey.v</code>和<code>MuxKeyInternal.v</code>模块。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(VERILATOR) $(VERILATOR_CFLAGS) \</span><br><span class="line">		--top-module $(TOPNAME) $^ \</span><br><span class="line">		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \</span><br><span class="line">		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))</span><br></pre></td></tr></table></figure>
+
+<p>​	通过前一节搭建verilator仿真环境，我们知道如何在<code>nvboard</code>上连接引脚进行测试。此处就不再赘述。实现效果如下：	 <img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.55.17-2690921.png" alt="截屏2023-08-22 15.55.17"></p>
+<p>​	当使能端<code>Y = 10</code>时，选择器选择<code>X2 = 11</code>，<code>LED0，LED1</code>被点亮。而不会输出其他信号。</p>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p>​	不要使用行为建模方式设计电路，即Verilog不像C语言编程一样是在过程中发现错误并优化代码的。一定要在脑海或者图纸上先将电路画出来，再进行编码仿真。特别是当开发者心里没有电路但期望通过行为建模让综合器生成某种行为的电路，这就已经偏离“描述电路”的本质了。对于代码来说，多尝试总是没错的，尽量把自己脑海中想到的东西写下来验证，电脑永远是对的。</p>
+<h3 id="遗留问题："><a href="#遗留问题：" class="headerlink" title="遗留问题："></a>遗留问题：</h3><blockquote>
+<p>​	所以，直到大家掌握“描述电路”的思维而不被行为建模误导之前，我们强烈建议初学者远离行为建模方式，仅通过数据流建模和结构化建模方式直接描述电路。例如，上文关于if和always的说法从某种程度上来说是正确的，但下面的问题可以帮助大家测试自己是否已经掌握了Verilog的本质：</p>
+<ul>
+<li>在硬件描述语言中，“执行”的精确含义是什么？</li>
+<li>是谁在执行Verilog的语句？ 是电路，综合器，还是其它的？</li>
+<li>if的条件满足，就不执行else后的语句，这里的“不执行”又是什么意思？ 和描述电路有什么联系？</li>
+<li>有“并发执行”，又有“顺序执行”，还有“任何一个变量发生变化就立即执行”，以及“在任何情况下都执行”，它们都是如何在设计出来的电路中体现的？</li>
+</ul>
+<p>​	如果你无法对这些问题作出明确的回答，我们强烈建议你不要使用行为建模方式。如果你真的想弄懂它们，你需要阅读 <a target="_blank" rel="noopener" href="https://nju-projectn.github.io/dlco-lecture-note/exp/inst.eecs.berkeley.edu/~cs150/fa06/Labs/verilog-ieee.pdf">Verilog标准手册</a> 。</p>
+</blockquote>
+<p>​		标准手册太长了，留着慢慢读。</p>
+<h2 id="实验二-译码器和编码器"><a href="#实验二-译码器和编码器" class="headerlink" title="实验二 译码器和编码器"></a>实验二 译码器和编码器</h2><h3 id="任务：实现一个8-3优先编码器并在七段数码管上显示"><a href="#任务：实现一个8-3优先编码器并在七段数码管上显示" class="headerlink" title="任务：实现一个8-3优先编码器并在七段数码管上显示"></a>任务：<strong>实现一个8-3优先编码器并在七段数码管上显示</strong></h3><blockquote>
+<p><strong>功能描述</strong></p>
+<p>查找8-3优先编码器相关原理和实现方法，实现一个8-3编码器，完成8-3编码器的设计、功能仿真和硬件实现。</p>
+<p>输入一个8位二进制数，对此8位二进制数进行高位优先编码成一个3位二进制值，并根据是否有输入增加一位输入指示位，即8个输入全0时指示位为0，有任何一个输入为1时指示位为1。编码器的使能端可选实现。将此编码结果及指示位以二进制形式显示在四个发光二极管LED上。再将此结果跟据七段数码管的显示进行译码，将二进制的优先编码结果以十进制的形式显示在数码管上。</p>
+<p><strong>输入输出建议</strong></p>
+<p>输入可以使用拨动开关SW7-SW0。使能端可以用SW8。输出为LED2-0，输出指示可以是LED4，数码管输出为HEX0。</p>
+<p>例：我们从SW7—SW0输入00001110，因为我们设计的是一个高位优先的优先编码器，从左（高位）开始，第一位为1的是第3号位，那么优先编码器的编码二进制结果就为011，将这个值显示在发光二极管上，并且指示位也同时置为1。再对这个数值跟据七段数码管的显示进行译码，此时应显示为 <code>3</code> ，用HEX0显示，所以HEX0[6:0]应该译码为0110000（注意高低位顺序），那么在七段数码管上就会显示 <code>3</code> 这个字符。</p>
+</blockquote>
+<p>​	首先我们先在<code>vsrc</code>中新建文件<code>bcd7seg.v</code>实现七段数码管编码的模块。该模块在网上已经有很多实现方式了，这里需要注意一点，我们在<code>nvboard/board/N4</code>中能找到LED数码管每个管的名称，在组合显示数字时多尝试查看显示是否正确。接着实现顶层模块<code>top.v</code>，代码及注释如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">module top(x, en, y, f, led);</span><br><span class="line">	input [7:0] x;	//输入码</span><br><span class="line">	input en;	// 使能端</span><br><span class="line">	output reg [6:0] led; // 灯，数码管的引脚</span><br><span class="line">	output reg f;					// 输入指示位</span><br><span class="line">	output reg [2:0] y;		// 输出编码</span><br><span class="line">	integer i;</span><br><span class="line">	</span><br><span class="line">	// 实例化七段数码管编码模块</span><br><span class="line">	bcd7seg seg(</span><br><span class="line">		.b(&#123;1&#x27;b0, y&#125;), //接入引脚</span><br><span class="line">		.h(led)</span><br><span class="line">	);</span><br><span class="line">	</span><br><span class="line">	// 逻辑</span><br><span class="line">	always @(x or en) begin</span><br><span class="line">		f = 0;</span><br><span class="line">		if (en) begin</span><br><span class="line">			y = 0;</span><br><span class="line">			for(i = 0; i &lt;= 7; i = i + 1)</span><br><span class="line">				if(x[i] == 1) begin </span><br><span class="line">					y = i[2:0];	// 把十进制i转化为3位二进制数存入y中</span><br><span class="line">					f = 1&#x27;b1;</span><br><span class="line">				end</span><br><span class="line">			end</span><br><span class="line">		else y = 0;</span><br><span class="line">	end</span><br><span class="line">endmodule</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>​	<code>nvboard</code>的引脚接线和<code>Makefile</code>参照上一个实验即可。</p>
+<p>​	最终效果如下图所示，<code>LED4</code>是输入指示位，<code>SW8</code>是使能端，当使能端为1时允许输出，输入端为<code>00010100</code>，由于是优先编码，最高位4对应的LED2被点亮，数码管显示4。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2016.41.08-2693675-2693707.png" alt="截屏2023-08-22 16.41.08"></p>
+<h3 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h3><p>​	在实例化时发现引脚数目不对，8-3优先编码器的输出端为3位而数码管的输入端为4位，用<code>&#123;&#125;</code>将输出扩展一位达到效果。</p>
+<p>​	在数字电路设计与计算机组成一书中有提到电路中存在高阻态<code>Z</code>和不定值<code>X</code>，这类状态在<code>Verilog</code>中用<code>casez</code>和<code>casex</code>解决。首先要明确的是’?’代表的不是don’t care，而是’z’。再有就是case&#x2F;casez&#x2F;casex其实都是可综合的，这一点也要记住。</p>
+<p> 区分：</p>
+<ul>
+<li><p>case语句的表达式的值有4中情况：0、1、z、x。4种是不同的，故表达式要严格的相等才可以操作分支语句。</p>
+</li>
+<li><p>casez语句中的表达式情况有三种：0、1、x。不用关心z，z可以和任何数值相等，即z &#x3D;0.z&#x3D; 1,z&#x3D;x;</p>
+</li>
+<li><p>casex语句的表达式情况有二种：0、1.不用关心x和z。即x&#x3D;z&#x3D;0,x&#x3D;z&#x3D;1<img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2017.02.57-2694983.png" alt="截屏2023-08-22 17.02.57"></p>
+</li>
+</ul>
+<p>​		<code>casez </code>用<code>?</code>表示无关项；<code>casex</code>用<code>x</code>表示无关值。</p>
 
     </div>
 
@@ -311,7 +365,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%B3%BB-%E6%95%B0%E5%AD%97%E9%80%BB%E8%BE%91%E4%B8%8E%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90-%E8%AF%BE%E7%A8%8B%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.</span> <span class="nav-text">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">实验一 选择器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A1-%E4%B8%8A%E6%9D%BF%E5%AE%9E%E9%AA%8C-%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%9B2-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%B3%BB-%E6%95%B0%E5%AD%97%E9%80%BB%E8%BE%91%E4%B8%8E%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90-%E8%AF%BE%E7%A8%8B%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.</span> <span class="nav-text">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">实验一 选择器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A1-%E4%B8%8A%E6%9D%BF%E5%AE%9E%E9%AA%8C-%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%9B2-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">2.2.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">2.3.</span> <span class="nav-text">遗留问题：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8C-%E8%AF%91%E7%A0%81%E5%99%A8%E5%92%8C%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">实验二 译码器和编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA8-3%E4%BC%98%E5%85%88%E7%BC%96%E7%A0%81%E5%99%A8%E5%B9%B6%E5%9C%A8%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E4%B8%8A%E6%98%BE%E7%A4%BA"><span class="nav-number">3.1.</span> <span class="nav-text">任务：实现一个8-3优先编码器并在七段数码管上显示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="nav-number">3.2.</span> <span class="nav-text">总结：</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -372,12 +426,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">33k</span>
+    <span title="站点总字数">37k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">30 分钟</span>
+    <span title="站点阅读时长">34 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
