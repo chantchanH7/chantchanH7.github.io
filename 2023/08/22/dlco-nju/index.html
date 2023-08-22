@@ -22,17 +22,19 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="不舍昼夜">
+  <meta name="description" content="南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验实验一 选择器任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。 用选择器模板实现一个2位4选1的选择器，如下图所示，选择器有5个2位输入端，分别为X0, X1, X2, X3和Y，输出端为F；X0, X1, X2, X3是四个2位的输入变量。输出F端受控制端Y的控制，选择其中的一个X输出，当Y &#x3D; 0">
 <meta property="og:type" content="article">
 <meta property="og:title" content="dlco_nju">
 <meta property="og:url" content="http://example.com/2023/08/22/dlco-nju/index.html">
 <meta property="og:site_name" content="master haodong">
-<meta property="og:description" content="不舍昼夜">
+<meta property="og:description" content="南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验实验一 选择器任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。 用选择器模板实现一个2位4选1的选择器，如下图所示，选择器有5个2位输入端，分别为X0, X1, X2, X3和Y，输出端为F；X0, X1, X2, X3是四个2位的输入变量。输出F端受控制端Y的控制，选择其中的一个X输出，当Y &#x3D; 0">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/digital-design-and-computer-architecture/mux241.png">
 <meta property="article:published_time" content="2023-08-22T07:13:02.000Z">
-<meta property="article:modified_time" content="2023-08-22T07:13:02.936Z">
+<meta property="article:modified_time" content="2023-08-22T07:26:24.782Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/digital-design-and-computer-architecture/mux241.png">
 
 <link rel="canonical" href="http://example.com/2023/08/22/dlco-nju/">
 
@@ -189,8 +191,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2023-08-22 15:13:02" itemprop="dateCreated datePublished" datetime="2023-08-22T15:13:02+08:00">2023-08-22</time>
+              <time title="创建时间：2023-08-22 15:13:02 / 修改时间：15:26:24" itemprop="dateCreated datePublished" datetime="2023-08-22T15:13:02+08:00">2023-08-22</time>
             </span>
 
           
@@ -206,7 +209,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
+              <span>444</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -225,7 +228,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h2 id="南京大学-计算机科学与技术系-数字逻辑与计算机组成-课程实验"><a href="#南京大学-计算机科学与技术系-数字逻辑与计算机组成-课程实验" class="headerlink" title="南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验"></a><a target="_blank" rel="noopener" href="https://nju-projectn.github.io/dlco-lecture-note/index.html">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</a></h2><h2 id="实验一-选择器"><a href="#实验一-选择器" class="headerlink" title="实验一 选择器"></a>实验一 选择器</h2><h3 id="任务：1-上板实验-二位四选一选择器；2-实现一个简单的二位四选一选择器。"><a href="#任务：1-上板实验-二位四选一选择器；2-实现一个简单的二位四选一选择器。" class="headerlink" title="任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。"></a>任务：1.<strong>上板实验: 二位四选一选择器</strong>；2.实现一个简单的二位四选一选择器。</h3><blockquote>
+<p>用选择器模板实现一个2位4选1的选择器，如下图所示，选择器有5个2位输入端，分别为X0, X1, X2, X3和Y，输出端为F；X0, X1, X2, X3是四个2位的输入变量。输出F端受控制端Y的控制，选择其中的一个X输出，当Y &#x3D; 00时，输出端输出X0，即F &#x3D; X0；当Y &#x3D; 01时，输出端输出X1，即F &#x3D; X1；以此类推。</p>
+<p><img src="/../images/digital-design-and-computer-architecture/mux241.png" alt="../_images/mux241.png"></p>
+<p>选择开发板上的SW0和SW1作为控制端Y，SW2—SW9作为四个两位数据输入端X0–X3，将两位的输出端F接到发光二极管LEDR0和LEDR1上显示输出，完成设计，对自己的设计进行功能仿真，并下载到开发板上验证电路性能。</p>
+</blockquote>
+<p>​	简单的二位四选一选择器实现比较简单，参照讲义上 <em>Listing 5</em> <em>4选1选择器case语句实现</em> 使用<code>case</code>语句实现即可。但是选择器模版</p>
+
     </div>
 
     
@@ -302,6 +311,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%B3%BB-%E6%95%B0%E5%AD%97%E9%80%BB%E8%BE%91%E4%B8%8E%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90-%E8%AF%BE%E7%A8%8B%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.</span> <span class="nav-text">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">实验一 选择器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A1-%E4%B8%8A%E6%9D%BF%E5%AE%9E%E9%AA%8C-%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%9B2-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
