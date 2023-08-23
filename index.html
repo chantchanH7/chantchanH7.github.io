@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-23 14:42:37" itemprop="dateModified" datetime="2023-08-23T14:42:37+08:00">2023-08-23</time>
+                <time title="修改时间：2023-08-23 14:50:24" itemprop="dateModified" datetime="2023-08-23T14:50:24+08:00">2023-08-23</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.9k</span>
+              <span>6.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -354,6 +354,7 @@
 <p>​	箭头所指的地方解释了编译失败的原因，因为我们将<code>tmp_res</code>作为敏感事件，这导致<code>always</code>语句中为<code>tmp_res</code>赋值时会唤醒敏感事件，在组合电路中产生环路，这是不允许的。</p>
 <p>​	编译时出现的另一个问题时在电路中会产生latches，我遇到的情况是<strong>原信号赋值或者判断</strong>，即在取反时直接使用以下语句<code>b = ~b</code>。更多避免latch的方法请阅读菜鸟教程**<a target="_blank" rel="noopener" href="https://www.runoob.com/w3cnote/verilog-latch.html">Verilog 避免 Latch</a>**。</p>
 <p>​	总之，在使用<code>always</code>语法块的时候要时刻注意模拟的电路是否正确，更好的办法是将电路图先画下来，这样更方便debug。</p>
+<h3 id="疑问："><a href="#疑问：" class="headerlink" title="疑问："></a>疑问：</h3><p>​	既然ALU有那么多功能，那我们把每个功能模块化后再在顶层模块实例化并使用他们可以吗？不过出现的问题是，实例化无法在always语句中使用，这样我们只能在电路中实例化每一个模块，那引脚该怎么连呢？需要使用多个引线<code>(wire)</code>先接入引脚，再在每个<code>case</code>语句判断后接入输入输出吗？既然采用模块化，case也可以被替代为选择器模块？又该怎么实现仿真？</p>
 
       
     </div>
