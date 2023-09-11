@@ -38,8 +38,10 @@
 <meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-09%2016.00.42-4246445.png">
 <meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2010.18.29.png">
 <meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2010.19.00-4398757.png">
+<meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.12.10-4416337.png">
+<meta property="og:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.18.01-4416688.png">
 <meta property="article:published_time" content="2023-08-22T07:13:02.000Z">
-<meta property="article:modified_time" content="2023-09-11T02:25:43.444Z">
+<meta property="article:modified_time" content="2023-09-11T07:22:38.192Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.30.30.png">
@@ -207,7 +209,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-09-11 10:25:43" itemprop="dateModified" datetime="2023-09-11T10:25:43+08:00">2023-09-11</time>
+                <time title="修改时间：2023-09-11 15:22:38" itemprop="dateModified" datetime="2023-09-11T15:22:38+08:00">2023-09-11</time>
               </span>
 
           
@@ -223,14 +225,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
+              <span>13k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
+              <span>12 分钟</span>
             </span>
 
         </div>
@@ -463,7 +465,64 @@ end
 <li>在时序逻辑电路中，即<code>always @ (posedge clk)</code>块中，使用非阻塞声明<code>x &lt;= y</code>，这表明整个时序逻辑块内的电路是并行的。而在组合逻辑电路中，使用阻塞声明<code>x = y</code>。他们的区别在上文中有提到。</li>
 <li>遇到的问题：无法通过 <code>b0 = (count % 10)</code> 将26位宽的类型通过截断放入4位宽的b0中，笔者的解决方法是新声明一个暂存寄存器存储值后使用verilator语法<code>b0 = count_tmp1[3:0]</code>赋值，是否还有更好的办法？</li>
 </ul>
+<h2 id="实验五-寄存器组及存储器"><a href="#实验五-寄存器组及存储器" class="headerlink" title="实验五 寄存器组及存储器"></a>实验五 寄存器组及存储器</h2><h3 id="任务-请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为-，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。"><a href="#任务-请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为-，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。" class="headerlink" title="任务 请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为 ，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。"></a>任务 请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为 ，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。</h3><blockquote>
+<h3 id="实现寄存器堆："><a href="#实现寄存器堆：" class="headerlink" title="实现寄存器堆："></a>实现寄存器堆：</h3><p>​	读取时不需要时钟控制，即读地址有效后，直接输出数据。写入时通过时钟上升沿进行控制。</p>
+<p>​	此时可用以下方式输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assign out = ram[addr];</span><br></pre></td></tr></table></figure>
 
+<p>​	采用下面的方式进行初始化。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">initial</span><br><span class="line">begin</span><br><span class="line">  $readmemh(&quot;D:/digital_logic/mem1.txt&quot;, ram, 0, 15);</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>​	初始化数值为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@0 00</span><br><span class="line">@1 01</span><br><span class="line">@2 02</span><br><span class="line">@3 03</span><br><span class="line">@4 04</span><br><span class="line">@5 05</span><br><span class="line">@6 06</span><br><span class="line">@7 07</span><br><span class="line">@8 08</span><br><span class="line">@9 09</span><br><span class="line">@a 0a</span><br><span class="line">@b 0b</span><br><span class="line">@c 0c</span><br><span class="line">@d 0d</span><br><span class="line">@e 0e</span><br><span class="line">@f 0f</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="存储器的行为和FPGA的RAM模块"><a href="#存储器的行为和FPGA的RAM模块" class="headerlink" title="存储器的行为和FPGA的RAM模块"></a><strong>存储器的行为和FPGA的RAM模块</strong></h3><blockquote>
+<p>​	以下存储器综合时，综合器是否会用FPGA的RAM模块来实现这个模块？</p>
+<p>​	Listing 19 存储器实现代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">module ram #(</span><br><span class="line">  parameter RAM_WIDTH = 32,</span><br><span class="line">  parameter RAM_ADDR_WIDTH = 10</span><br><span class="line">)(</span><br><span class="line">    input clk,</span><br><span class="line">    input we,</span><br><span class="line">    input [RAM_WIDTH-1:0] din,</span><br><span class="line">    input [RAM_ADDR_WIDTH-1:0] inaddr,</span><br><span class="line">    input [RAM_ADDR_WIDTH-1:0] outaddr,</span><br><span class="line">    output [RAM_WIDTH-1:0] dout</span><br><span class="line">);</span><br><span class="line">  reg [RAM_WIDTH-1:0] ram [(2**RAM_ADDR_WIDTH)-1:0];</span><br><span class="line">  always @(posedge clk)</span><br><span class="line">      if (we)</span><br><span class="line">        ram[inaddr] &lt;= din;</span><br><span class="line">  assign dout = ram[outaddr];</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	如果将表 Listing 19中存储器实现部分改为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk)</span><br><span class="line">  if (we)</span><br><span class="line">    ram[inaddr] &lt;= din;</span><br><span class="line">  else</span><br><span class="line">    dout &lt;= ram[outaddr];</span><br></pre></td></tr></table></figure>
+
+<p>该存储器的行为是否会发生变化？</p>
+</blockquote>
+<p>​	原代码<code>assign dout = ram[outaddr]</code>书写格式为组合逻辑电路格式，该读取数据不受时钟控制，只要输出地址有效，就会读取数据。而修改后的代码将<code>dout &lt;= ram[outaddr]</code>写入时序逻辑电路中，这样一来，读取数据将受到时钟信号控制，在时钟信号上沿且使能端为1时读取数据。</p>
+<h3 id="实验思路："><a href="#实验思路：" class="headerlink" title="实验思路："></a>实验思路：</h3><p>​	<em><strong>Listing 20</strong></em> 给出了存储器实例代码，我们只需要在此基础上稍加修改，就可以得到一个16 * 8 的存储器。</p>
+<pre><code>module top(clk, we, inaddr, outaddr, din, dout, rst);
+input clk; 
+input we;
+input rst;
+input [3:0] inaddr;
+input [3:0] outaddr;
+input [7:0] din;
+output reg [7:0] dout;
+reg [7:0] ram [15:0];
+
+initial
+begin
+    $readmemh(&quot;/home/thelonging/verilator/dlco-nju/lab05/v_rams_16/mem/mem1.txt&quot;, ram, 0, 15);
+end
+
+always @ (posedge clk)
+begin
+    if (we)
+        ram[inaddr] &lt;= din;
+end
+
+assign dout = ram[outaddr];
+endmodule
+</code></pre>
+<h3 id="实验结果："><a href="#实验结果：" class="headerlink" title="实验结果："></a>实验结果：</h3><p>​	通过nvboard观察实验结果，我们置<code>SW15-SW12</code>为读地址，<code>SW11-SW8</code>为写地址，<code>SW7-SW0</code>为输入数据，<code>LED7-LED0</code>显示读出的数据，<code>PBC</code>为写使能位。</p>
+<p>​	当前读取存储地址位为<code>0001</code>的数据，结果显示为1，如下图所示</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.12.10-4416337.png"></p>
+<p>​	现在我们尝试在地址为0的地方写入<code>00000111</code>，点击<code>PBC</code>使读使能位有效写入数据，结果如下图所示：</p>
+<h3 id="总结：-4"><a href="#总结：-4" class="headerlink" title="总结："></a><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.18.01-4416688.png">总结：</h3><ul>
+<li><p><code>verilator</code>语句中的<code>initial</code>语句块完成在RAM的初始化，该语句在一个verilator中只能使用一次。</p>
+</li>
+<li><p>当需要初始化的RAM数据量较大的时候，可以使用文件来在系统启动时直接装入RAM数据。 Verilog提供了以下语句来将文件中的数据导入到RAM中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">initial</span><br><span class="line">begin</span><br><span class="line">  $readmemh(&quot;D:/digital_logic/mem1.txt&quot;, ram, 0, 7);</span><br><span class="line">end</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="实验六-移位寄存器及桶形移位器"><a href="#实验六-移位寄存器及桶形移位器" class="headerlink" title="实验六 移位寄存器及桶形移位器"></a>实验六 移位寄存器及桶形移位器</h2>
     </div>
 
     
@@ -540,7 +599,7 @@ end
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%B3%BB-%E6%95%B0%E5%AD%97%E9%80%BB%E8%BE%91%E4%B8%8E%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90-%E8%AF%BE%E7%A8%8B%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.</span> <span class="nav-text">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">实验一 选择器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A1-%E4%B8%8A%E6%9D%BF%E5%AE%9E%E9%AA%8C-%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%9B2-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">2.2.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">2.3.</span> <span class="nav-text">遗留问题：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8C-%E8%AF%91%E7%A0%81%E5%99%A8%E5%92%8C%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">实验二 译码器和编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA8-3%E4%BC%98%E5%85%88%E7%BC%96%E7%A0%81%E5%99%A8%E5%B9%B6%E5%9C%A8%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E4%B8%8A%E6%98%BE%E7%A4%BA"><span class="nav-number">3.1.</span> <span class="nav-text">任务：实现一个8-3优先编码器并在七段数码管上显示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="nav-number">3.2.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%89-%E5%8A%A0%E6%B3%95%E5%99%A8%E4%B8%8EALU"><span class="nav-number">4.</span> <span class="nav-text">实验三 加法器与ALU</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%B8%A6%E6%9C%89%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97%E7%9A%84%E7%AE%80%E5%8D%95ALU"><span class="nav-number">4.1.</span> <span class="nav-text">任务：实现一个带有逻辑运算的简单ALU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-2"><span class="nav-number">4.2.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%96%91%E9%97%AE%EF%BC%9A"><span class="nav-number">4.3.</span> <span class="nav-text">疑问：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9BLinux%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">4.4.</span> <span class="nav-text">一些Linux系统问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">4.4.1.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%EF%BC%9A"><span class="nav-number">4.4.2.</span> <span class="nav-text">解决方法：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9Bverilator%E8%AF%AD%E6%B3%95%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">一些verilator语法：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Blocking-vs-Non-Blocking-Assignment"><span class="nav-number">5.1.</span> <span class="nav-text">Blocking vs. Non-Blocking Assignment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#verilog-%E5%90%8C%E6%AD%A5%E5%A4%8D%E4%BD%8D%E4%B8%8E%E5%BC%82%E6%AD%A5%E5%A4%8D%E4%BD%8D"><span class="nav-number">5.2.</span> <span class="nav-text">verilog-同步复位与异步复位</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%9B-%E8%AE%A1%E6%95%B0%E5%99%A8%E5%92%8C%E6%97%B6%E9%92%9F"><span class="nav-number">6.</span> <span class="nav-text">实验四 计数器和时钟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%9C%A8nvboard%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%8C%E5%9C%A8%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E4%B8%8A%E7%9B%B4%E6%8E%A5%E4%BB%A5%E5%8D%81%E8%BF%9B%E5%88%B6%E6%98%BE%E7%A4%BA"><span class="nav-number">6.1.</span> <span class="nav-text">任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-3"><span class="nav-number">6.2.</span> <span class="nav-text">总结：</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%B3%BB-%E6%95%B0%E5%AD%97%E9%80%BB%E8%BE%91%E4%B8%8E%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90-%E8%AF%BE%E7%A8%8B%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.</span> <span class="nav-text">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">实验一 选择器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A1-%E4%B8%8A%E6%9D%BF%E5%AE%9E%E9%AA%8C-%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%9B2-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BA%8C%E4%BD%8D%E5%9B%9B%E9%80%89%E4%B8%80%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">2.2.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">2.3.</span> <span class="nav-text">遗留问题：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8C-%E8%AF%91%E7%A0%81%E5%99%A8%E5%92%8C%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">实验二 译码器和编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA8-3%E4%BC%98%E5%85%88%E7%BC%96%E7%A0%81%E5%99%A8%E5%B9%B6%E5%9C%A8%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E4%B8%8A%E6%98%BE%E7%A4%BA"><span class="nav-number">3.1.</span> <span class="nav-text">任务：实现一个8-3优先编码器并在七段数码管上显示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="nav-number">3.2.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%89-%E5%8A%A0%E6%B3%95%E5%99%A8%E4%B8%8EALU"><span class="nav-number">4.</span> <span class="nav-text">实验三 加法器与ALU</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%B8%A6%E6%9C%89%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97%E7%9A%84%E7%AE%80%E5%8D%95ALU"><span class="nav-number">4.1.</span> <span class="nav-text">任务：实现一个带有逻辑运算的简单ALU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-2"><span class="nav-number">4.2.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%96%91%E9%97%AE%EF%BC%9A"><span class="nav-number">4.3.</span> <span class="nav-text">疑问：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9BLinux%E7%B3%BB%E7%BB%9F%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">4.4.</span> <span class="nav-text">一些Linux系统问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">4.4.1.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%EF%BC%9A"><span class="nav-number">4.4.2.</span> <span class="nav-text">解决方法：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9Bverilator%E8%AF%AD%E6%B3%95%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">一些verilator语法：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Blocking-vs-Non-Blocking-Assignment"><span class="nav-number">5.1.</span> <span class="nav-text">Blocking vs. Non-Blocking Assignment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#verilog-%E5%90%8C%E6%AD%A5%E5%A4%8D%E4%BD%8D%E4%B8%8E%E5%BC%82%E6%AD%A5%E5%A4%8D%E4%BD%8D"><span class="nav-number">5.2.</span> <span class="nav-text">verilog-同步复位与异步复位</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%9B-%E8%AE%A1%E6%95%B0%E5%99%A8%E5%92%8C%E6%97%B6%E9%92%9F"><span class="nav-number">6.</span> <span class="nav-text">实验四 计数器和时钟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%EF%BC%9A%E5%9C%A8nvboard%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%8C%E5%9C%A8%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E4%B8%8A%E7%9B%B4%E6%8E%A5%E4%BB%A5%E5%8D%81%E8%BF%9B%E5%88%B6%E6%98%BE%E7%A4%BA"><span class="nav-number">6.1.</span> <span class="nav-text">任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-3"><span class="nav-number">6.2.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%94-%E5%AF%84%E5%AD%98%E5%99%A8%E7%BB%84%E5%8F%8A%E5%AD%98%E5%82%A8%E5%99%A8"><span class="nav-number">7.</span> <span class="nav-text">实验五 寄存器组及存储器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1-%E8%AF%B7%E5%9C%A8%E4%B8%80%E4%B8%AA%E5%B7%A5%E7%A8%8B%E4%B8%AD%E5%AE%8C%E6%88%90%E5%A6%82%E4%B8%8B%E7%9A%84%E5%AF%84%E5%AD%98%E5%99%A8%E5%A0%86%E5%92%8CRAM%E3%80%82%E5%AF%84%E5%AD%98%E5%99%A8%E5%A0%86%E5%92%8CRAM%E7%9A%84%E5%A4%A7%E5%B0%8F%E5%9D%87%E4%B8%BA-%EF%BC%8C%E5%8D%B3%E9%83%BD%E6%9C%8916%E4%B8%AA%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83%EF%BC%8C%E6%AF%8F%E4%B8%AA%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83%E9%83%BD%E6%98%AF8%E4%BD%8D%E7%9A%84%EF%BC%8C%E5%9D%87%E5%8F%AF%E4%BB%A5%E8%BF%9B%E8%A1%8C%E8%AF%BB%E5%86%99%E3%80%82"><span class="nav-number">7.1.</span> <span class="nav-text">任务 请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为 ，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E5%AF%84%E5%AD%98%E5%99%A8%E5%A0%86%EF%BC%9A"><span class="nav-number">7.2.</span> <span class="nav-text">实现寄存器堆：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E5%99%A8%E7%9A%84%E8%A1%8C%E4%B8%BA%E5%92%8CFPGA%E7%9A%84RAM%E6%A8%A1%E5%9D%97"><span class="nav-number">7.3.</span> <span class="nav-text">存储器的行为和FPGA的RAM模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">7.4.</span> <span class="nav-text">实验思路：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A"><span class="nav-number">7.5.</span> <span class="nav-text">实验结果：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-4"><span class="nav-number">7.6.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%85%AD-%E7%A7%BB%E4%BD%8D%E5%AF%84%E5%AD%98%E5%99%A8%E5%8F%8A%E6%A1%B6%E5%BD%A2%E7%A7%BB%E4%BD%8D%E5%99%A8"><span class="nav-number">8.</span> <span class="nav-text">实验六 移位寄存器及桶形移位器</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -601,12 +660,12 @@ end
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">44k</span>
+    <span title="站点总字数">46k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40 分钟</span>
+    <span title="站点阅读时长">41 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
