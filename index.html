@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-09-13 16:48:43" itemprop="dateModified" datetime="2023-09-13T16:48:43+08:00">2023-09-13</time>
+                <time title="修改时间：2023-09-13 17:26:26" itemprop="dateModified" datetime="2023-09-13T17:26:26+08:00">2023-09-13</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>21k</span>
+              <span>22k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>19 分钟</span>
+              <span>20 分钟</span>
             </span>
 
         </div>
@@ -559,6 +559,14 @@ endmodule
 <li><p>在记录按下次数时不能写位时序逻辑电路而必须写为组合逻辑电路，以下是错误写法，问题就是虽然是沿时钟上沿变化，但是里面的判断并未和时钟有关系，为什么这样写了之后数据会变化且无规律。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 记录按下的次数 错误版</span><br><span class="line">	always @ (posedge clk)</span><br><span class="line">	begin</span><br><span class="line">		if(en_clk_sync[1] != en_clk_sync[0]) begin</span><br><span class="line">			count = count + 1;</span><br><span class="line">		end else begin</span><br><span class="line">			count = (count == 8&#x27;b11111111) ? 0 : count;</span><br><span class="line">		end</span><br><span class="line">	end</span><br></pre></td></tr></table></figure></li>
 </ol>
+<h2 id="评估电路综合后的时序"><a href="#评估电路综合后的时序" class="headerlink" title="评估电路综合后的时序:"></a>评估电路综合后的时序:</h2><blockquote>
+<p>​	我们提供了一个基于开源EDA的综合后时序评估项目. 这个项目通过<a target="_blank" rel="noopener" href="https://yosyshq.net/yosys">开源RTL综合器yosys</a>对RTL设计进行综合, 并映射到一个45nm的<a target="_blank" rel="noopener" href="https://mflowgen.readthedocs.io/en/latest/stdlib-freepdk45.html">开源工艺库nangate45</a>, 然后将综合得到的网表文件和工艺库中的标准单元信息文件输入到<a target="_blank" rel="noopener" href="https://github.com/OSCC-Project/iEDA/tree/master/src/operation/iSTA">开源静态时序分析工具iSTA</a>中, iSTA将快速评估RTL设计中的时序路径, 并给出时序余量最少的若干条路径, 供RTL设计者参考. 通过上述方式, RTL设计者可快速得知RTL设计的时序情况, 并对RTL设计进行快速迭代.</p>
+<p>你可以通过以下命令克隆该项目, 具体操作方式请阅读项目中的README.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@github.com:OSCPU/yosys-sta.git</span><br></pre></td></tr></table></figure>
+
+<p>尝试用上述项目评估你的数字电路实验.</p>
+</blockquote>
+<p>​	下载之后，会有个叫yosys-sta的文件，笔者目前找到的使用方法就是把之前verilator项目中的vsrc复制粘贴到该文件目录下，改名为exmaple，然后运行命令<code>make sta</code>，评估结果会存储在<code>result</code>目录中。</p>
 <h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>​	笔者断断续续一个月把讲义要求的数字电路必做部分实验做完了，剩下的实验就先放着，去做PA1去，说实做到现在感觉也只学到了皮毛，感觉只会写代码，对于实际如何连线肯定还是存在很大困难，不知道在这个地方偷的懒后面会不会需要补回来，<del>遗留的问题也不想解决。</del></p>
 
       
