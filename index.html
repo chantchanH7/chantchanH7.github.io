@@ -164,6 +164,137 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/09/14/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/14/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/" class="post-title-link" itemprop="url">PA1 - 开天辟地的篇章: 最简单的计算机</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-14 19:17:02" itemprop="dateCreated datePublished" datetime="2023-09-14T19:17:02+08:00">2023-09-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-09-21 14:04:34" itemprop="dateModified" datetime="2023-09-21T14:04:34+08:00">2023-09-21</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="PA1-开天辟地的篇章-最简单的计算机"><a href="#PA1-开天辟地的篇章-最简单的计算机" class="headerlink" title="PA1 - 开天辟地的篇章: 最简单的计算机"></a>PA1 - 开天辟地的篇章: 最简单的计算机</h1><blockquote>
+<p><strong>世界诞生的故事 - 第一章</strong></p>
+<p>先驱已经准备好了创造计算机世界的工具. 为了迈出第一步, 他运用了一些数字电路的知识, 就已经创造出了一个最小的计算机 – 图灵机. 让我们来看看其中的奥妙.</p>
+</blockquote>
+<h2 id="在开始愉快的PA之旅之前"><a href="#在开始愉快的PA之旅之前" class="headerlink" title="在开始愉快的PA之旅之前"></a>在开始愉快的PA之旅之前</h2><blockquote>
+<p><strong>随时记录实验心得</strong>	</p>
+<p>我们已经在你学长学姐的实验报告中多次看到类似的悔恨: 因为没有及时记录实验心得而在编写实验报告的时候忘记了自己经历趣事的细节. 为了和助教们分享你的各种实验经历, 我们建议你在实验过程中随时记录实验心得, 比如自己踩过的大坑, 或者是调了一周之后才发现的一个弱智bug, 等等.</p>
+<p>我们相信, 当你做完PA回过头来阅读这些心得的时候, 就会发现这对你来说是一笔宝贵的财富.</p>
+</blockquote>
+<h2 id="开天辟地的篇章"><a href="#开天辟地的篇章" class="headerlink" title="开天辟地的篇章"></a>开天辟地的篇章</h2><h3 id="任务-尝试理解计算机如何计算"><a href="#任务-尝试理解计算机如何计算" class="headerlink" title="任务 尝试理解计算机如何计算"></a>任务 尝试理解计算机如何计算</h3><blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// PC: instruction    | // label: statement</span><br><span class="line">0: mov  r1, 0         |  pc0: r1 = 0;</span><br><span class="line">1: mov  r2, 0         |  pc1: r2 = 0;</span><br><span class="line">2: addi r2, r2, 1     |  pc2: r2 = r2 + 1;</span><br><span class="line">3: add  r1, r1, r2    |  pc3: r1 = r1 + r2;</span><br><span class="line">4: blt  r2, 100, 2    |  pc4: if (r2 &lt; 100) goto pc2;   // branch if less than</span><br><span class="line">5: jmp 5              |  pc5: goto pc5;</span><br></pre></td></tr></table></figure>
+
+<p>在看到上述例子之前, 你可能会觉得指令是一个既神秘又难以理解的概念. 不过当你看到对应的C代码时, 你就会发现指令做的事情竟然这么简单! 而且看上去还有点蠢, 你随手写一个for循环都要比这段C代码看上去更高级.</p>
+<p>不过你也不妨站在计算机的角度来理解一下, 计算机究竟是怎么通过这种既简单又笨拙的方式来计算<code>1+2+...+100</code>的. 这种理解会使你建立”程序如何在计算机上运行”的最初原的认识.</p>
+</blockquote>
+<p>​	我理解的计算机执行计算的方式是：不断的更新PC，读取对应地址，从中取出指令并执行。</p>
+<h2 id="RTFSC"><a href="#RTFSC" class="headerlink" title="RTFSC"></a>RTFSC</h2><h3 id="代码框架初探"><a href="#代码框架初探" class="headerlink" title="代码框架初探"></a>代码框架初探</h3><blockquote>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ics2023</span><br><span class="line">├── abstract-machine   # 抽象计算机</span><br><span class="line">├── am-kernels         # 基于抽象计算机开发的应用程序</span><br><span class="line">├── fceux-am           # 红白机模拟器</span><br><span class="line">├── init.sh            # 初始化脚本</span><br><span class="line">├── Makefile           # 用于工程打包提交</span><br><span class="line">├── nemu               # NEMU</span><br><span class="line">└── README.md</span><br></pre></td></tr></table></figure>
+
+<p>​	目前只需要关心nemu目录下的代码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">nemu</span><br><span class="line">├── configs                    # 预先提供的一些配置文件</span><br><span class="line">├── include                    # 存放全局使用的头文件</span><br><span class="line">│   ├── common.h               # 公用的头文件</span><br><span class="line">│   ├── config                 # 配置系统生成的头文件, 用于维护配置选项更新的时间戳</span><br><span class="line">│   ├── cpu</span><br><span class="line">│   │   ├── cpu.h</span><br><span class="line">│   │   ├── decode.h           # 译码相关</span><br><span class="line">│   │   ├── difftest.h</span><br><span class="line">│   │   └── ifetch.h           # 取指相关</span><br><span class="line">│   ├── debug.h                # 一些方便调试用的宏</span><br><span class="line">│   ├── device                 # 设备相关</span><br><span class="line">│   ├── difftest-def.h</span><br><span class="line">│   ├── generated</span><br><span class="line">│   │   └── autoconf.h         # 配置系统生成的头文件, 用于根据配置信息定义相关的宏</span><br><span class="line">│   ├── isa.h                  # ISA相关</span><br><span class="line">│   ├── macro.h                # 一些方便的宏定义</span><br><span class="line">│   ├── memory                 # 访问内存相关</span><br><span class="line">│   └── utils.h</span><br><span class="line">├── Kconfig                    # 配置信息管理的规则</span><br><span class="line">├── Makefile                   # Makefile构建脚本</span><br><span class="line">├── README.md</span><br><span class="line">├── resource                   # 一些辅助资源</span><br><span class="line">├── scripts                    # Makefile构建脚本</span><br><span class="line">│   ├── build.mk</span><br><span class="line">│   ├── config.mk</span><br><span class="line">│   ├── git.mk                 # git版本控制相关</span><br><span class="line">│   └── native.mk</span><br><span class="line">├── src                        # 源文件</span><br><span class="line">│   ├── cpu</span><br><span class="line">│   │   └── cpu-exec.c         # 指令执行的主循环</span><br><span class="line">│   ├── device                 # 设备相关</span><br><span class="line">│   ├── engine</span><br><span class="line">│   │   └── interpreter        # 解释器的实现</span><br><span class="line">│   ├── filelist.mk</span><br><span class="line">│   ├── isa                    # ISA相关的实现</span><br><span class="line">│   │   ├── mips32</span><br><span class="line">│   │   ├── riscv32</span><br><span class="line">│   │   ├── riscv64</span><br><span class="line">│   │   └── x86</span><br><span class="line">│   ├── memory                 # 内存访问的实现</span><br><span class="line">│   ├── monitor</span><br><span class="line">│   │   ├── monitor.c</span><br><span class="line">│   │   └── sdb                # 简易调试器</span><br><span class="line">│   │       ├── expr.c         # 表达式求值的实现</span><br><span class="line">│   │       ├── sdb.c          # 简易调试器的命令处理</span><br><span class="line">│   │       └── watchpoint.c   # 监视点的实现</span><br><span class="line">│   ├── nemu-main.c            # 你知道的...</span><br><span class="line">│   └── utils                  # 一些公共的功能</span><br><span class="line">│       ├── log.c              # 日志文件相关</span><br><span class="line">│       ├── rand.c</span><br><span class="line">│       ├── state.c</span><br><span class="line">│       └── timer.c</span><br><span class="line">└── tools                      # 一些工具</span><br><span class="line">    ├── fixdep                 # 依赖修复, 配合配置系统进行使用</span><br><span class="line">    ├── gen-expr</span><br><span class="line">    ├── kconfig                # 配置系统</span><br><span class="line">    ├── kvm-diff</span><br><span class="line">    ├── qemu-diff</span><br><span class="line">    └── spike-diff</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>提示：</p>
+<ul>
+<li><code>nemu/include/generated/autoconf.h</code>, 阅读C代码时使用</li>
+<li><code>nemu/include/config/auto.conf</code>, 阅读Makefile时使用</li>
+</ul>
+<h4 id="准备第一个程序"><a href="#准备第一个程序" class="headerlink" title="准备第一个程序"></a>准备第一个程序</h4><blockquote>
+<p>我们已经知道, NEMU是一个用来执行客户程序的程序, 但客户程序一开始并不存在于客户计算机中. 我们需要将客户程序读入到客户计算机中, 这件事是monitor来负责的. 于是NEMU在开始运行的时候, 首先会调用<code>init_monitor()</code>函数(在<code>nemu/src/monitor/monitor.c</code>中定义) 来进行一些和monitor相关的初始化工作.</p>
+</blockquote>
+<h4 id="运行第一个客户程序"><a href="#运行第一个客户程序" class="headerlink" title="运行第一个客户程序"></a>运行第一个客户程序</h4><blockquote>
+<p>Monitor的初始化工作结束后, <code>main()</code>函数会继续调用<code>engine_start()</code>函数 (在<code>nemu/src/engine/interpreter/init.c</code>中定义). 代码会进入简易调试器(Simple Debugger)的主循环<code>sdb_mainloop()</code> (在<code>nemu/src/monitor/sdb/sdb.c</code>中定义), 并输出NEMU的命令提示符:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(nemu)</span><br></pre></td></tr></table></figure>
+
+<p>简易调试器是monitor的核心功能, 我们可以在命令提示符中输入命令, 对客户计算机的运行状态进行监控和调试. 框架代码已经实现了几个简单的命令, 它们的功能和GDB是很类似的.</p>
+<p>在命令提示符后键入<code>c</code>后, NEMU开始进入指令执行的主循环<code>cpu_exec()</code> (在<code>nemu/src/cpu/cpu-exec.c</code>中定义). <code>cpu_exec()</code>又会调用<code>execute()</code>, 后者模拟了CPU的工作方式: 不断执行指令. 具体地, 代码将在一个for循环中不断调用<code>exec_once()</code>函数, 这个函数的功能就是我们在上一小节中介绍的内容: 让CPU执行当前PC指向的一条指令, 然后更新PC.</p>
+</blockquote>
+<h4 id="任务：优美的退出"><a href="#任务：优美的退出" class="headerlink" title="任务：优美的退出"></a>任务：优美的退出</h4><blockquote>
+<p>为了测试大家是否已经理解框架代码, 我们给大家设置一个练习: 如果在运行NEMU之后直接键入<code>q</code>退出, 你会发现终端输出了一些错误信息. 请分析这个错误信息是什么原因造成的, 然后尝试在NEMU中修复它.</p>
+</blockquote>
+<p>​	当我们执行任务中的流程后，终端显示错误信息，我们如何通过错误信息找到解决方法呢？</p>
+<p><img src="/../images/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/%E6%88%AA%E5%B1%8F2023-09-21%2008.38.12-5256718.png" alt="截屏2023-09-21 08.38.12"></p>
+<p>​	先试试阅读make显示的出错位置的信息，大概了解到在执行NEMU的时候出错，但笔者在漫长的查找下并没有找到出错的原因：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">run: run-env</span><br><span class="line">	$(call git_commit, &quot;run NEMU&quot;)</span><br><span class="line">	$(NEMU_EXEC)</span><br></pre></td></tr></table></figure>
+
+<p>​	换个思路：试一试神奇的GDB，首先我们通过<code>make menuconfig</code>命令，进入<code>config</code>页面，勾选<code>Build Options</code>中的<code>Enable debug information</code>，退出后执行<code>make clean</code>，<code>make gdb</code>进入gdb，通过执行gdb我们发现gdb输出<code>Inferior 1 (process 10465) exited with code 01</code>，RTFW后我们知道： “Exited with code N” just refers to the value returned from <code>main()</code>. 同时，<code>return is_exit_status_bad()</code> 暗示了<code>main</code>的返回值，<del>按照之前写代码的经验，main函数通常在最后返回的是0</del>。<img src="/../images/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/%E6%88%AA%E5%B1%8F2023-09-21%2009.09.15-5258561-5258563.png" alt="截屏2023-09-21 09.09.15"></p>
+<p>​	现在明确目标，找到<code>is_exit_status_bad()</code>并弄清它做了什么。在linux中，我们使用grep命令在文件中查找：<img src="/../images/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/%E6%88%AA%E5%B1%8F2023-09-21%2009.16.40.png" alt="截屏2023-09-21 09.16.40"></p>
+<p>​	查阅函数，在包含的头文件中弄清函数中的宏表示什么：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// src/utils/state.c</span><br><span class="line"></span><br><span class="line">#include &lt;utils.h&gt;</span><br><span class="line"></span><br><span class="line">NEMUstate nemu_state = &#123; .state = NEMU_STOP&#125;</span><br><span class="line">int good = (nemu_state.state == NEMU_END &amp;&amp; nemu_state.alt_ret == 0) || (nemu_state.state == NEMU_QUIT);</span><br><span class="line"></span><br><span class="line">return !good;</span><br></pre></td></tr></table></figure>
+
+<p>​	<code>utils.h</code>中<code>enum &#123;NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT&#125;</code> 。</p>
+<p>​	当退出状态是“好”的，<code>good == 1</code>，返回0，反之，返回1。</p>
+<p>​	现在，使用gdb设置断点，打印信息，笔者发现，在从nemu_state声明后到程序执行结束时，nemu_state.state &#x3D;&#x3D; 1且nemu_state.halt_ret &#x3D;&#x3D; 0，明显，此时good被置为0。那么，但NEMU状态为stop时，也是一个可以退出的“好”状态，修改代码，完成优美地退出。<img src="/../images/PA1-%E5%BC%80%E5%A4%A9%E8%BE%9F%E5%9C%B0%E7%9A%84%E7%AF%87%E7%AB%A0-%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E8%AE%A1%E7%AE%97%E6%9C%BA/%E6%88%AA%E5%B1%8F2023-09-21%2012.37.11-5271038.png" alt="截屏2023-09-21 12.37.11"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/22/dlco-nju/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1936,99 +2067,11 @@ endmodule
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/09/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不舍昼夜">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/09/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-07-09 20:27:54" itemprop="dateCreated datePublished" datetime="2023-07-09T20:27:54+08:00">2023-07-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-07-10 17:10:59" itemprop="dateModified" datetime="2023-07-10T17:10:59+08:00">2023-07-10</time>
-              </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>431</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
 
 
 
@@ -2095,7 +2138,7 @@ endmodule
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2140,12 +2183,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">54k</span>
+    <span title="站点总字数">60k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">49 分钟</span>
+    <span title="站点阅读时长">54 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
