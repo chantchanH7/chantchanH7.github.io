@@ -164,6 +164,359 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/10/Lab-system-calls/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/07/10/Lab-system-calls/" class="post-title-link" itemprop="url">Lab: system calls</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-07-10 20:42:34" itemprop="dateCreated datePublished" datetime="2023-07-10T20:42:34+08:00">2023-07-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-07-20 17:08:19" itemprop="dateModified" datetime="2023-07-20T17:08:19+08:00">2023-07-20</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-using-gdb"><a href="#1-using-gdb" class="headerlink" title="1. using gdb"></a>1. using gdb</h1><p>​		1. layout命令展示gdb目前位于代码的什么位置，该命令会将窗口分割</p>
+<p>​		2. backtrace 命令简介：  </p>
+<p>​		backtrace命令用于打印当前调试环境中所有栈帧信息：<br>​       <code>backtrace [-full] [n]</code>. </p>
+<p>​		· n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈帧的信息；</p>
+<p>​		· -full：打印栈帧信息的同时，打印出局部变量的值。  </p>
+<h2 id="·-Question-1"><a href="#·-Question-1" class="headerlink" title="· Question 1"></a>· Question 1</h2><pre><code> `Looking at the backtrace output, which function called syscall`  
+</code></pre>
+<p><img src="/../images/Lab-system-calls/backtrace.png" alt="backtrace"></p>
+<pre><code>from the output, we find the trace frame usertrap() at kernel/trap.c :67. Now, follow the trace we open file kernel/trap.c. 
+![trap](../images/Lab-system-calls/trap.png)
+</code></pre>
+<p>At this time we find out that the syscall() is called in funtion usertrap() and this is the answer for the first question.</p>
+<h2 id="·-Question-2"><a href="#·-Question-2" class="headerlink" title="· Question 2"></a>· Question 2</h2><pre><code> `What is the value of `p-&gt;trapframe-&gt;a7` and what does that value represent? (Hint: look `user/initcode.S`, the first user program xv6 starts.)`
+</code></pre>
+<p>​	首先解释gdb命令 p：  </p>
+<p>​		命令p是print的缩写，允许自定义输出格式，下表列出具体格式  </p>
+<p>​		<img src="/../images/Lab-system-calls/fmt-9052134.png" alt="fmt">  </p>
+<p>​       打印 p &#x2F;x *p 后显示 </p>
+<p><img src="/../images/Lab-system-calls/p%20:x%20*p-9053504-9053542.png" alt="p :x *p"></p>
+<p>​	通过检查pro.h 中 struct proc 结构</p>
+<pre><code>struct proc &#123;
+
+  struct spinlock lock;
+
+  // p-&gt;lock must be held when using these:
+
+  enum procstate state;        // Process state
+
+  void *chan;                  // If non-zero, sleeping on chan
+
+  int killed;                  // If non-zero, have been killed
+
+  int xstate;                  // Exit status to be returned to parent&#39;s wait
+
+  int pid;                     // Process ID
+
+  // wait_lock must be held when using this:
+
+  struct proc *parent;         // Parent process
+
+  // these are private to the process, so p-&gt;lock need not be held.
+
+  uint64 kstack;               // Virtual address of kernel stack
+
+  uint64 sz;                   // Size of process memory (bytes)
+
+  pagetable_t pagetable;       // User page table
+
+  struct trapframe *trapframe; // data page for trampoline.S
+
+  struct context context;      // swtch() here to run process
+
+  struct file *ofile[NOFILE];  // Open files
+
+  struct inode *cwd;           // Current directory
+
+  char name[16];               // Process name (debugging)
+
+&#125;;
+</code></pre>
+<p>​	观察到 trapframe 的地址为0x87f74000 且可以知道我们要找的值 <code>*p-&gt;trapframe-&gt;a7</code> 是在 trapframe中，尝试输入 <code>p /x *p-&gt;trapframe</code> 得到输出.  </p>
+<p><img src="/../images/Lab-system-calls/p-%3Etrapframe-9054502-9054503-9054504.png" alt="p-&gt;trapframe"></p>
+<p>​	如图所示，<code>*p-&gt;trapframe-&gt;a7 = 0x7</code> 那么这个数字7代表的是什么意思呢？通过对 <code>struct trapframe</code> 的解释，我们大概(<strong>可能有错</strong>)了解到该结构的作用是在user process 将user mode 中的寄存器存储的地方，方便之后重新载入时将存储的值重新加载到寄存器中。接着，跟随文档中的提示，我们打开<code>initcode.S</code>文件：  </p>
+<p><img src="/../images/Lab-system-calls/initcodes-9056225-9056228.png" alt="initcodes"></p>
+<p>​	既然<code>a7</code>是一个寄存器，代码中将<code>SYS_exec</code> 加载到 <code>a7</code>中去，查阅文档，其中有一句提到：</p>
+<blockquote>
+<p>​	The kernel uses the number in register a7 in syscall (kernel&#x2F;syscall.c:133) to call the desired system call. The system call table (kernel&#x2F;syscall.c:108) maps SYS_EXEC to sys_exec, which the kernel invokes. As we saw in Chapter 1, exec replaces the memory and registers of the current process with a new program (in this case, &#x2F;init).&#96; </p>
+</blockquote>
+<p>​	至此，我们知道了<code>a7</code> 中存储的是当前进程想要使用的系统调用(<code>system call</code>) ，继续翻阅代码<code>kernel/syscall.c :108</code></p>
+<p><img src="/../images/Lab-system-calls/sycscall-9056869.png" alt="sycscall"></p>
+<p>7 表示SYS_exec 系统调用，至此我们终于得到答案，a7中存储的值表示进程想唤醒的系统调用<code>SYS_exec</code>。</p>
+<h2 id="·-Question-3"><a href="#·-Question-3" class="headerlink" title="· Question 3"></a>· Question 3</h2><p>​	<code>What was the previous mode that the CPU was in?</code></p>
+<p>​	<code>(gdb)p /x $sstatus</code> 得到：</p>
+<p>​	<img src="/../images/Lab-system-calls/p%20:x%20$sstatus-9057564.png" alt="p :x $sstatus"></p>
+<p>​	阅读文档<code>riscv-privileged-20211203</code>，我们知道 <code>sstatus register keeps track of theprocessor&#39;s current operating state</code> </p>
+<p>​	每位表示的信息如下图所示:</p>
+<p><img src="/../images/Lab-system-calls/sstatus64-9058263.png" alt="sstatus64"></p>
+<p>​	<code>0x200000022</code> 换成二进制表示为<code>0010 0000 0000 0000 0000 0000 0000 0010 0010</code></p>
+<p>​	文档指出:</p>
+<blockquote>
+<p>The SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode.</p>
+</blockquote>
+<p>​	因此我们知道当前SSP位为 0, <code>SSP is set to 0 if the trap originated from user mode</code></p>
+<p>​	至此，我们可以回答<code>Question 3</code>, <code>the previous mode that the CPU was in user mode</code></p>
+<h2 id="·-Question-4"><a href="#·-Question-4" class="headerlink" title="· Question 4"></a>· Question 4</h2><p>​	<code>Write down the assembly instruction the kernel is panicing at. Which register corresponds to the varialable </code>num<code>?</code></p>
+<p>​	在这个lab中我们需要更改源码，要记住修改的地方 ，</p>
+<p>​	在<code>kernel/syscall.c:137</code> 中修改如下:</p>
+<p>​	<code>replace the statement </code>num &#x3D; p-&gt;trapframe-&gt;a7;<code>with</code>num &#x3D; * (int *) 0;<code> </code></p>
+<p>​	<code>make qemu</code> 后输出如下</p>
+<p>​	<img src="/../images/Lab-system-calls/num=0-9059807.png" alt="num=0"></p>
+<p>​	查阅文档<code>riscv-privileged-20211203</code> 可知 <code>sepc</code> 是 <code>Supervisor Exception Program Counter</code> 的缩写。</p>
+<blockquote>
+<p>​	<code>sepc</code> is a WARL register that must be able to hold all valid virtual addresses.</p>
+</blockquote>
+<p>​	这句话比较重要：</p>
+<blockquote>
+<p>​	When a trap is taken into S-mode, sepc is written with the virtual address of the instruction that was interrupted or that encountered the exception. Otherwise, sepc is never written by the implementation, though it may be explicitly written by software.</p>
+</blockquote>
+<p>​	大意是当在<code>supervisor mode</code>中如果有一个<code>trap</code>, <code>sepc</code> 只会写入被中断或遇到异常指令的虚拟地址。上图<code>sepc=0x0000000080001ff8</code> 反映了内核在虚拟地址为<code>0x0000000080001ff8</code>的地方发生了<code>panic</code>。</p>
+<p>​	知道了虚拟地址后，我们寻找汇编码。</p>
+<blockquote>
+<p>​	To track down the source of a kernel page-fault panic, search for the <code>sepc</code> value printed for the panic you just saw in the file <code>kernel/kernel.asm</code>, which contains the assembly for the compiled kernel.</p>
+</blockquote>
+<p>​	跟随文档提示，我们打开<code>kernel/kernel.asm</code>，查找<code>80001ff8</code></p>
+<p>​	<img src="/../images/Lab-system-calls/80001ff8-9061766.png" alt="80001ff8"></p>
+<p>​	图中给出了发生<code>panic</code>的位置,</p>
+<p>​	<code>the assembly instruction the kernel is pannicing at</code> :  <code>lw a3, 0(zero)</code></p>
+<p>​	该 <code>assembly code</code> 向 <code>register a3</code> 中载入 <code>0</code>，<code>so the register corresponds to the variable is a3</code>.</p>
+<p>​	以上是我们人工的推测，现在尝试通过<code>gdb</code>验证我们的推测是否正确。</p>
+<blockquote>
+<p>​	To inspect the state of the processor and the kernel at the faulting instruction, fire up gdb, and set a breakpoint at the faulting <code>epc</code></p>
+</blockquote>
+<p>​	<img src="/../images/Lab-system-calls/80001ff8%E9%AA%8C%E8%AF%81-9064072.png" alt="80001ff8验证"></p>
+<p>​	事实证明我们的推测是正确的，因为在达到断点处继续输入n之后，gdb无法继续运行下去，并且程序窗口(而不是gdb窗口)，输出：</p>
+<p>​	<img src="/../images/Lab-system-calls/gdb-80001ff8.png" alt="gdb-80001ff8"></p>
+<h2 id="·-Question-5"><a href="#·-Question-5" class="headerlink" title="· Question 5"></a>· Question 5</h2><p>​	 <code>Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in </code>scause<code>above? (See description of</code>scause<code> in [RISC-V privileged instructions]: https://pdos.csail.mit.edu/6.828/2022/labs/n//github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf)</code></p>
+<p>​	刚看到这个问题我没有什么头绪，试试在文档中查找<code>scause</code>:</p>
+<h4 id="Supervisor-Cause-Register"><a href="#Supervisor-Cause-Register" class="headerlink" title="Supervisor Cause Register :"></a><code>Supervisor Cause Register</code> :</h4><blockquote>
+<p>​	The scause register is an SXLEN-bit read-write register formatted as shown in Figure 4.11. When a trap is taken into S-mode, scause is written with a code indicating the event that caused the trap. Otherwise, scause is never written by the implementation, though it may be explicitly written by software.</p>
+<p>​	The Interrupt bit in the scause register is set if the trap was caused by an interrupt. The Exception Code field contains a code identifying the last exception or interrupt. Table 4.2 lists the possible exception codes for the current supervisor ISAs. The Exception Code is a WLRL field. It is required to hold the values 0–31 (i.e., bits 4–0 must be implemented), but otherwise it is only guaranteed to hold supported exception codes.</p>
+</blockquote>
+<p>​	<img src="/../images/Lab-system-calls/scause-9066981-9066982.png" alt="scause"></p>
+<p>​		<code>interrupt</code>位为<code>1</code>时，表示当前<code>trap</code>是由<code>interrupt</code>引起的，<code>Exception Code</code>用于定位最后一个<code>exception</code> 或<code>interrupt</code>，<code>table 4.2</code> 列出了可能的<code>exception code</code>。</p>
+<p>​		<img src="/../images/Lab-system-calls/table%204.2-9068017.png" alt="table 4.2"></p>
+<p>​	现在我们知道，<code>scause</code>是用于定位中断和异常的，回顾<code>make qemu failed</code> in Question 4, 我们发现终端窗口中输出的<code>scause = 0x000000000000000d</code> ，查表可知，当前错误是由于 <code>LOAD page fault</code> 产生的。</p>
+<p>​				<strong><u>但没有弄清楚后两问的答案，搜索互联网后也没有得到比较好的答案。</u></strong></p>
+<blockquote>
+<p>​	当地址为0的时候 ，并没有映射到任何地址上，我们在程序中使用的地址均为虚拟地址，所以自然无法获取他的值。</p>
+</blockquote>
+<h2 id="·-Question-6"><a href="#·-Question-6" class="headerlink" title="· Question 6"></a>· Question 6</h2><p>​	<code>What is the name of the binary that was running when the kernel paniced? What is its process id (</code>pid<code>)?</code></p>
+<blockquote>
+<p>​	Note that <code>scause</code> was printed by the kernel panic above, but often you need to look at additional info to track down the problem that caused the panic. For example, to find out which user process was running when the kernel paniced, you can print out the process’s name:	</p>
+</blockquote>
+<p>​	教程告诉我们，仅仅通过<code>scause</code>所能知道的信息是有限的，我们需要知道更多的信息去追踪是什么导致程序终端。例如，通过打印进程名字，<code>p p-&gt;name</code>。</p>
+<p>​	<img src="/../images/Lab-system-calls/QQ20230712-202342.png" alt="QQ20230712-202342"></p>
+<p>​	我们现在知道程序在运行 initcode函数的二进制文件时导致了内存崩溃。打印<code>p p-&gt;pid</code> 知道程序的pid是1。</p>
+<h1 id="2-System-call-tracing"><a href="#2-System-call-tracing" class="headerlink" title="2. System call tracing"></a>2. System call tracing</h1><blockquote>
+<p>​	In this assignment you will add a system call tracing feature that may help you when debugging later labs. You’ll create a new <code>trace</code> system call that will control tracing. It should take one argument, an integer “mask”, whose bits specify which system calls to trace. For example, to trace the fork system call, a program calls <code>trace(1 &lt;&lt; SYS_fork)</code>, where <code>SYS_fork</code> is a syscall number from <code>kernel/syscall.h</code>. You have to modify the xv6 kernel to print out a line when each system call is about to return, if the system call’s number is set in the mask. The line should contain the process id, the name of the system call and the return value; you don’t need to print the system call arguments. The <code>trace</code> system call should enable tracing for the process that calls it and any children that it subsequently forks, but should not affect other processes.</p>
+</blockquote>
+<p>​	这个实验要实现一个<code>trace</code>系统调用。该系统调用传入一个int 类型的参数,我们称该参数为mask, 该参数的二进制形式用来确定<code>trace</code>追踪哪个系统调用。确定的方法是对1做左移位运算，例如 <code>SYS_read = 5</code>，追踪 SYS_read 的命令为<code>trace 32</code>，这是因为32的二进制表示为<code>100000</code>，同时 32 &#x3D; 1 &lt;&lt; 5。</p>
+<p>​	那就先跟着hints一步一步走。首先看一看一开始提到的<code>user/user.S</code>和<code>user/usys.pl</code>。<code>.S</code>文件是汇编代码文件，<code>.pl</code>文件是一种脚本文件。在这个项目中，<code>user.S</code>文件是在<code>make</code>时通过<code>usys.pl</code>产生的。在阅读<code>usys.pl</code> 文档时我们顺带学习一些perl语法。</p>
+<ul>
+<li>sub <function_name>&#96; 用于定义函数。</li>
+<li><code>my $name</code>用于定义局部变量标准关键字，标准关键字以<code>$</code>开头。</li>
+<li><code>shift ARRAY</code>:  这个函数把数组的第一个值移出并且返回它，然后把数组长度减一并且把所有的东西都顺移。如果在数组中不再存在元素，它返回 undef。如果省略了 ARRAY，那么该函数在子过程和格式的词法范围里移动 @_；它在文件范围（通常是主程序）里移动 @ARGV。</li>
+<li>向子程序传递参数时，子程序参数使用特殊数组<code>@_</code>标明，因此子程序第一个参数为 <code>$_[0]</code>, 第二个参数为 <code>$_[1]</code>, 以此类推。</li>
+</ul>
+<p>​	现在我们通过对比 <code>usys.S</code> 和 <code>usys,pl</code>发现，<code>usys.S</code>正好是通过该脚本语言产生的。把系统调用路由到内核的用户空间“存根”位于<code>user/usys.S</code>中。将系统调用路由到实现它的内核函数的内核空间代码位于<code>kernel/syscall.c</code>和<code>kernel/syscall.h</code>中。进程相关的代码在<code>kernel/pro.h</code> 和 <code>kernel/proc.c</code>中。</p>
+<p>​	现在可以开始尝试更改代码。</p>
+<ul>
+<li><blockquote>
+<p>​	Add <code>$U/_trace</code> to UPROGS in Makefile.</p>
+</blockquote>
+<p><img src="/../images/Lab-system-calls/56d4a1105995fee1df5c7c74cbbbc0d4-9260851-9260853.png" alt="56d4a1105995fee1df5c7c74cbbbc0d4"></p>
+</li>
+<li><blockquote>
+<p>Run make qemu and you will see that the compiler cannot compile <code>user/trace.c</code>, because the user-space stubs for the system call don’t exist yet: add a prototype for the system call to <code>user/user.h</code>, a stub to <code>user/usys.pl</code>, and a syscall number to <code>kernel/syscall.h</code>. The Makefile invokes the perl script <code>user/usys.pl</code>, which produces <code>user/usys.S</code>, the actual system call stubs, which use the RISC-V <code>ecall</code> instruction to transition to the kernel. Once you fix the compilation issues, run trace 32 grep hello README; it will fail because you haven’t implemented the system call in the kernel yet.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	In<code> user.h</code>,</p>
+<p><img src="/../images/Lab-system-calls/int%20trace-9240023.png" alt="int trace"></p>
+<p>​		这里要说明一下传参的问题，使用int类型是因为上文提到<code>trace(1 &lt;&lt; SYS_fork)</code>，这说明trace函数的参数是一个int类型，第二个地方能证明传入是int类型位于<code>user.c/trace.c</code>, <code>atoi()</code>函数将字符转换为<code>int</code>，也证明了参数类型为int。</p>
+<p><img src="/../images/Lab-system-calls/7819266e33873c6ad8a1865dd10afa30-9247771.png" alt="7819266e33873c6ad8a1865dd10afa30"></p>
+<p>​	In <code>usys.pl</code>,</p>
+<p><img src="/../images/Lab-system-calls/entry_trace.png" alt="entry_trace"></p>
+<p>​	In <code>syscall.h</code>, add a syscall number,</p>
+<p><img src="/../images/Lab-system-calls/SYS_trace.png" alt="SYS_trace"></p>
+<ul>
+<li><blockquote>
+<p>Add a <code>sys_trace()</code> function in <code>kernel/sysproc.c</code> that implements the new system call by remembering its argument in a new variable in the <code>proc</code> structure (see <code>kernel/proc.h</code>). The functions to retrieve system call arguments from user space are in <code>kernel/syscall.c</code>, and you can see examples of their use in <code>kernel/sysproc.c</code>.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	In <code>kernel/sysproc.c</code>, add a <code>sys_trace()</code>, </p>
+<p><img src="/../images/Lab-system-calls/856d5a80fff400209485597fb245a98f-9247005.png" alt="856d5a80fff400209485597fb245a98f"></p>
+<p>​	这里能看出来在代码<code>syscall.c</code>中是实现系统调用的地方，此时我们在这个新加的函数中尝试打印一些信息来证明我们的猜想。下图证明猜想正确。</p>
+<p><img src="/../images/Lab-system-calls/54da95c980228341e338d4d5a666ba61.png" alt="54da95c980228341e338d4d5a666ba61"></p>
+<p>​	根据提示 by remembreing its argument in a new variable in the <code>proc</code> structure. 这里让我们在 <code>pro </code>struct 里面添加一个变量用来存储<code>mask</code>值。</p>
+<p>​	In <code>kernel/pro.h</code>,</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.15.28-9254153-9254155.png" alt="截屏2023-07-13 21.15.28"></p>
+<p>​	增加进程结构变量后，我们需要在初始进程的时候给定变量一个初始值，查看<code>allocproc(void)</code>函数后我们知道，该函数通过调用<code>freeproc()</code>清空已经存在的进程内容，我们在<code>freeproc()</code>函数中要将增加的变量赋值为0，即<code>p-&gt;trace_mask = 0</code>。</p>
+<p>​	In <code>proc.c</code>,</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.18.00.png" alt="截屏2023-07-13 22.18.00"></p>
+<p>​	</p>
+<p>​	在<code>sys_trace</code>函数中，我们首先需要将终端输入的<code>mask</code>值读取并存储到，看一看别的系统调用是怎么做的：</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.27.50-9254881-9254955.png" alt="截屏2023-07-13 21.27.50"></p>
+<p>​	我们发现在<code>sys_sleep</code>函数中使用<code>argint(0, &amp;n)</code>将参数读入n中。<code>mypro()</code>函数 返回当前的进程结构。依葫芦画瓢，修改<code>sys_trace()</code>函数。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2021.39.50-9255595-9255597.png" alt="截屏2023-07-13 21.39.50"></p>
+<p>​	现在我们应该思考的问题是在哪里打印输出内容，既然是追踪系统调用，那我们在调用的时候打印信息是最好的，程序在什么地方实现的系统调用呢？那当然是在<code>kernel/syscall.c</code>中。</p>
+<blockquote>
+<p>​	The functions to retrieve system call arguments from user space are in <code>kernel/syscall.c</code>, </p>
+</blockquote>
+<p>​	修改<code>syscall(void)</code>函数：</p>
+<p><img src="/../images/Lab-system-calls/043d4c827b9d9ab26bc1527d0164ccb1.png" alt="043d4c827b9d9ab26bc1527d0164ccb1"></p>
+<p>​	首先声明数存储系统调用函数的名称，接着用位运算<code>(p-&gt;trace_mask &gt;&gt; num) &amp; 1</code> 当掩码位和当前系统调用的为相与不为0时，输出进程序号<code>p-&gt;pid</code>，系统调用名称<code>syscall_names[nums-1]</code>，返回值<code>p-&gt;trapframe-&gt;a0</code>。</p>
+<ul>
+<li><blockquote>
+<p>Modify <code>fork()</code> (see <code>kernel/proc.c</code>) to copy the trace mask from the parent to the child process.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	最后，为了将掩码mask传递给子进程，要修改<code>fork()</code>。观察<code>fork()</code>函数可知，该函数将进程p的内容全部复制给进程np，最后返回进程np的pid，由此我们可以知道np就是子进程。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.30.49.png" alt="截屏2023-07-13 22.30.49"></p>
+<p>​	现在测试是否正确。</p>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-13%2022.54.14-9260059.png" alt="截屏2023-07-13 22.54.14"></p>
+<p>​	恭喜，我们终于完成了这项实验！！！</p>
+<h1 id="3-Sysinfo"><a href="#3-Sysinfo" class="headerlink" title="3. Sysinfo"></a>3. Sysinfo</h1><blockquote>
+<p>​	In this assignment you will add a system call, <code>sysinfo</code>, that collects information about the running system. The system call takes one argument: a pointer to a <code>struct sysinfo</code> (see <code>kernel/sysinfo.h</code>). The kernel should fill out the fields of this struct: the <code>freemem</code> field should be set to the number of bytes of free memory, and the <code>nproc</code>field should be set to the number of processes whose <code>state</code> is not <code>UNUSED</code>. We provide a test program <code>sysinfotest</code>; you pass this assignment if it prints “sysinfotest: OK”.</p>
+</blockquote>
+<p>​	Sysinfo 收集正在运行的系统的信息。该函数有一个参数 ，这个参数是一个指向<code>struct sysinfo</code> 的指针。内核应填写这个结构的字段。freemem字段应该设置为可用内存的字节数，nproc字段应该设为状态不是UNUSED的进程数。</p>
+<ul>
+<li><blockquote>
+<p>Add <code>$U/_sysinfotest</code> to UPROGS in Makefile</p>
+</blockquote>
+</li>
+</ul>
+<p><img src="/../images/Lab-system-calls/%E6%88%AA%E5%B1%8F2023-07-14%2015.20.11-9319216.png" alt="截屏2023-07-14 15.20.11"></p>
+<ul>
+<li><blockquote>
+<p>Run make qemu; <code>user/sysinfotest.c</code> will fail to compile. Add the system call sysinfo, following the same steps as in the previous assignment. To declare the prototype for sysinfo() <code>in user/user.h</code> you need predeclare the existence of <code>struct sysinfo</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct sysinfo;</span><br><span class="line">int sysinfo(struct sysinfo *);</span><br></pre></td></tr></table></figure>
+<p>Once you fix the compilation issues, run sysinfotest; it will fail because you haven’t implemented the system call in the kernel yet.</p>
+</blockquote>
+</li>
+</ul>
+<p>​	与2.system call tracing 中添加系统调用步骤相同。</p>
+<ul>
+<li><blockquote>
+<p>sysinfo needs to copy a <code>struct sysinfo</code> back to user space; see <code>sys_fstat()</code> (<code>kernel/sysfile.c</code>) and <code>filestat()</code>(<code>kernel/file.c</code>) for examples of how to do that using <code>copyout()</code>.</p>
+</blockquote>
+</li>
+<li><p>​	浏览<code>kernel/sysfile.c</code> 和 <code>kernel/file.c</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">uint64 sys_fstat(void) &#123;</span><br><span class="line">	struct file *f;</span><br><span class="line">	uint64 st; // user pointer to struct stat</span><br><span class="line">	argaddr(1, &amp;st);</span><br><span class="line">	if(argfd(0, 0, &amp;f) &lt; 0)</span><br><span class="line">	  	return -1;</span><br><span class="line">	return filestat(f, st);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>先看函数<code>argaddr(int n, uint64 *i)</code></p>
+<p>检索作为指针的参数。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// Retrieve an argument as a pointer.</span><br><span class="line">// Doesn&#x27;t check for legality, since</span><br><span class="line">// copyin/copyout will do that.</span><br><span class="line">void</span><br><span class="line">argaddr(int n, uint64 *ip)</span><br><span class="line">&#123;</span><br><span class="line">  *ip = argraw(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>再看函数<code>argraw(n)</code></p>
+<p>了解到该函数的目的是从进程的data page中返回指定的寄存器的值</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">static uint64</span><br><span class="line">argraw(int n)</span><br><span class="line">&#123;</span><br><span class="line">  struct proc *p = myproc();</span><br><span class="line">  switch (n) &#123;</span><br><span class="line">  case 0:</span><br><span class="line">    return p-&gt;trapframe-&gt;a0;</span><br><span class="line">  case 1:</span><br><span class="line">    return p-&gt;trapframe-&gt;a1;</span><br><span class="line">  case 2:</span><br><span class="line">    return p-&gt;trapframe-&gt;a2;</span><br><span class="line">  case 3:</span><br><span class="line">    return p-&gt;trapframe-&gt;a3;</span><br><span class="line">  case 4:</span><br><span class="line">    return p-&gt;trapframe-&gt;a4;</span><br><span class="line">  case 5:</span><br><span class="line">    return p-&gt;trapframe-&gt;a5;</span><br><span class="line">  &#125;</span><br><span class="line">  panic(&quot;argraw&quot;);</span><br><span class="line">  return -1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>现在我们知道 <code>st</code> 存储的是<code>trapframe</code>中第二个寄存器<code>a1</code>的值。</p>
+</li>
+<li><p>紧接着看函数<code>argfd(0, 0, &amp;f)</code>， 该函数获取第n个字大小的系统调用参数作为文件描述符并返回描述符<code>pfd</code>和相应的结构文件<code>pf</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// Fetch the nth word-sized system call argument as a file descriptor</span><br><span class="line">// and return both the descriptor and the corresponding struct file.</span><br><span class="line">static int</span><br><span class="line">argfd(int n, int *pfd, struct file **pf)</span><br><span class="line">&#123;</span><br><span class="line">  int fd;</span><br><span class="line">  struct file *f;</span><br><span class="line"></span><br><span class="line">  argint(n, &amp;fd);</span><br><span class="line">  if(fd &lt; 0 || fd &gt;= NOFILE || (f=myproc()-&gt;ofile[fd]) == 0)</span><br><span class="line">    return -1;</span><br><span class="line">  if(pfd)</span><br><span class="line">    *pfd = fd;</span><br><span class="line">  if(pf)</span><br><span class="line">    *pf = f;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>函数<code>argint(int n, int *p)</code>的作用是获取第n个32位的系统调用并存储在地址<code>ip</code>中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// Fetch the nth 32-bit system call argument.</span><br><span class="line">void</span><br><span class="line">argint(int n, int *ip)</span><br><span class="line">&#123;</span><br><span class="line">  *ip = argraw(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>函数<code>filestat(f, st)</code>获取文件<code>f</code>的数据，<code>addr</code>是用户虚拟地址，指向状态结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// Get metadata about file f.</span><br><span class="line">// addr is a user virtual address, pointing to a struct stat.</span><br><span class="line">int</span><br><span class="line">filestat(struct file *f, uint64 addr)</span><br><span class="line">&#123;</span><br><span class="line">  struct proc *p = myproc();</span><br><span class="line">  struct stat st;</span><br><span class="line">  </span><br><span class="line">  if(f-&gt;type == FD_INODE || f-&gt;type == FD_DEVICE)&#123;</span><br><span class="line">    ilock(f-&gt;ip);</span><br><span class="line">    stati(f-&gt;ip, &amp;st);</span><br><span class="line">    iunlock(f-&gt;ip);</span><br><span class="line">    if(copyout(p-&gt;pagetable, addr, (char *)&amp;st, sizeof(st)) &lt; 0)</span><br><span class="line">      return -1;</span><br><span class="line">    return 0;</span><br><span class="line">  &#125;</span><br><span class="line">  return -1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>观察<code>copyout</code>函数: </p>
+<p>该函数从内核向用户拷贝信息，从参数<code>src</code>指向的地址开始，将<code>len</code>个字节复制到指定页表<code>pagetable</code>中的虚拟地址<code>dstva</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">// Copy from kernel to user.</span><br><span class="line">// Copy len bytes from src to virtual address dstva in a given page table.</span><br><span class="line">// Return 0 on success, -1 on error.</span><br><span class="line">int</span><br><span class="line">copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)</span><br><span class="line">&#123;</span><br><span class="line">  uint64 n, va0, pa0;</span><br><span class="line"></span><br><span class="line">  while(len &gt; 0)&#123;</span><br><span class="line">    va0 = PGROUNDDOWN(dstva);</span><br><span class="line">    pa0 = walkaddr(pagetable, va0);</span><br><span class="line">    if(pa0 == 0)</span><br><span class="line">      return -1;</span><br><span class="line">    n = PGSIZE - (dstva - va0);</span><br><span class="line">    if(n &gt; len)</span><br><span class="line">      n = len;</span><br><span class="line">    memmove((void *)(pa0 + (dstva - va0)), src, n);</span><br><span class="line"></span><br><span class="line">    len -= n;</span><br><span class="line">    src += n;</span><br><span class="line">    dstva = va0 + PGSIZE;</span><br><span class="line">  &#125;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><blockquote>
+<p>To collect the amount of free memory, add a function to <code>kernel/kalloc.c</code></p>
+</blockquote>
+<p>提示让我们在<code>kernel/kalloc.c</code>中添加收集空闲内存的函数，<code>struct sysinfo</code>中有一个成员<code>uint64 freemem</code>,所以我们要添加一个<code>unint64 freemem(void)</code>的函数，统计并返回空闲内存。观察<code>kalloc.c</code>中的函数，在分配和回收内存空间的时候需要请求锁。</p>
+</li>
+</ul>
+<p>​	</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/09/my-new-post/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -419,7 +772,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -464,12 +817,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">61k</span>
+    <span title="站点总字数">76k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">55 分钟</span>
+    <span title="站点阅读时长">1:09</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
