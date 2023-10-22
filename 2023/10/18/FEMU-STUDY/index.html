@@ -31,7 +31,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/FEMU-STUDY/%E6%88%AA%E5%B1%8F2023-10-21%2010.12.04.png">
 <meta property="article:published_time" content="2023-10-18T07:40:36.000Z">
-<meta property="article:modified_time" content="2023-10-22T07:06:30.877Z">
+<meta property="article:modified_time" content="2023-10-22T08:37:45.264Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/FEMU-STUDY/%E6%88%AA%E5%B1%8F2023-10-21%2010.12.04.png">
@@ -199,7 +199,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-22 15:06:30" itemprop="dateModified" datetime="2023-10-22T15:06:30+08:00">2023-10-22</time>
+                <time title="修改时间：2023-10-22 16:37:45" itemprop="dateModified" datetime="2023-10-22T16:37:45+08:00">2023-10-22</time>
               </span>
 
           
@@ -215,14 +215,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
+              <span>31k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
+              <span>28 分钟</span>
             </span>
 
         </div>
@@ -400,6 +400,182 @@
 </ul>
 </li>
 </ol>
+<h1 id="Research-Papers-using-FEMU"><a href="#Research-Papers-using-FEMU" class="headerlink" title="Research Papers using FEMU"></a>Research Papers using FEMU</h1><ol>
+<li><p><strong>Holistic and Opportunistic Scheduling of Background I&#x2F;Os in Flash-based SSDs</strong>. <strong>(TC’23)</strong>. Yu Wang, You Zhou, Fei Wu, Yu Zhong, Jian Zhou, Zhonghai Lu, Shu Li, Zhenghong Wang, Changsheng Xie</p>
+<blockquote>
+<p>​	在从应用程序到基于闪存的SSD的多个存储系统层中，背景 (BG) 任务是不可或缺的。它们发起大量的I&#x2F;O操作，与前台（FG）I&#x2F;O性能产生显著的干扰。我们的关键洞察是，为了减轻这种干扰，需要在整个系统范围内对多源背景I&#x2F;O进行全面调度，而这只能在底层的SSD层实现。只有SSD对所有的FG和BG I&#x2F;O以及关于闪存存储资源的直接信息和控制都有一个全局的视图。因此，我们受到启发，提出了一个新颖的I&#x2F;O调度架构，称为HuFu。它为主机软件提供了一个框架，用于注册BG任务并将其I&#x2F;O调度卸载到SSD。然后，SSD内部的I&#x2F;O调度器优先处理FG I&#x2F;O，而BG I&#x2F;O则通过利用闪存并行性和闲置来有机会地进行调度。为了验证HuFu，我们对RocksDB进行了案例研究，并将其与几种最先进的主机端I&#x2F;O调度方案进行了比较。实验结果显示，HuFu可以显著减轻由BG I&#x2F;O引起的性能干扰并提高SSD带宽利用率，从而提高FG吞吐量、平均和尾部延迟（例如，在写入密集型工作负载中约提高18%）。</p>
+</blockquote>
+</li>
+<li><p><strong>NVMeVirt: A Versatile Software-defined Virtual NVMe Device</strong>. <strong>(FAST’23)</strong>. Sang-Hoon Kim, Jaehoon Shim, Seongyeop Jeong, Jin-Soo Kim</p>
+<blockquote>
+<p>​	 近期，存储设备领域发生了剧烈的变化。在多种存储景观的中心是NVMe接口，它允许这些新一代设备类型所需的高性能和灵活的通信模型。然而，其以硬件为中心的定义和规范正成为新的革命性存储设备的开发和评估周期的瓶颈。在本文中，我们提出了NVMeVirt，一种促进软件定义NVMe设备的新方法。用户可以定义带有自定义功能的任何NVMe设备类型，而NVMeVirt则允许在软件中将主机I&#x2F;O堆栈和虚拟NVMe设备之间的差距进行桥接。我们通过实现各种存储类型和配置来展示NVMeVirt的优点和功能，例如传统SSD、低延迟高带宽NVM SSD、分区命名空间SSD以及支持PCI对等DMA和NVMe-oF目标卸载的键值SSD。我们还利用NVMeVirt进行存储研究，如研究数据库引擎的性能特征和扩展NVMe规范以提高键值SSD性能。</p>
+</blockquote>
+</li>
+<li><p><strong>DECC: Differential ECC for Read Performance Optimization on High-Density NAND Flash Memory</strong>. <strong>(ASPDAC ‘23)</strong>. Yunpeng Song, Yina Lv, Liang Shi</p>
+<blockquote>
+<p>​	由于其高密度，采用 先进的多电平单元技术的3D NAND闪存已被广泛采用，但其可靠性明显降低。为了解决这一可靠性问题，闪存通常采用低密度奇偶校验码（LDPC）作为纠错码（ECC）来编码数据并提供容错能力。对于低码率的LDPC，它可以提供强大的纠错能力，但能耗较高。为避免这一成本，通常采用较高码率的LDPC。当访问的数据未成功解码时，LDPC将依赖读重试操作来提高纠错能力。但是，读重试操作会导致读取性能下降。在这项工作中，我们提出了一种差分ECC（DECC）方法来提高读取性能。DECC的基本思想是为具有不同访问特性的数据采用不同码率的LDPC。具体来说，当数据因可靠性而被热读和重试时，将采用低码率的LDPC来优化性能。通过这种方法，最大程度地减少了低码率LDPC的成本并优化了性能。通过在3D三电平单元（TLC）NAND闪存上对真实工作负载的仔细设计和评估，DECC实现了鼓舞人心的读取性能优化。</p>
+</blockquote>
+</li>
+<li><p><strong>ConfZNS : A Novel Emulator for Exploring Design Space of ZNS</strong>. <strong>(SYSTOR’23)</strong>. Inho Song, Myounghoon Oh, Bryan S. Kim, Seehwan Yoo, Jaedong Lee, Jongmoo Choi</p>
+<blockquote>
+<p>​	ZNS（分区命名空间）接口将大部分存储维护责任从底层的SSD（固态驱动器）转移到了主机。此外，它为在硬件和软件级别利用SSD的内部并行性提供了新的机会。通过调整区域与SSD内部资源之间的映射并控制线程之间的区域分配，ZNS SSD在并行性和隔离性之间提供了明显的性能权衡。为了理解和探索ZNS SSD的设计空间，我们提出了基于QEMU的易于配置和时序精确的模拟器ConfZNS（可配置的ZNS）。ConfZNS允许用户研究各种ZNS SSD的内部架构以及它如何与现有的主机软件配合工作。我们使用真实的ZNS SSD验证了ConfZNS的准确性，并探索了使用诸如RocksDB、F2FS和Docker环境等真实应用程序的不同ZNS SSD设计的性能特性。</p>
+</blockquote>
+</li>
+<li><p><strong>Optimizing Data Migration for Garbage Collection in ZNS SSDs</strong>. <strong>(DATE’23)</strong>. Zhenhua Tan, Linbo Long, Renping Liu, Congming Gao, Yi Jiang, Yan Liu</p>
+<blockquote>
+<p>ZNS SSD将垃圾回收（GC）的责任转移到了主机。然而，在GC中的数据迁移需要先将数据移至主机的缓冲区，然后再写回到新的位置，导致了不必要的端到端传输开销。此外，由于区域和块之间的预配置映射，GC需要在区域之间执行大量不必要的块到块的数据迁移。为了解决这些问题，本文提出了一种简单且高效的数据迁移方法，名为IS-AR，具有存储内数据迁移和地址重映射功能。基于全栈SSD模拟器，我们的评估显示IS-AR平均降低了6.78倍的GC延迟，并提高了1.17倍的SSD寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>zCeph: Achieving High Performance On Storage System Using Small Zoned ZNS SSD</strong>. <strong>(SAC’23)</strong>. Jin Yong Ha, Heon Young Yeom</p>
+<blockquote>
+<p>​	ZNS SSD（分区命名空间SSD）是块设备，通过强制顺序写入提供稳定的性能和低价格，但用户必须付出代价来保证强烈的写入顺序。此外，为了从给予用户对设备内部并行元素的控制的小分区ZNS SSD中获得最佳性能，用户需要详细地使用SSD。由于这些开销，与使用传统SSD相比，使用ZNS SSD的分布式存储系统之一Ceph的性能降低了高达69%。在本文中，我们提出了zCeph，它解决了在存储系统中使用小分区ZNS SSD时出现的问题。我们基于传统的Ceph实现了zCeph，并使用合成和真实工作负载对其进行了评估，结果显示，与使用ZNS SSD的传统Ceph相比，性能分别提高了最多4.1倍和7倍。</p>
+</blockquote>
+</li>
+<li><p><strong>Design of a High-Performance, High-Endurance Key-Value SSD for Large-Key Workloads</strong>. <strong>(IEEE CAL’23)</strong>. Chanyoung Park, Chun-Yi Liu, Kyungtae Kang, Mahmut Kandemir, Wonil Choi</p>
+<blockquote>
+<p>​	当前的KV-SSD设计假设了一定范围的典型工作负载，其中值的大小相对较大，而键的大小相对较小。然而，我们发现：(i) 存在另一种工作负载，其键的大小相对于其值的大小较大；(ii) 在这种大键工作负载下，当前的KV-SSD设计遭受长尾延迟和低存储利用率的问题。为此，我们提出了一种新颖的KV-SSD设计（称为LK-SSD），它可以在大键工作负载下减少尾部延迟并提高存储利用率，并为其增加了增强功能以延长设备寿命。通过广泛的实验，我们展示了LK-SSD更适合大键工作负载，同时也适用于典型工作负载。</p>
+</blockquote>
+</li>
+<li><p><strong>CFIO: A conflict-free I&#x2F;O mechanism to fully exploit internal parallelism for Open-Channel SSDs</strong>. <strong>(JSA’23)</strong>. Jinbin Zhu, Liang Wang, Limin Xiao, Lei Liu, Guangjun Qi</p>
+<blockquote>
+<p>​	I&#x2F;O访问冲突严重降低了NVMe SSDs的利用率，导致其性能损失不可预测。尽管现有的研究采用I&#x2F;O隔离或冲突感知的I&#x2F;O调度来避免访问冲突，但它们可能导致利用率不平衡并减少NVMe SSDs的寿命。在本文中，我们设计并实现了CFIO，一个低开销的冲突感知I&#x2F;O机制，实现了无冲突的I&#x2F;O，以利用NVMe SSDs中的内部并行性。CFIO通过两种新颖的机制提高了PU利用率并减少了I&#x2F;O延迟。首先，提出了一个无冲突（CF）通道，通过根据物理地址将I&#x2F;O请求划分到无冲突的PU队列中，以消除冲突。这些PU队列对应于NVMe SSDs内的PU资源。其次，设计了一个k-RR调度器，批量地并分别将读写请求分派到NVMe SSDs。K-RR调度器可以充分利用NVMe SSDs的内部并行性，并基于PU的双寄存器形成一个I&#x2F;O流水线。最后，我们将CFIO集成到带有Open-Channel NVMe SSD (OCSSD) 的LightNVM中，并与几种现有的解决方案进行比较。我们的评估显示，与最先进的方法相比，CFIO提高了OCSSD的吞吐量19.32%，并将其尾部延迟降低了23.71%。</p>
+</blockquote>
+</li>
+<li><p><strong>An Efficient F2FS GC Scheme for Improving I&#x2F;O Latency of Foreground Application</strong>. <strong>(ICCE’23)</strong>. Manjong Lee, Jonggyu Pa, Young Ik Eom</p>
+<blockquote>
+<p>​	近年来，由于其迷人的功能，ZNS吸引了移动设备制造商，并预计将合并到移动I&#x2F;O子系统中。与此同时，由于F2FS采用了只追加写入策略，因此它是支持移动设备中ZNS的可行选项之一。然而，F2FS在文件系统级的垃圾收集（GC）上表现不佳，这增加了前台应用的尾部延迟。为了克服这个问题，我们提出了一种新的F2FS GC方案，当这样做有利时，该方案会抢占正在进行的GC，以防止前台应用等待过长时间。我们的评估表明，与传统的F2FS GC方案相比，我们的方案将前台应用的尾部延迟减少了高达87%。</p>
+</blockquote>
+</li>
+<li><p><strong>SimBricks: End-to-End Network System Evaluation with Modular Simulation</strong>. <strong>(SIGCOMM’22)</strong>. Hejing Li, Jialin Li, Antoine Kaufmann</p>
+<blockquote>
+<p>​	在物理测试环境中进行的全系统“端到端”测量是网络系统评估的金标准，但往往不可行。当没有物理测试环境时，我们经常转向仿真进行评估。遗憾的是，现有的模拟器对于端到端评估来说是不足够的，因为它们要么不能模拟所有组件，要么模拟它们的细节不足。我们通过模块化仿真来解决这个问题，灵活地组合和连接多个现有的模拟器，用于不同的组件，包括处理器和内存、设备和网络，形成针对每个用例调优的虚拟端到端测试环境。我们的架构，SimBricks，结合了明确定义的组件接口，用于扩展性和模块化，高效的通信通道，用于本地和分布式仿真，以及一个共同设计的高效同步机制，用于跨模拟器的精确时序。我们展示SimBricks可以扩展到1000个模拟主机，每个都运行着完整的软件堆栈，包括Linux，而且它可以模拟具有现有NIC和交换机RTL实现的测试环境。我们还在SimBricks中再现了先前关于拥塞控制、NIC架构和网络内计算的关键发现。</p>
+</blockquote>
+</li>
+<li><p><strong>Meta-Block: Exploiting Cross-Layer and Direct Storage Access for Decentralized Blockchain Storage Systems</strong>. <strong>(TC’22)</strong>. Yi Wang, Jing Liao, Jing Yang, Zhengda Li, Chenlin Ma, Rui Mao</p>
+<blockquote>
+<p>​	去中心化存储系统，如基于区块链的存储应用，采用分布式存储技术，并使用分布式存储节点存储持久数据。对于每个链下存储节点，通常使用键值（KV）存储来管理数据。作为KV存储的最常见数据结构，日志结构化合并树（LSM-Tree）消除了随机写操作，同时保持了可接受的读性能。尽管基于LSM-Tree的去中心化存储系统可以提供安全可靠的存储平台，但区块链应用的独特特性并没有得到充分利用。在区块链存储应用中，KV存储的键的生成是基于加密数据的。一个固态硬盘（SSD）中的物理块可能会被不同系统用户的数据填充，这种混合工作负载会导致SSD物理空间的低效使用，并为LSM-Tree引起额外的压缩操作。本文提出了Meta-Block，一种针对去中心化区块链存储应用的跨层和高效的存储管理策略。目标是捕获区块链存储应用的特点，并减少不同存储层之间不必要的读写操作。作为一个跨层设计，Meta-Block重新设计了LSM-Tree的组织，可以有效地减少写放大。我们还设计了一个数据预取策略，以加速索引并启用直接存储访问。通过一系列广泛的实验，我们展示了所提技术的可行性。实验结果表明，与代表性方案相比，Meta-Block可以有效地减少写放大并延长SSD的寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>Improving the Reliability of Next Generation SSDs using WOM-v Codes</strong>. <strong>(FAST’22)</strong>. Shehbaz Jaffer, Kaveh Mahdaviani, Bianca Schroeder. <strong>(Best Paper Award)</strong></p>
+<blockquote>
+<p>​	高密度固态硬盘，如QLC驱动器，提供了增加的存储容量，但其编程和擦除（P&#x2F;E）周期减少了一个数量级，限制了它们的耐用性和可用性。我们介绍了非二进制的基于电压的一次性存储（WOM-v）代码的设计和实现，以提高QLC驱动器的使用寿命。首先，我们开发了一个基于FEMU的模拟器测试平台，以评估WOM-v代码在实际工作负载上的收益。其次，我们提出并实施了两种优化，一个高效的垃圾收集机制和一个编码优化，以极大地提高WOM-v代码的耐用性，同时不影响性能。通过仔细评估，包括微基准测试和基于迹线的评估，结果表明WOM-v代码可以为实际工作负载减少QLC驱动器的擦除周期4.4 x-11.1 x，带有最小的性能开销，从而提高QLC SSD的使用寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>Generating Realistic Wear Distributions for SSDs</strong>. <strong>(HotStorage’22)</strong>. Ziyang Jiao, Bryan S. Kim</p>
+<blockquote>
+<p>​	我们介绍了FF-SSD，一个基于机器学习的SSD老化框架，可以生成代表性的未来磨损状态。FF-SSD准确性高（相似度高达99%）、效率高（加速模拟时间2倍）、并且模块化（可以与现有的模拟器和仿真器集成）。</p>
+</blockquote>
+</li>
+<li><p><strong>When F2FS Meets Address Remapping</strong>. <strong>(HotStorage’22)</strong>. Yongmyung Lee, Jong-Hyeok Park, Jonggyu Park, Hyunho Gwak, Dongkun Shin, Young Ik Eom, Sang-Won Lee</p>
+<blockquote>
+<p>​	虽然在移动设备中越来越受欢迎，但F2FS（一个针对闪存友好的日志结构文件系统变种）揭示了三个缺点：段清理开销、元数据更新开销和文件碎片化，这在随机更新工作负载下变得尤为明显。本文首次建议在闪存中利用地址重映技术来弥补F2FS中的这些缺陷。我们的方法在保留日志结构写入的好处的同时，可以实现就地更新的最终效果，完全防止F2FS的三个缺陷。因此，它在随机更新工作负载下可以显著优于ext4和原始F2FS。配备了另一种写入模式，F2FS将在更广泛的应用范围内变得有竞争力。</p>
+</blockquote>
+</li>
+<li><p><strong>TailCut: Improving Performance and Lifetime of SSDs Using Pattern-Aware State Encoding</strong>. <strong>(DAC’22)</strong>. Jaeyong Lee, Myungsunk Kim, Wonil Choi, Sanggu Lee, Jihong Kim</p>
+<blockquote>
+<p>​	尽管在3D NAND闪存中，横向电荷扩散被视为主要的误差来源，但我们对其在存储系统级别的详细特性知之甚少。从设备特性研究中，我们观察到横向电荷扩散强烈依赖垂直相邻的状态模式，并且少数特定模式对于横向电荷扩散的位错误负有很大的责任。我们提出了一种新的状态编码方案，称为TailCut，它通过修改编码状态来删除容易受到影响的状态模式。通过删除容易受到影响的模式，TailCut可以分别提高SSD的使用寿命和读取延迟，增长率达到80%和25%。</p>
+</blockquote>
+</li>
+<li><p><strong>Selective Power-Loss-Protection Method for Write Buffer in ZNS SSDs</strong>. <strong>(Electronics’22)</strong>. Junseok Yang, Seokjun Lee, Sungyong Ahn</p>
+<blockquote>
+<p>​	大多数SSD（固态硬盘）使用内部DRAM（动态随机存取内存）来提高I&#x2F;O性能，并通过吸收写请求来延长SSD的寿命。然而，在突然断电的情况下，这种易失性存储器不能保证缓冲数据的持久性。因此，高可靠性的企业级SSD采用断电保护（PLP）逻辑，利用电容的备用电源来确保缓冲数据的耐久性。SSD必须根据易失性缓冲区的大小为PLP提供足够的电容。与此同时，新兴的ZNS（分区命名空间）SSD正受到关注，因为它们可以支持多租户系统中有用的多个I&#x2F;O流。虽然ZNS SSD不使用内部映射表，与传统的块接口SSD不同，但需要一个大的写缓冲区来提供多个I&#x2F;O流。原因是每个I&#x2F;O流都需要自己的写缓冲区来进行写缓冲，其中主机可以为不同的I&#x2F;O流分配不同的区域。此外，ZNS SSD支持的容量越大，I&#x2F;O流越多，所需的写缓冲区就越大。然而，写缓冲区的大小取决于电容量，这不仅受到SSD内部空间的限制，而且受到成本的限制。因此，在本文中，我们提出了一套技术，它可以在确保在突然断电时缓冲数据的耐久性的同时，显著减少ZNS SSD所需的电容量。首先，我们注意到现代文件系统或数据库都有自己的数据恢复解决方案，如WAL（预写式日志）和日志。因此，我们提出了一种选择性断电保护方法，只确保数据恢复所需的WAL或日志的耐久性，而不是整个缓冲数据。其次，为了最小化PLP所需的时间，我们提出了一种平衡刷新方法，该方法将缓冲数据暂时写入多个区域以最大化并行性，并在恢复电源时保留数据在其原始位置。所提出的方法通过修改FEMU（基于QEMU的Flash仿真器）和RocksDB来实现和评估。根据实验结果，所提出的选择性PLP在保持ZNS SSD的可靠性的同时，将电容量减少了50%到90%。此外，平衡刷新方法将PLP延迟减少了高达96%。</p>
+</blockquote>
+</li>
+<li><p><strong>CoDiscard: A Revenue Model based Cross-layer Cooperative Discarding Mechanism for Flash Memory Devices</strong>. <strong>(JSA’22)</strong>. Xiaoliu Feng, Xianzhang Chen, Ruolan Li, Jiali Li, Chunlin Song, Duo Liu, Yujuan Tan, Lei Qiao</p>
+<blockquote>
+<p>​	在闪存中的写放大是一个严重的问题，它缩短了闪存的寿命并降低了其性能。TRIM命令被提出来通过避免在闪存设备中进行不必要的重定位来减少写放大。然而，巨大的开销导致当I&#x2F;O忙时，常见的文件系统完全禁止使用TRIM命令。这种完全禁止的TRIM策略不仅影响了闪存设备的寿命，而且由于巨大的写放大，降低了性能。在本文中，我们提出了CoDiscard，一个基于收益模型的跨层协作丢弃机制，用于优化I&#x2F;O性能并在密集工作负载下减少写放大。CoDiscard的核心思想是将高性价比的TRIM命令筛选到闪存设备，因为它们可以显著减少写放大，从而提高性能。为了识别这样的TRIM命令，我们提出了一个收益模型来预测写放大减少和相应的开销。基于收益模型，CoDiscard采用了一个跨层协作方案来调度TRIM命令。文件系统中的CoDiscard调度器负责做出决策。闪存设备中的CoDiscard监视器用于监控与收益模型相关的信息变化。我们在真实工作负载下进行了实验。结果显示，性能提高了113%和118.4%，写放大减少了最多12.12和8.18。</p>
+</blockquote>
+</li>
+<li><p><strong>NASA: NVM-Assisted Secure Deletion for Flash Memory</strong>. <strong>(TCAD’22)</strong>. Weidong Zhu, Kevin R. B. Butler</p>
+<blockquote>
+<p>​	在基于闪存的存储中，安全删除对于数据安全至关重要。然而，现有的针对闪存的安全删除方案存在性能下降和可靠性问题，无法提供安全删除保证。尽管新兴的非易失性内存（NVM）允许就地更新并提供高性能，但它无法完全替代闪存，因此无法解决安全删除问题。在本文中，我们提出了一个针对闪存的NVM辅助安全删除方案（NASA），这是一个没有陈旧数据的存储系统，它结合了NVM和闪存，旨在为SSDs提供即时的安全删除，而不会导致显著的性能下降。NASA使用块擦除为闪存提供安全删除保证，并利用NVM来隐藏耗时的擦除操作。我们证明，除非考虑到NVM的独特特性，否则仅实现现有的安全删除方法的方案最终将在其存储介质中留下陈旧的数据副本。此外，我们使用不同的真实工作负载评估NASA，并证明与LRU相比，NASA增加了0.01%的平均延迟，并比FIFO缓存策略减少了2.1%的平均延迟。NASA是一个提供强大的安全删除保证和高性能的新型存储系统。</p>
+</blockquote>
+</li>
+<li><p><strong>Understanding and Exploiting the Full Potential of SSD Address Remapping</strong>. <strong>(TCAD’22)</strong>. Qiulin Wu, You Zhou, Fei Wu, Hong Jiang, Jian Zhou, Changsheng Xie.</p>
+<blockquote>
+<p>​	存储系统中的重复写入是普遍存在的，来源于数据重复、日志记录和数据重新定位等。由于基于闪存的固态硬盘（SSDs）已被广泛部署，重复写入可以显著降低其性能和使用寿命。先前的研究提出了创新的方法，利用SSD内部的地址重映射工具消除重复写入。然而，重映射操作修改了逻辑到物理（L2P）的地址映射表，而在闪存上持续的物理到逻辑（P2L）映射保持不变。L2P和P2L映射之间的这种不一致性可能导致数据损坏，并长期以来一直是使用SSD地址重映射的主要障碍。</p>
+<p>​	在本文中，我们提出了一个新颖的SSD设计，称为Remap-SSD-LH，实现了SSD地址重映射的全部潜力。它提供了一个重映射原语，允许主机软件和SSD固件以几乎零成本执行重复数据的逻辑写入。为了确保映射一致性以及快速的映射查找，Remap-SSD-LH采用基于混合存储的本地日志方案。每个闪存垃圾收集单元都维护一个本地日志，用于记录由重映射操作引起的相关P2L映射更改。日志存储在小型的非易失性RAM（NVRAM）中，例如电容保护的DRAM，并且如果NVRAM已满，可以将其写入闪存。</p>
+<p>​	我们在一个软件SSD模拟器上验证了Remap-SSD-LH，并进行了三个案例研究：1）SSD内部去重；2）SQLite日志记录；以及3）F2FS清理。实验结果显示，Remap-SSD-LH可以最大限度地并高效地利用地址重映射来提高SSD的性能和使用寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>Finding the Optimal Execution Scheme of External Mergesort on Solid State Drives</strong>. <strong>(World Wide Web 2021)</strong>. Yubiao Chen, Jianzhong Li, Hong Gao</p>
+<blockquote>
+<p>​	随着基于闪存的固态硬盘(SSDs)逐渐取代机械硬盘(HDDs)成为主流存储，与HDDs不同，SSDs具有丰富的内部并行性，这使得它具有HDDs所没有的出色特性。外部合并排序作为许多系统和算法中采用的外部排序的经典算法，对整体性能有着重要的影响。因此，优化并提高外部合并排序算法的效率具有重要意义。针对SSDs上的原始外部合并排序算法的优化研究相对较少。因此，针对外部合并排序问题，基于SSDs的特点，本文提出了SortDecision算法，该算法可以计算其最优执行方案，包括决定外部合并排序执行过程的合并方式、读缓冲区大小和写缓冲区大小。利用上述最优执行方案，外部合并排序可以获得更好的效率。在SortDecision算法中，SSDs上的外部合并排序问题被形式化并转化为分段凸优化问题。然后，通过枚举每个子凸问题的解来获得最优的外部合并排序方案。实验结果表明，在提供有限内存的情况下，由SortDecision算法指导的外部合并排序与传统的外部合并排序算法相比，可以实现16.7倍的加速。SSDs内部并行资源越丰富，SortDecision的加速效果越好。</p>
+</blockquote>
+</li>
+<li><p><strong>SW-WAL: Leveraging Address Remapping of SSDs to Achieve Single-Write Write-Ahead Logging</strong>, <strong>(DATE’21)</strong>. Qiulin Wu, You Zhou, Fei Wu, Ke Wang, Hao Lv, Jiguang Wan, Changsheng Xie</p>
+<blockquote>
+<p>​	写前日志 (WAL) 在数据库中被广泛使用，如SQLite和MySQL&#x2F;InnoDB，以提供事务的原子性。然而，WAL导入了重复的写入，即在WAL文件中记录的更改随后会写入到数据库文件中，这称为检查点写入。另一方面，基于NAND闪存的SSDs有一个固有的间接软件层，称为闪存转换层 (FTL)，它在现代存储系统中变得很普遍。已经提出了创新的SSD设计，通过利用FTL来消除WAL的开销，例如提供一个原子写入接口或利用其地址重映射。然而，这些设计引入了维护和持续保存额外的事务信息的显著性能开销，以保证事务的原子性或映射一致性。</p>
+<p>​	在本文中，我们提出了单写WAL (SW-WAL)，一个新的跨层设计，用于在SSDs上消除WAL引入的重复写入，带有最小的开销。SSD向主机公开一个地址重映射接口，通过该接口，检查点写入可以在不进行真实数据写入的情况下完成。为了确保事务的原子性和映射一致性，我们让SSD知道对WAL文件的事务写入。具体来说，当事务数据被写入WAL文件时，事务和映射语义从主机传递到SSD，并持久化在相关的闪存页面中作为管理元数据，没有任何额外的开销。我们实现了一个SW-WAL的原型，在一个模拟的NVMe SSD上运行流行的数据库SQLite。实验结果显示，与承受WAL开销的原始SQLite相比，SW-WAL提高了数据库性能高达62%，与消除WAL开销的最新设计相比，提高了高达32%。</p>
+</blockquote>
+</li>
+<li><p><strong>IODA: A Host&#x2F;Device Co-Design for Strong Predictability Contract on Modern Flash Storage</strong>, <strong>(SOSP’21)</strong>. Huaicheng Li, Martin L. Putra, Ronald Shi, Xing Lin, Gregory R. Ganger, Haryadi S. Gunawi</p>
+<blockquote>
+<p>​	在闪存存储上预测延迟一直是一个长期追求的目标，但由于许多众所周知的SSD内部活动带来的不可避免的干扰，这种不可预测性仍然存在。为了应对这个问题，最近的NVMe IO确定性（IOD）接口主张对SSD内部管理任务进行主机级控制。尽管这很有前景，但如何利用它实现真正可预测的性能仍然面临挑战。</p>
+<p>​	我们提出了IODA，一个建立在IOD接口之上的I&#x2F;O确定性闪存阵列设计，通过强大但简单的扩展便于部署。IODA利用IOD上下文中的数据冗余来提供强大的延迟可预测性合约。在IODA中，SSDs预期会故意迅速地使I&#x2F;O失败，以便通过主动的数据重构允许可预测的I&#x2F;O。在并发内部操作的情况下，IODA引入了繁忙剩余时间暴露和可预测延迟窗口的制定，以保证可预测的数据重构。总体上，IODA只增加了5个新字段到NVMe接口和闪存固件中的一个小修改，同时保持主机OS中的大部分复杂性。我们的评估显示，IODA将95-99.99th的延迟提高了高达75倍。与7种最新的抢占、暂停、GC协调、分区、微小尾部闪存控制器、预测和主动方法相比，IODA也是最接近理想的无干扰情况。</p>
+</blockquote>
+</li>
+<li><p><strong>Lightweight Data Lifetime Classification using Migration Counts to Improve Performance and Lifetime of Flash-based SSDs</strong>, <strong>(APSys’21)</strong>. Hyunseung Park, Eunjae Lee, Jaeho Kim, Sam H. Noh</p>
+<blockquote>
+<p>本文提出了一种策略，有效地根据其寿命对固态硬盘(SSD)中的数据进行分类，以减少基于闪存的存储的写放大。虽然已有许多研究针对数据的生命周期或热度进行分离，但它们要么需要硬件接口支持，要么产生不小的管理开销。特别地，最近提出的多流技术存在一个限制，即数据流必须由主机给出。此外，数据流分离需要用户程序实现或额外的计算。在本文中，我们提出了\sys（基于迁移计数的数据年龄分类），这是一种轻量级且有效的数据生命周期分离策略。具体来说，它利用闪存块的数据移动模式，因此只需可忽略的开销即可有效地进行分类。它是在存储设备级别上实现的，从而不需要对主机进行任何修改。使用各种合成和真实世界的数据库工作负载，我们在FEMU上评估了这种技术，这是一个NVMe SSD模拟器。我们发现它既提高了基于闪存的SSD的性能，也提高了其寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>ZNS+: Advanced Zoned Namespace Interface for Supporting In-Storage Zone Compaction</strong>, <strong>(OSDI’21)</strong>. Kyuhwa Han, Hyunho Gwak, Dongkun Shin, Joo-Young Hwang.</p>
+<blockquote>
+<p>​	NVMe分区命名空间(ZNS)正逐渐成为一种新的存储接口，其中逻辑地址空间被划分为固定大小的区域，每个区域必须顺序写入以实现对闪存友好的访问。由于ZNS的顺序写入只区域方案，需要日志结构文件系统(LFS)来访问ZNS固态硬盘(SSD)。尽管在当前的ZNS接口下SSD可以被简化，但其对应的LFS必须承受段合并的开销。为了解决这个问题，我们提出了一个新的LFS感知ZNS接口，称为ZNS+，以及其实现，其中主机可以将数据复制操作卸载到SSD以加速段合并。ZNS+还允许每个区域使用稀疏的顺序写请求进行覆盖写入，这使得LFS可以使用基于线程日志的块回收代替段合并。我们还提出了两种针对ZNS+感知LFS的文件系统技术。考虑到SSD内部不同复制路径上的不同复制成本，提出了copyback-aware块分配。混合段回收根据它们的成本，在段合并和线程日志之间选择适当的块回收策略。我们在一个SSD模拟器和一个真实的SSD上实现了ZNS+ SSD。所提出的ZNS+存储系统的文件系统性能比正常的基于ZNS的存储系统好1.33-2.91倍。</p>
+</blockquote>
+</li>
+<li><p><strong>Remap-SSD: Safely and Efficiently Exploiting SSD Address Remapping to Eliminate Duplicate Writes</strong>, <strong>(FAST’21)</strong>. You Zhou, Qiulin Wu, Fei Wu, Hong Jiang, Jian Zhou, Changsheng Xie.</p>
+<blockquote>
+<p>​	在各种存储系统中，重复写入是普遍存在的，起源于数据重复、日志记录和数据重新定位等。随着基于闪存的SSD被广泛部署，这些写入操作会显著降低其性能和使用寿命。为了消除重复的写入，先前的研究已提出了利用SSD内部地址重映射工具的创新方法。然而，重映射操作导致了映射不一致问题，这可能会导致数据丢失，并且在现有研究中尚未得到妥善解决。在本文中，我们提出了一种名为Remap-SSD的新型SSD设计，具有两个显著特点。首先，它提供了一个重映射原语，允许主机软件和SSD固件以几乎零成本执行重复数据的逻辑写入。其次，采用了混合存储架构来保持映射一致性。小字节可寻址的非易失性RAM（NVRAM）用于以日志结构方式持久化重映射元数据，并与闪存协同管理。我们在一个软件SSD模拟器上验证了Remap-SSD，并进行了三个案例研究：SSD内部去重、SQLite日志记录和F2FS清理。实验结果显示，Remap-SSD可以实现地址重映射的全部潜力，以提高SSD的性能和使用寿命。</p>
+</blockquote>
+</li>
+<li><p><strong>Prolonging 3D NAND SSD Lifetime via Read Latency Relaxation</strong>, <strong>(ASPLOS’21)</strong>. Chun-Yi Liu, Yunju Lee, Myoungsoo Jung, Mahmut Taylan Kandemir, Wonil Choi.</p>
+<blockquote>
+<p>​	3D NAND的采用显著提高了SSD的密度；然而，如多层电池层的堆叠等3D NAND密度增加技术可能会放大读取干扰并缩短SSD的使用寿命。从我们对8个最先进的SSD的寿命影响特性分析中，我们观察到，由于背景中执行了大量因读干扰引起的重写，3D TLC&#x2F;QLC SSD可能会在其保修期内由低读取工作负载磨损。为了了解其他的读干扰缓解机会，我们还对另外2个没有背景重写机制的SSD进行了读取延迟特性分析。收集的结果表明，没有背景重写，随着数据的读取次数增加，大多数数据的读取延迟都会增加。受到这两种特性分析的启发，本文提议放宽高密度3D SSD上的短读取延迟约束。具体而言，我们的提议依赖于从应用程序传递到SSD的提示信息，该信息指定了预期的读取性能。这样，由读取引起的写入造成的寿命消耗就可以减少，从而延长SSD的使用寿命。详细的实验评估显示，我们的提议可以在文件服务器应用程序下，减少多达56%的重写引起的已用寿命，而性能仅降低2%。</p>
+</blockquote>
+</li>
+<li><p><strong>QBLKe: Host-side flash translation layer management for Open-Channel SSDs</strong>, <strong>Journal of Systems Architecture (2021)</strong>, Hongwei Qin, Dan Feng, Wei Tong, Yutong Zhao, Mengye Peng, Jingning Liu</p>
+<blockquote>
+<p>​	开放通道SSD (OCSSD) 在高性能存储系统中展现出巨大潜力。现有的应用程序或文件系统依赖基于主机的Flash转换层(FTL)来使用OCSSDs。然而，现有解决方案在多线程工作负载下不能充分发挥OCSSD的性能。在读&#x2F;写关键路径上，我们发现三个组件（环形缓冲区、转换映射和DMA内存池）使用全局自旋锁来实现原子性。自旋锁耗尽CPU时间，从而损害系统的可扩展性。此外，随着OCSSD并行单元数量的增加，现有解决方案的垃圾收集（GC）的粒度也增加。这导致GC期间不必要的页面迁移。在本文中，我们提出QBLKe作为OCSSD基于主机的FTL。QBLKe采用三种技术来提高可扩展性并最小化软件开销：(1) 每CPU环形缓冲区，(2) 无锁转换映射，和(3) 每CPU DMA池。为了进一步减少GC页面迁移和对I&#x2F;O性能的影响，QBLKe实现了每通道GC和一种称为基于评分的速率限制器的新方案。实验结果显示，与现有解决方案相比，QBLKe将写带宽提高了高达78.9%。它还将峰值读IOPS提高了139.31%，GC效率提高了49.11%。</p>
+</blockquote>
+</li>
+<li><p><strong>Better Atomic Writes by Exposing the Flash Out-of-Band Area to File Systems</strong>, <strong>(LCTES’21)</strong>. Hongwei Qin, Dan Feng, Wei Tong, Yutong Zhao, Sheng Qiu, Fei Liu, Shu Li</p>
+<blockquote>
+<p>​	移动设备的文件系统通常通过有序I&#x2F;O来保持数据的一致性。然而，维护I&#x2F;O顺序阻碍了应用程序充分利用设备的并行性，从而降低了存储性能。在本文中，我们提出NBStack，旨在在不妥协数据一致性的情况下消除有序I&#x2F;O。首先，我们增强现有的块接口，以将Flash的带外区域暴露给文件系统。其次，我们构建了一个增强的块设备原型，支持新的接口。第三，我们开发了NBFS，一个Linux文件系统，利用新的块接口实现原子写入，而不需要强制I&#x2F;O排序。实验结果显示，NBStack的性能是F2FS的两倍，同时提供了强有力的一致性和持久性保证。如果应用程序愿意牺牲持久性，NBStack可以进一步大幅提高性能。</p>
+</blockquote>
+</li>
+<li><p><strong>Determinizing Crash Behavior with a Verified Snapshot-Consistent Flash Translation Layer</strong>, <strong>(OSDI’20)</strong>. Yun-Sheng Chang, Yao Hsiao, Tzu-Chi Lin, Che-Wei Tsao, Chun-Feng Wu, Yuan-Hao Chang, Hsiang-Shang Ko, Yu-Fang Chen.</p>
+<blockquote>
+<p>​	本文介绍了一个为闪存磁盘设计的快照一致性的闪存转换层(SCFTL)。它比传统设计提供了更强的关于崩溃后可能的行为的保证。具体来说，SCFTL的flush操作还具有制作“磁盘快照”的功能。当发生崩溃时，闪存磁盘保证恢复到最后一次flush操作之前的状态。SCFTL的主要优点是它允许在存储堆栈的上层设计得更高效。例如，建立在SCFTL上的文件系统不需要使用日志进行崩溃恢复。相反，它只需要在每个原子事务结束时执行SCFTL的flush操作。我们使用一个证明助手、一个符号执行器和一个SMT求解器，正式验证我们的SCFTL实现的正确性。我们修改了xv6文件系统以支持组提交，并利用SCFTL更强的崩溃保证。我们使用文件系统基准测试进行评估，结果显示，修改后的xv6在SCFTL上的速度比在传统FTLs上使用日志的xv6快3到30倍，并且在最坏的情况下只比最先进的设置慢两倍：ext4文件系统在物理块设备(pblk) FTL上。</p>
+</blockquote>
+</li>
+<li><p><strong>LeapIO: Efficient and Portable Virtual NVMe Storage on ARM SoCs</strong>, <strong>(ASPLOS’20)</strong>. Huaicheng Li, Mingzhe Hao, Stanko Novakovic, Vaibhav Gogte, Sriram Govindan, Dan R. K. Ports, Irene Zhang, Ricardo Bianchini, Haryadi S. Gunawi, Anirudh Badam.</p>
+<blockquote>
+<p>​	今天的云存储堆栈对资源的需求极高，消耗了数据中心x86核心的10-20%，这是云服务提供商必须支付的主要”存储税”。然而，复杂的云存储堆栈并不完全适用于当今的IO加速器。我们介绍了LeapIO，一个新的云存储堆栈，它利用基于ARM的协处理器来卸载复杂的存储服务。LeapIO解决了许多部署挑战，如硬件的可替换性、软件的可移植性、可虚拟化性、可组合性和效率。它使用了一套操作系统&#x2F;软件技术和新的硬件属性，这些属性为x86和ARM核心提供了统一的地址空间，并将虚拟NVMe存储暴露给未修改的客户虚拟机，其性能与裸机服务器相媲美。</p>
+</blockquote>
+</li>
+<li><p><strong>DualFS: A Coordinative Flash File System with Flash Block Dual-mode Switching</strong>, <strong>(ICCD’20)</strong>. Bing Wu, Mengye Peng, Dan Feng, Wei Tong.</p>
+<blockquote>
+<p>​	随着用户对大容量存储的需求持续增长，广泛使用的NAND闪存始终采用每个单元的多位和3D堆叠技术来提高存储密度，但这会损害闪存的性能。现代闪存芯片允许闪存块在多位每单元和一位每单元之间切换，这为从单级单元(SLC，即一位每单元)的高性能中受益提供了可能性。然而，由块I&#x2F;O接口和闪存转换层(FTL)引起的语义差距阻止了底层闪存的性能得到充分利用。在本文中，我们提出了一个日志结构文件系统，称为DualFS。DualFS允许闪存块自由地在原始模式和SLC模式之间切换，并使用这些SLC块来加速关键请求。DualFS根据有效数据的总大小动态调整SLC模式区域的容量，以保持设备的容量损耗可以忽略不计。此外，DualFS利用Open-Channel固态硬盘(SSD)的优点，使用软件语义信息来指导数据的放置和管理。特别是，由于向SLC块写入相同数量的数据会损害更多的耐久性，DualFS提出了一种新颖的生命周期管理方案，它在一定的窗口内限制了写入SLC模式区域的比率，从而准确地控制了SSD的耐久性。最后，DualFS整合了由文件系统直接驱动的垃圾收集(GC)过程，并合并了SLC模式区域和原始模式区域的GC。实验结果表明，与基于开放通道SSD的最新闪存文件系统相比，DualFS提供了平均22.2%的性能提升。与基于闪存块双模式切换特性的其他存储系统相比，DualFS的平均性能也表现出13.3%到24.6%的显著改善。此外，DualFS在不同的读&#x2F;写比率下有效地减少了读响应时间，并精确地管理了设备的耐久性。</p>
+</blockquote>
+</li>
+<li><p><strong>HMB-I&#x2F;O: Fast Track for Handling Urgent I&#x2F;Os inNonvolatile Memory Express Solid-State Drives</strong>, <strong>(Appl. Sci. 2020)</strong>. Kyusik Kim, Seongmin Kim, Taeseok Kim.</p>
+<blockquote>
+<p>​	为满足各自需求的应用程序提供差异化的I&#x2F;O服务对于用户满意度非常重要。非易失性内存快速通道（NVMe）固态硬盘（SSD）架构可以通过其众多的提交队列来提高I&#x2F;O带宽，但每个I&#x2F;O请求的服务质量（QoS）从未得到保证。特别是，如果由于突发的I&#x2F;O工作负载，在提交队列中有很多I&#x2F;O请求待处理，紧急的I&#x2F;O请求可能会被延迟，因此，需要快速服务的应用程序的QoS要求可能无法得到满足。本文提出了一种处理紧急I&#x2F;O请求的方案，即使有很多挂起的I&#x2F;O请求，也不会延迟。由于提交队列中的待处理I&#x2F;O请求不能由主机控制，所以使用主机内存缓冲区（HMB）——这是可以从控制器访问的主机的DRAM的一部分——来处理紧急的I&#x2F;O请求。该方案并不是通过传统的I&#x2F;O路径将紧急I&#x2F;O请求发送到SSD中，而是通过直接将它们插入HMB来消除延迟。模拟器实验表明，该方案可以将平均延迟和尾部延迟分别降低高达99%和86%。</p>
+</blockquote>
+</li>
+<li><p><strong>QBLK: Towards Fully Exploiting the Parallelism of Open-Channel SSDs</strong>, <strong>(DATE’19)</strong>. Hongwei Qin, Dan Feng, Wei Tong, Jingning Liu, Yutong Zhao.</p>
+<blockquote>
+<p>​	通过将物理通道暴露给主机软件，Open-Channel SSD在未来的高性能存储系统中展现出巨大的潜力。然而，现有的方案在重负载下无法达到令人满意的性能。主要原因不仅在于其单一缓冲体系结构，更重要的是其基于行的物理地址管理。此外，在重负载下，地址映射表的锁也是一个性能负担。我们提出了QBLK，一个开源驱动程序，试图更好地利用Open-Channel SSDs的并行性。特别地，QBLK采用了四个关键技术，分别是：（1）基于多队列的缓冲，（2）基于每个通道的地址管理，（3）无锁地址映射，以及（4）细粒度的排放。实验结果显示，与现有的最先进的PBLK方案相比，QBLK实现了高达97.4%的带宽提升。</p>
+</blockquote>
+</li>
+<li><p><strong>An Efficient Design and Implementation of Deduplication on Open-Channel SSDs</strong>, <strong>(HPCC’19)</strong>. Qiqi Hu, Jianxi Chen, Dan Feng, Qing Yang, Bo Liu.</p>
+<blockquote>
+<p>​	由于NAND闪存的写入周期达到上限，数据无法可靠地存储。因此，固态硬盘（SSDs）的寿命受到限制，使其无法成为写入密集型数据中心的可靠存储设备。数据去重可以有效减少写入流量并延长SSDs的使用寿命。但是，传统数据去重方案中的指纹计算开销太大，这将降低SSDs的写入性能。在本文中，我们提出了一种基于Open-Channel SSDs (OCSSDs)的新的去重方案D-pblk，它可以配合现代高性能CPU来减少指纹计算的开销。在D-pblk中，我们使用轻量级的哈希CRC32来过滤大部分非重复数据，当CRC32首次被命中时，我们从Open-Channel SSDs中读取数据并计算重量级的哈希SHA-1进行精确比较，这减少了指纹计算的开销，几乎不影响工作负载的去重率。我们还使用多线程并行计算指纹，进一步减少了指纹计算的开销。此外，我们使用双环缓冲区来解决去重后的数据大小可能不匹配闪存页面大小的问题。我们使用FEMU模拟Open-Channel SSDs进行评估。实验结果显示，D-pblk可以实现从4.61%到31.63%的去重率，写入延迟提高了高达29倍。</p>
+</blockquote>
+</li>
+</ol>
 <h2 id="Appendix："><a href="#Appendix：" class="headerlink" title="Appendix："></a>Appendix：</h2><h3 id="一些名词解释："><a href="#一些名词解释：" class="headerlink" title="一些名词解释："></a>一些名词解释：</h3><blockquote>
 <ul>
 <li><p><strong>virtio</strong>：<code>virtio</code> 是一个虚拟化标准，用于提供一种高效、标准化的方式在宿主（host）和虚拟机（guest）之间进行 IO 操作。它是一个设备抽象标准，但不依赖于任何特定的虚拟化环境或物理硬件，通常用于改进网络和磁盘性能。使用 <code>virtio</code>，虚拟机与一个“虚拟化的”设备通信，而不是模拟实际的硬件设备，从而提高性能。</p>
@@ -546,7 +722,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#The-CASE-of-FEMU-Cheap-Accurate-Scalable-and-Extensible-Flash-Emulator"><span class="nav-number">1.</span> <span class="nav-text">The CASE of FEMU: Cheap, Accurate, Scalable and Extensible Flash Emulator</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FEMU%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">FEMU是什么：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%981-%E7%A1%AC%E4%BB%B6SSD%E5%92%8C%E9%97%AA%E5%AD%98%E6%9C%89%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%E5%90%97%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%97%AA%E5%AD%98%E6%A8%A1%E6%8B%9F%E5%99%A8%E5%8F%AF%E4%BB%A5%E4%BF%83%E8%BF%9B%E5%85%A8%E6%A0%88%E8%BD%AF%E4%BB%B6-x2F-%E7%A1%AC%E4%BB%B6SSD%E7%A0%94%E7%A9%B6%EF%BC%9F"><span class="nav-number">1.1.1.</span> <span class="nav-text">问题1:硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件&#x2F;硬件SSD研究？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%982-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%A8%A1%E6%8B%9F%E9%97%AA%E5%AD%98%EF%BC%9F"><span class="nav-number">1.1.2.</span> <span class="nav-text">问题2:为什么要模拟闪存？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%983-%E7%8E%B0%E6%9C%89%E5%93%AA%E4%BA%9B%E9%97%AA%E5%AD%98-x2F-SSD%E4%BB%BF%E7%9C%9F%E5%99%A8%EF%BC%9F"><span class="nav-number">1.1.3.</span> <span class="nav-text">问题3: 现有哪些闪存&#x2F;SSD仿真器？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%984-%E6%97%A2%E7%84%B6%E5%B7%B2%E7%BB%8F%E6%9C%89%E8%BF%99%E4%BA%9B%E5%A4%9A%E4%BB%BF%E7%9C%9F%E5%99%A8%E4%BA%86%EF%BC%8C%E9%82%A3%E6%88%91%E4%BB%AC%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%8F%90%E5%87%BAFEMU%EF%BC%9F"><span class="nav-number">1.1.4.</span> <span class="nav-text">问题4: 既然已经有这些多仿真器了，那我们为什么要提出FEMU？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1FEMU%E7%9A%84%E4%B8%BB%E8%A6%81%E6%8C%91%E6%88%98%E5%92%8C%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">设计FEMU的主要挑战和解决办法：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#scalability%EF%BC%9A"><span class="nav-number">1.2.1.</span> <span class="nav-text">scalability：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#accuracy"><span class="nav-number">1.2.2.</span> <span class="nav-text">accuracy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#increasing-usability-and-extensibility"><span class="nav-number">1.2.3.</span> <span class="nav-text">increasing usability and extensibility</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FEMU%E6%98%AF%E5%8F%AF%E4%BB%A5%E8%A2%AB%E6%89%A9%E5%B1%95%E7%9A%84%EF%BC%9A"><span class="nav-number">1.2.4.</span> <span class="nav-text">FEMU是可以被扩展的：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Appendix%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">Appendix：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A%EF%BC%9A"><span class="nav-number">1.3.1.</span> <span class="nav-text">一些名词解释：</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#The-CASE-of-FEMU-Cheap-Accurate-Scalable-and-Extensible-Flash-Emulator"><span class="nav-number">1.</span> <span class="nav-text">The CASE of FEMU: Cheap, Accurate, Scalable and Extensible Flash Emulator</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FEMU%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">FEMU是什么：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%981-%E7%A1%AC%E4%BB%B6SSD%E5%92%8C%E9%97%AA%E5%AD%98%E6%9C%89%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%E5%90%97%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%97%AA%E5%AD%98%E6%A8%A1%E6%8B%9F%E5%99%A8%E5%8F%AF%E4%BB%A5%E4%BF%83%E8%BF%9B%E5%85%A8%E6%A0%88%E8%BD%AF%E4%BB%B6-x2F-%E7%A1%AC%E4%BB%B6SSD%E7%A0%94%E7%A9%B6%EF%BC%9F"><span class="nav-number">1.1.1.</span> <span class="nav-text">问题1:硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件&#x2F;硬件SSD研究？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%982-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%A8%A1%E6%8B%9F%E9%97%AA%E5%AD%98%EF%BC%9F"><span class="nav-number">1.1.2.</span> <span class="nav-text">问题2:为什么要模拟闪存？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%983-%E7%8E%B0%E6%9C%89%E5%93%AA%E4%BA%9B%E9%97%AA%E5%AD%98-x2F-SSD%E4%BB%BF%E7%9C%9F%E5%99%A8%EF%BC%9F"><span class="nav-number">1.1.3.</span> <span class="nav-text">问题3: 现有哪些闪存&#x2F;SSD仿真器？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%984-%E6%97%A2%E7%84%B6%E5%B7%B2%E7%BB%8F%E6%9C%89%E8%BF%99%E4%BA%9B%E5%A4%9A%E4%BB%BF%E7%9C%9F%E5%99%A8%E4%BA%86%EF%BC%8C%E9%82%A3%E6%88%91%E4%BB%AC%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%8F%90%E5%87%BAFEMU%EF%BC%9F"><span class="nav-number">1.1.4.</span> <span class="nav-text">问题4: 既然已经有这些多仿真器了，那我们为什么要提出FEMU？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1FEMU%E7%9A%84%E4%B8%BB%E8%A6%81%E6%8C%91%E6%88%98%E5%92%8C%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">设计FEMU的主要挑战和解决办法：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#scalability%EF%BC%9A"><span class="nav-number">1.2.1.</span> <span class="nav-text">scalability：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#accuracy"><span class="nav-number">1.2.2.</span> <span class="nav-text">accuracy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#increasing-usability-and-extensibility"><span class="nav-number">1.2.3.</span> <span class="nav-text">increasing usability and extensibility</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FEMU%E6%98%AF%E5%8F%AF%E4%BB%A5%E8%A2%AB%E6%89%A9%E5%B1%95%E7%9A%84%EF%BC%9A"><span class="nav-number">1.2.4.</span> <span class="nav-text">FEMU是可以被扩展的：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Research-Papers-using-FEMU"><span class="nav-number">2.</span> <span class="nav-text">Research Papers using FEMU</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Appendix%EF%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">Appendix：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A%EF%BC%9A"><span class="nav-number">2.1.1.</span> <span class="nav-text">一些名词解释：</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -607,12 +783,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">86k</span>
+    <span title="站点总字数">105k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:18</span>
+    <span title="站点阅读时长">1:36</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
