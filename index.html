@@ -260,10 +260,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-10-18 15:40:36 / 修改时间：15:42:53" itemprop="dateCreated datePublished" datetime="2023-10-18T15:40:36+08:00">2023-10-18</time>
+              <time title="创建时间：2023-10-18 15:40:36" itemprop="dateCreated datePublished" datetime="2023-10-18T15:40:36+08:00">2023-10-18</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-22 14:55:36" itemprop="dateModified" datetime="2023-10-22T14:55:36+08:00">2023-10-22</time>
+              </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -271,14 +277,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4</span>
+              <span>11k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>10 分钟</span>
             </span>
 
         </div>
@@ -290,7 +296,240 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="FEMU"><a href="#FEMU" class="headerlink" title="FEMU"></a>FEMU</h1><h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+          <h1 id="The-CASE-of-FEMU-Cheap-Accurate-Scalable-and-Extensible-Flash-Emulator"><a href="#The-CASE-of-FEMU-Cheap-Accurate-Scalable-and-Extensible-Flash-Emulator" class="headerlink" title="The CASE of FEMU: Cheap, Accurate, Scalable and Extensible Flash Emulator"></a>The CASE of FEMU: Cheap, Accurate, Scalable and Extensible Flash Emulator</h1><h2 id="FEMU是什么："><a href="#FEMU是什么：" class="headerlink" title="FEMU是什么："></a><code>FEMU</code>是什么：</h2><p>​	<code>femu</code>是一个基于 <code>QEMU</code> 的闪存模拟器，旨在促进未来的全栈软件&#x2F;硬件SSD研究。</p>
+<h3 id="问题1-硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件-x2F-硬件SSD研究？"><a href="#问题1-硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件-x2F-硬件SSD研究？" class="headerlink" title="问题1:硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件&#x2F;硬件SSD研究？"></a>问题1:硬件SSD和闪存有什么关系吗？为什么闪存模拟器可以促进全栈软件&#x2F;硬件SSD研究？</h3><blockquote>
+<p>​		SSD(固态硬盘)是一种数据存储设备，它使用闪存作为其主要的存储介质</p>
+</blockquote>
+<h3 id="问题2-为什么要模拟闪存？"><a href="#问题2-为什么要模拟闪存？" class="headerlink" title="问题2:为什么要模拟闪存？"></a>问题2:为什么要模拟闪存？</h3><blockquote>
+<p>​		模拟闪存为研究者、开发者和工程师提供了一个灵活、可控的环境，使他们能够在没有实际硬件的情况下进行研究、测试和开发。</p>
+</blockquote>
+<h3 id="问题3-现有哪些闪存-x2F-SSD模拟器？"><a href="#问题3-现有哪些闪存-x2F-SSD模拟器？" class="headerlink" title="问题3: 现有哪些闪存&#x2F;SSD模拟器？"></a>问题3: 现有哪些闪存&#x2F;SSD模拟器？</h3><blockquote>
+<ol>
+<li><p>DiskSim’s SSD：</p>
+<ul>
+<li>DiskSim是一个相当受欢迎的、由微软研究院开发的磁盘系统模拟器。</li>
+<li>它最初是为磁盘驱动器设计的，但后来又增加了对固态硬盘(SSD)的模拟支持。</li>
+<li>DiskSim可以模拟现实中的磁盘驱动器或SSD的性能，并帮助研究人员和工程师进行存储系统设计、优化和评估。</li>
+</ul>
+</li>
+<li><p>FlashSim</p>
+<ul>
+<li>FlashSim是一个针对NAND闪存的模拟器。</li>
+<li>它模拟闪存的基本操作，如读、写和擦除，以及其他与闪存有关的特性和行为。</li>
+<li>FlashSim是为了研究和开发针对闪存的管理策略和算法（如垃圾收集和擦写均衡）而设计的。</li>
+</ul>
+</li>
+<li><p>SSDSim</p>
+<ul>
+<li>SSDSim是一个专门为固态硬盘(SSD)设计的模拟器。</li>
+<li>它考虑了SSD的各种组件和特性，如控制器、缓存和多通道&#x2F;多飞道操作。</li>
+<li>与FlashSim不同，SSDSim更关注整个SSD设备的模拟，而不仅仅是闪存。</li>
+</ul>
+</li>
+<li><p>FPGA boards</p>
+<ul>
+<li>PGA（Field-Programmable Gate Array）是一种可以由用户在购买后进行配置的集成电路。</li>
+<li>FPGA板卡通常包含一个或多个FPGA芯片、电源、记忆体、I&#x2F;O接口以及其他必要的电子元件。</li>
+<li>FPGA被广泛应用于原型设计、硬件加速、数字信号处理、嵌入式系统等领域，因为它们提供了一种在硬件级别自定义设计的能力。</li>
+</ul>
+</li>
+<li><p>OpenSSD</p>
+<ul>
+<li>OpenSSD项目是一个开源项目，提供了关于固态硬盘(SSD)控制器的参考设计和源代码。</li>
+<li>该项目旨在推动学术界和工业界对SSD技术的研究和创新。</li>
+<li>OpenSSD为研究者提供了一个实验平台，使他们能够开发和测试新的算法、策略和技术，而无需从零开始构建SSD控制器。</li>
+</ul>
+</li>
+<li><p>OpenChannel SSD</p>
+</li>
+</ol>
+<ul>
+<li>OpenChannel SSD是一种新的SSD架构，它允许主机操作系统直接管理SSD的物理块。</li>
+<li>传统的SSD随机地在内部闪存块之间移动数据来实现擦除均衡和性能优化，这是通过一个称为Flash Translation Layer (FTL)的软件组件来实现的。OpenChannel SSD通过移除或简化FTL，允许更直接的控制，从而为应用提供更高的性能和更低的延迟。</li>
+<li>OpenChannel SSD需要特殊的驱动和支持，如Linux内核中的LightNVM。</li>
+</ul>
+<ol start="7">
+<li><p>基于QEMU的VSSIM</p>
+<p>​	is a QEMU&#x2F;KVM-based platform that emulates NAND flash latencies on a RAM disk, and has been used in several papers. The major drawback of VSSIM is that it is built within QEMU’s IDE interface im- plementation, which is not scalable. The upper-left red line (IDE line) in Figure 2a shows the user-perceived IO read latency through VSSIM without any NAND-delay emulation added. More concurrent IO threads (x-axis) easily multiply the average IO latency (y-axis). For ex- ample from 1 to 4 IO threads, the average latency spikes up from 152 to 583μs. The root cause is that IDE is not supported with virtualization optimizations.</p>
+</li>
+<li><p>FlashEm</p>
+<p>​	is an emulator built in the Linux block level layer, hence less portable; it is rigidly tied to its Linux version; to make changes, one must modify Linux kernel. FlashEm is not open-sourced and its development stopped two years ago (confirmed by the creators).</p>
+</li>
+<li><p>LightNVM的QEMU </p>
+<p>​	is still in its early stage. Currently, it cannot emulate multiple channels (as in OpenChannel SSD) and is only used for basic testing of 1 target (1 chip behind 1 channel). Worse, LightNVM’s QEMU performance is not scalable to emulate NAND latencies as it depends on vanilla QEMU NVMe interface.</p>
+</li>
+</ol>
+</blockquote>
+<h3 id="问题4-既然已经有这些多模拟器了，那我们为什么要提出FEMU？"><a href="#问题4-既然已经有这些多模拟器了，那我们为什么要提出FEMU？" class="headerlink" title="问题4: 既然已经有这些多模拟器了，那我们为什么要提出FEMU？"></a>问题4: 既然已经有这些多模拟器了，那我们为什么要提出<code>FEMU</code>？</h3><blockquote>
+<p>因为上述1-3的模拟器均<strong>only support internal-SSD research but not kernel-level extensions.</strong></p>
+<p>这句话的原因是：</p>
+<ul>
+<li><p>这些模拟器重点关注的是如何在SSD内部处理请求、如何进行数据放置、垃圾收集、擦除均衡等。它们为研究者提供了一个详细、精确的工具，以研究和优化这些内部过程。</p>
+</li>
+<li><p>然而，SSD的性能和行为不仅仅是由其内部结构决定的。当一个应用或操作系统向SSD发出I&#x2F;O请求时，该请求首先会经过操作系统的I&#x2F;O堆栈，包括文件系统、块层、驱动等。操作系统中的这些组件也会影响I&#x2F;O的性能和行为。</p>
+</li>
+</ul>
+<p> 所以对这句话更详细的解释应该是：</p>
+<ul>
+<li>当我们说这些模拟器”only support internal-SSD research but not kernel-level extensions”时，我们是指<strong>它们不模拟整个I&#x2F;O路径，特别是操作系统层面的部分。这意味着，如果你想研究如何修改文件系统或块层来优化SSD性能，这些模拟器可能不会为你提供足够的信息或支持。</strong></li>
+</ul>
+<p>而上述4-6的模拟器则<strong>support full-stack software&#x2F;hardware re- search but their high costs (thousands of dollars per de- vice) impair large-scale SSD research.</strong></p>
+<p>最后提到的7-9模拟器虽然更经济，但<strong>它们要么已经过时，要么不可扩展，要么并不是开源的</strong>。其中，对于可扩展的理解是，<code>VSSIM</code>只支持<code>IDE(Integrated Drive Electronics)</code>硬件接口技术，我们或许需要增加SATA、NVMe等接口。</p>
+<p>所以我们要提出的<code>FEMU</code>，有下述优点:</p>
+<ol>
+<li><p><strong>Cheap:</strong> open- sourced software</p>
+</li>
+<li><p>**(relatively) Accurate: ** 0.5-38% variance in our tests</p>
+</li>
+<li><p><strong>Scalable:</strong> 由于我们使用了各种技术来优化QEMU栈，例如无退出中断和跳过QEMU AIO组件，FEMU可以扩展到32个IO线程，同时仍然实现低延迟（在2.3GHz的CPU下延迟低至52微秒）。因此，FEMU可以准确地模拟32个并行通道&#x2F;芯片，而不会产生不希望的排队延迟。</p>
+</li>
+<li><p><strong>Extensible:</strong> 对于可扩展性，我的理解是，在使用<code>FEMU</code>模拟器时会有一个<code>guest os</code>(即运行在虚拟机中的操作系统)和一个<code>host os</code>(即宿主操作系统)。如下图所示，<code>FEMU</code>基于<code>QEMU</code>运行在<code>host os</code>，我们要模拟的<code>guest os</code>运行在虚拟机(VM)上，通过’NVMe(Non-Volatile Memory express)’接口访问<code>FEMU</code>（因为<code>FEMU</code>是一个<code>NVMe SSD</code>的模拟器）。因此 <code>FEMU</code>运行研究人员在<code>guest os</code>上进行内核级的改变，借口级的改变，和<code>FTL（Flash Translation Layer</code>）级的改变。</p>
+<p><img src="/../images/FEMU-STUDY/%E6%88%AA%E5%B1%8F2023-10-21%2010.12.04.png" alt="截屏2023-10-21 10.12.04"></p>
+<p>同时，<strong>FEMU also provides many new features not existent in other emulators, such as OpenChannel and multi-device&#x2F;RAID support, extensible interfaces via NVMe commands, and page-level latency variability.</strong></p>
+</li>
+</ol>
+</blockquote>
+<p>​	</p>
+<h2 id="设计FEMU的主要挑战和解决办法："><a href="#设计FEMU的主要挑战和解决办法：" class="headerlink" title="设计FEMU的主要挑战和解决办法："></a>设计<code>FEMU</code>的主要挑战和解决办法：</h2><ol>
+<li><h3 id="scalability："><a href="#scalability：" class="headerlink" title="scalability："></a>scalability：</h3><ul>
+<li><strong>问题1：</strong><code>QEMU</code> 通过传统的 <code>trap-and-emulate</code>方式模拟<code>IO</code>。当客户机的<code>NVMe</code>驱动向设备<code>(QEMU)这里的情况是因为客户机(guest os)是运行在QEMU模拟的环境上</code>发出<code>ring the doorbell</code>的信号，用于表示设备队列中有一些IO请求。由于该<code>doorbell</code>表示一个<code>memory mapped input output</code>操作，这将会导致 <code>VM-exit(word switch)</code> 即从客户机到<code>QEMU</code>的转换。同样，当<code>IO</code>请求完成时，也会存在一样的切换。</li>
+<li><strong>问题2：</strong><code>QEMU</code>使用<code>异步IO（AIO）</code>执行实际读&#x2F;写（字节传输）到备份图像文件。此AIO组件用来避免QEMU被缓慢的IO（例如，在磁盘映像上）阻止。然而，当存储后端是RAM支持的映像时，AIO开销变得很重要。</li>
+<li><strong>解决办法</strong>：<ol>
+<li>首先将<code>QEMU</code>的中断转换为基于轮询的设计，并在<code>guest os</code>中禁止通过<code>doorbell write</code>的操作。并在<code>QEMU</code>中创建一个专门的线程，用来持续轮询设备队列的状态。以这种方式，<code>guest os</code> 仍将控制权交给<code>QEMU</code>并且不会有昂贵的<code>word switch</code>。</li>
+<li>同样，我们将不使用<code>virual image file</code>（这一思想是为了避免进入<code>AIO</code>模块），我们通过在<code>QEMU&#39;s heap space</code>创建一个 <code>RAM-backed storage</code> (笔者认为这个操作类似于在安装操作系统时为操作系统划分物理空间)。然后修改<code>QEMU</code>中的<code>DMA emulator logic</code>，将数据读取或者写入到上面模拟的<code>RAM-backed storage</code>，在整个过程中，<code>guest os</code>并不会意识到它已经将数据写到了我们规定的<code>RAM-backed storage</code>中。</li>
+</ol>
+</li>
+<li><strong>实验结果：</strong>在1-32个IO线程之间，<code>FEMU</code>可以在低于52μs的时间内保持IO延迟的稳定，甚至在64个IO线程下保持在90μs以下。 </li>
+<li><strong>遗留问题：</strong>剩余的可扩展性瓶颈现在只来自QEMU的单线程“事件循环”，它执行主要的IO例程，如取消设备队列，触发DMA仿真，并将终端IO完成发送到<code>guest os</code>。最近的作品解决了这些限制（有重大变化），但尚未简化为QEMU的主要属性。我们将探索在未来FEMU开发中整合其他解决方案的可能性。</li>
+</ul>
+</li>
+<li><h3 id="accuracy"><a href="#accuracy" class="headerlink" title="accuracy"></a>accuracy</h3><ol>
+<li><p><strong>Delay Emulation:</strong></p>
+<p>​	<code>FEMU</code>中对<code>IO</code>的延迟模拟采用了一种专用的<code>end-io queue</code>，该队列基于IO完成时间进行排序。当队列中<code>IO</code>的模拟完成时间超过当前时间，将该<code>IO</code>从队列中取出。例如，模拟的<code>IO</code>完成时间是在<code>IO</code>进入时间的基础上加<code>50us</code>。</p>
+</li>
+<li><p><strong>Basic Delay Model:</strong></p>
+<ul>
+<li><p>那该如何给出一个准确的<code>IO</code>模拟完成时间呢?</p>
+</li>
+<li><p><code>channel1</code>的下一次空闲时间，其中 <code>Ttransfer</code>表示给定的页在通道上的传输时间。<br>$$<br>T_{freeOfChannel1}&#x3D;T_{now}+T_{transfer}<br>$$<br>而plane2的下一次空闲时间如下，其中<code>Twrite</code>是给定的一个NAND页面的写&#x2F;program时间<br>$$<br>T_{freeOfPlane2}&#x3D;T_{now}+T_{transfer}+T_{write}<br>$$<br>于是该写操作的<code>end-io time</code>等于 <code>TfreeOfPlane2</code></p>
+</li>
+<li><p>假设当写操作正在进行时，到同一平面的页面读取到达。在这里，我们会将TfreeOfPlane2增加Tread的值，其中Tread是一个可配置的NAND页面的读取时间，并将TfreeOfChannel1增加Ttransfer的值。这次读取的结束时间将是Tendio&#x3D;TfreeOfChannel1（因为这是一个读取操作，而不是写操作）。</p>
+</li>
+<li><p>这只是一个简单的延迟模型，模拟了一个单寄存器，统一页面延迟的模型。即每一个plane只有一个页寄存器，因此不支持多IO的并行操作。同时，传输时间，读写时间也被设置为固定的值。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Advanced “OC” Delay Model:</strong></p>
+<p>展示了如何扩展我们的模型，并实现对OpenChannel SSD更准确的延迟模拟。</p>
+<ul>
+<li><p>openChannel的每一个<code>plane</code>使用了两个寄存器<code>(data + cache registers)</code>。<code>data register</code>用于读写、擦除数据。<code>cache register</code>用于传输数据。例如，当数据从NAND页面读取到数据寄存器时，另一组数据可以从缓存寄存器传输到通道，或者相反。这种设计增加了并行性，因为两个操作可以在同一个时间段内同时进行，而不是顺序进行。</p>
+</li>
+<li><p>第二，OpenChannel (OC) 使用一个非均匀页面延迟模型。具体来说，映射到MLC单元的上位位（“上层”页面）的页面比映射到下位位（“下层”页面）的页面具有更高的延迟。例如，下层&#x2F;上层页面的读取时间分别为48&#x2F;64微秒，而写入时间则为900&#x2F;2400微秒。更为复杂的是，每个NAND块中的512个页面并不是以“LuLuLuLu…”的方式均匀交错映射的，而是以特定的方式映射，即“LLLLLLuLLuLLuu…”。其中，页面#0-6是映射到下层页面，页面#7和#10到#8-9是映射到上层页面，其余的页面有“LLuu”的重复模式。</p>
+</li>
+<li><p>“lower bits” 和 “lower” pages 指的是MLC（Multi-Level Cell）NAND闪存中的较低电压状态或较低的存储位。MLC闪存可以在每个单元中存储多个比特，通常是2比特。这些比特可以表示四种不同的电压状态，从而允许存储4个不同的值。</p>
+<p>在MLC中，每个单元有两个比特：一个是“upper bit”（上位比特），另一个是“lower bit”（下位比特）。由于读取和编程的方式，这两个比特可能具有不同的延迟特性。</p>
+<ul>
+<li>“lower pages”：与MLC单元的“lower bits”相关联的页面。</li>
+<li>“upper pages”：与MLC单元的“upper bits”相关联的页面。</li>
+</ul>
+<p>由于MLC的物理和电气特性，通常“upper”页面的读取和写入延迟要比“lower”页面的延迟更高。这是由于MLC的工作机制，特别是在编程和读取多个电压状态时的复杂性。这种差异经常需要在闪存管理和调度策略中进行特别处理，以最大化性能并平衡耐用性。</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><h3 id="increasing-usability-and-extensibility"><a href="#increasing-usability-and-extensibility" class="headerlink" title="increasing usability and extensibility"></a>increasing usability and extensibility</h3><h3 id="FEMU是可以被扩展的："><a href="#FEMU是可以被扩展的：" class="headerlink" title="FEMU是可以被扩展的："></a><code>FEMU</code>是可以被扩展的：</h3><ul>
+<li><p>FTL and GC schemes：<code>FTL</code>使用<code>dynamic mapping</code>。可以用 <code>FEMU</code>对比不同的 <code>garbage collection</code>策略，如 <code>controller-blocking</code>，<code>channel-blocking</code>，<code>plane-blocking</code>。</p>
+</li>
+<li><p>White-box vs. Black-box：FEMU 可以被用来模拟白盒设备，例如<code>OpenChannel SSD</code>，即设备将物理页面地址直接暴露给操作系统，且<code>FTL</code>层被操作系统管理，例如Linux LightNVM。而黑盒设备，如商用SSDs，FTL层驻留在FEMU中，只有逻辑地址被暴露给操作系统。</p>
+</li>
+<li><p>Multi-device support for flash-array research: FEMU可配置为在<code>guest os</code>中显示为多个设备。例如，如果FEMU暴露了4个SSD，在FEMU内部，单个QEMU实例中将有4个单独的NVMe实例和FTL结构（没有重叠通道）。以前的模拟器（VSSIM和LightNVM的QEMU）不支持这一点。</p>
+</li>
+<li><p>Extensible OS-SSD NVMe commands:</p>
+<p>可以为NVMe添加更多的OS-to-SSD 命令。</p>
+</li>
+<li><p>Page-level latency variability:</p>
+</li>
+</ul>
+<p>  FEMU支持页面级别的延迟可变性。</p>
+<ul>
+<li><p>Distributed SSDs: FEMU的多个实例可以很容易地部署在多台机器上（就像运行Linux虚拟机管理程序KVM一样简单），这促进了更大规模的SSD研究。</p>
+</li>
+<li><p>Page-level fault injection: FEMU除了支持性能相关的研究，也支持闪存可靠性的研究。（例如，通过注入页面级损坏和故障，并观察高级软件堆栈的反应）。</p>
+</li>
+<li><p>Limitations: FEMU是DRAM支持的，因此无法模拟大容量SSD。此外，对于崩溃一致性研究，FEMU用户必须手动emu-后期“软”崩溃，因为硬重启将擦除DRAM中的数据。此外，如前所述（§3.2），还有提高准确性的空间。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>​	</p>
+<h2 id="Appendix："><a href="#Appendix：" class="headerlink" title="Appendix："></a>Appendix：</h2><h3 id="一些名词解释："><a href="#一些名词解释：" class="headerlink" title="一些名词解释："></a>一些名词解释：</h3><blockquote>
+<ul>
+<li><p><strong>virtio</strong>：<code>virtio</code> 是一个虚拟化标准，用于提供一种高效、标准化的方式在宿主（host）和虚拟机（guest）之间进行 IO 操作。它是一个设备抽象标准，但不依赖于任何特定的虚拟化环境或物理硬件，通常用于改进网络和磁盘性能。使用 <code>virtio</code>，虚拟机与一个“虚拟化的”设备通信，而不是模拟实际的硬件设备，从而提高性能。</p>
+</li>
+<li><p>**dataplane (或称 data plane)**：数据平面通常指的是网络设备（如路由器或交换机）中处理数据包转发的部分。与之相对的是控制平面，它决定数据如何转发。在虚拟化语境中，当我们谈论 “dataplane”，我们通常指的是为了提高性能而进行优化的数据处理路径，例如 <code>vhost-user</code> 或 <code>dpdk</code> 在 <code>QEMU/KVM</code> 环境中。这些优化路径旨在减少不必要的上下文切换和缓冲，从而提供接近本机的 IO 性能。</p>
+</li>
+<li><p><strong>“trap-and-emulate”</strong> 是虚拟化技术中的一个术语。</p>
+<ol>
+<li><strong>Trap</strong>：在虚拟化中，当虚拟机（guest）尝试执行某些特定的、不能在其权限级别下直接执行的操作时，会触发一个异常或中断。这种异常或中断被称为“陷阱”（trap）。</li>
+<li><strong>Emulate</strong>：一旦产生了这种陷阱，虚拟机监控器（如QEMU、KVM等）会接管控制权，然后在更高的权限级别上模拟或解释执行那些操作，就像真实硬件上的操作一样，但是实际上是通过软件来完成的。</li>
+</ol>
+<p>所以，“trap-and-emulate”意味着：当虚拟机尝试执行某些它没有权限直接执行的操作时，这些操作会被陷阱捕获，并由宿主机上的虚拟机监控器以模拟的方式执行。这是传统虚拟化技术的基本工作原理。</p>
+</li>
+<li><p><strong>rings the doorbell</strong>：“rings the doorbell”是一个比喻，用于描述一种通知或信号机制。在NVMe协议中，当驱动程序想要通知控制器有新的命令已经放入命令队列中，准备被处理时，它会写入一个特定的内存映射输入&#x2F;输出（MMIO）寄存器。这个动作被称为”ringing the doorbell”，就好像是敲门铃一样，通知某人来处理某事。简而言之，当Guest OS的NVMe驱动有IO请求准备发送时，它通过“敲门铃”来通知设备（在这种情况下是QEMU）开始处理这些IO请求。</p>
+</li>
+<li><p>**MMIO:**是 “Memory-Mapped Input&#x2F;Output” 的缩写，翻译为“内存映射输入&#x2F;输出”。在计算机系统中，MMIO 是一种将设备的寄存器映射到主存储器地址空间的技术，这样CPU可以通过访问这个内存地址来读写设备的寄存器，而不是使用专门的I&#x2F;O指令。</p>
+<p>​	当提到“doorbell”是一个 MMIO 操作时，意思是说，为了通知设备有新的IO请求，驱动程序会写入一个特定的内存地址，这个地址实际上是映射到设备寄存器的。然后这个写操作会被设备捕获并做出响应。</p>
+<p>​	“会导致一个昂贵的VM-exit”部分则表示，当虚拟机的Guest OS进行这样的MMIO操作时，它实际上需要从Guest OS切换到宿主机的上下文（在这种情况下是QEMU），这个上下文切换过程是有性能开销的，因此被称为“昂贵”。</p>
+</li>
+<li><p><strong>为什么说：然而，当存储后端是RAM支持的映像时，AIO的开销变得非常显著。</strong></p>
+<p>​	当存储后端是RAM支持的映像时，数据访问速度非常快，因为RAM（随机存取存储器）是计算机中最快的存储介质。与硬盘或SSD相比，从RAM读取或写入数据的延迟是非常低的。</p>
+<p>​	AIO（异步I&#x2F;O）的主要优势是允许系统在等待I&#x2F;O操作完成时进行其他工作，从而提高效率。但这个优势主要在于处理慢速存储设备时更为明显，例如传统硬盘，因为这时I&#x2F;O操作可能需要很长时间。</p>
+<p>​	但是，当后端存储是RAM时，由于RAM的快速响应，同步I&#x2F;O操作的完成时间非常短，几乎可以立即完成。因此，引入AIO的额外开销（如设置和管理异步操作）可能不仅不会提高性能，反而可能导致性能降低。简而言之，为了处理非常快速的RAM操作，引入AIO可能会增加不必要的复杂性和开销，这就是为什么说在这种情况下，AIO的开销变得非常显著。</p>
+</li>
+<li><p><strong>end-to-end IO time</strong>:是指从输入&#x2F;输出操作开始到完成的总时间。在计算机领域中，”端到端”通常指的是一个过程从开始到结束的整个周期。所以，端到端的IO时间是指从IO请求发起（例如，应用程序请求读取或写入数据）到请求被完全处理并得到响应的总时间。这包括了所有中间过程，如数据传输、数据转换、系统调度和任何其他可能的延迟。</p>
+</li>
+<li><p>**Lantency tail:**（延迟尾）指的是在性能测量中，尤其是分布式系统或网络服务中，某些请求的响应时间比大多数请求都要长的那部分请求。在很多场景下，这些高延迟的请求，即使只是很小的一部分，也可能对系统的整体性能和用户体验产生显著的负面影响。</p>
+<p>例如，考虑一个在线服务，其中99%的请求在10毫秒内得到响应，但1%的请求需要1秒。这1%的请求就构成了延迟的尾部。尽管它们的比例很小，但它们的延迟对用户体验产生的负面影响可能与其它99%的请求一样大，甚至更大。</p>
+</li>
+<li><p><strong>Plane</strong>: 在NAND闪存中，一个plane代表存储芯片中的一个独立存储区域。每个plane可以独立地执行读、写和擦除操作。一个NAND芯片可以有一个或多个plane，多plane架构可以提高存储的并行性和性能。</p>
+</li>
+<li><p><strong>Channel</strong>: 通道是连接NAND闪存和控制器之间的接口，用于数据传输。多通道架构允许同时访问多个NAND芯片，从而提高数据读取和写入的速度。每个通道可能连接到一个或多个NAND芯片。</p>
+</li>
+<li><p><strong>MLC：</strong><code>(multi-level Cell)</code>它是一种 NAND 闪存存储技术。<code>MLC</code> 可以在每个存储单元中存储多于一位的数据，通常是2位。这与 <code>SLC (Single-Level Cell)</code> 闪存不同，<code>SLC </code>每个单元只存储1位数据。</p>
+</li>
+<li><p><strong>controller-blocking GC</strong>：这是最具侵入性的GC类型。当垃圾回收在整个存储控制器上进行时，其他所有操作（如读取或写入）都会被阻塞，直到GC完成。这可以对性能产生显著的负面影响，因为它停止了所有其他I&#x2F;O操作。</p>
+</li>
+<li><p><strong>channel-blocking GC</strong>：在这种情况下，当某个特定的通道正在进行垃圾回收时，该通道上的其他操作会被阻塞。但是，其他通道上的操作可以继续进行，从而允许一定程度的并行性。这减少了GC对整体性能的影响，但在被GC阻塞的通道上仍可能会看到性能下降。</p>
+</li>
+<li><p><strong>plane-blocking GC</strong>：这是最具局部性的GC，仅在特定的平面上阻塞操作。其他平面上的操作可以正常进行，使得性能影响最小化。由于仅影响特定的平面，这种方法可能是对性能影响最小的。</p>
+</li>
+<li><p><strong>FTL 指的是“Flash Translation Layer”</strong>。这是固态硬盘（SSD）和其他基于闪存的存储设备中的一个关键组件。FTL 的主要任务是管理如何在物理NAND闪存上存储数据，同时为上层应用提供一个标准的块设备接口。</p>
+<p>以下是 FTL 的主要功能和特点：</p>
+<ol>
+<li><strong>地址转换</strong>：FTL 负责将逻辑块地址（LBA，通常由操作系统提供）转换为物理块地址（PBA），从而隐藏闪存的物理细节。</li>
+<li><strong>Wear Leveling</strong>：由于NAND闪存单元有限的擦除周期（通常是几千到几万次），FTL 通过均匀分布写入和擦除操作来确保所有的闪存块都具有相似的使用寿命。这就是所谓的“wear leveling”。</li>
+<li><strong>Garbage Collection</strong>：当数据被重写或删除时，其旧版本在闪存上不会被立即删除。相反，这些块会被标记为“无效”。FTL 会定期运行垃圾回收，移动有效数据并擦除包含大量无效块的块。</li>
+<li><strong>Bad Block Management</strong>：由于制造缺陷或使用过程中的损耗，NAND闪存可能会有坏块。FTL 负责检测这些坏块并将它们从使用中排除。</li>
+<li><strong>随机到顺序的转换</strong>：闪存优先处理顺序写入，因为它们可以更高效地处理大量的连续数据。FTL 试图将随机写入转化为顺序写入，从而优化性能。</li>
+</ol>
+<p>FTL 的实现和策略可能会因不同的SSD制造商和模型而异。FTL 的效率和策略对SSD的整体性能、寿命和可靠性都有着直接的影响</p>
+</li>
+<li><p><strong>NVMe（Non-Volatile Memory Express）</strong>是一种协议，专为高速固态存储驱动器（如使用NAND闪存的SSDs）设计，以最大化其性能并减少延迟。它被设计为替代旧的AHCI协议，AHCI最初是为HDDs设计的，因此它在管理SSDs时存在一些效率和性能的瓶颈。</p>
+<p>以下是NVMe的主要特点和优势：</p>
+<ol>
+<li><strong>接口</strong>：NVMe通常使用PCI Express (PCIe)总线作为其物理接口，这允许更高的带宽和更低的延迟。</li>
+<li><strong>并行性</strong>：NVMe支持多个命令队列，每个队列可容纳上千个命令。这与AHCI的单一队列形成了对比，AHCI的队列只能容纳32个命令。这种高度的并行性尤其适合现代多核处理器。</li>
+<li><strong>低延迟</strong>：NVMe协议被优化，减少了命令处理的总体开销，这使得存储I&#x2F;O操作的延迟得到了显著的减少。</li>
+<li><strong>针对SSD优化</strong>：与AHCI相比，NVMe专为固态存储优化，省略了许多与旋转硬盘相关的冗余操作。</li>
+<li><strong>扩展性</strong>：NVMe为未来的存储技术，如3D XPoint等，提供了良好的扩展性。</li>
+<li><strong>功能丰富</strong>：NVMe提供了许多先进的特性，如支持多路径、安全擦除和更细粒度的功耗管理。</li>
+</ol>
+<p>由于上述优势，NVMe SSDs在许多应用场景中，特别是需要高性能和低延迟的场景中，已经成为首选。不过，值得注意的是，为了充分利用NVMe SSDs的优势，系统需要一个支持NVMe的主板和操作系统。</p>
+</li>
+</ul>
+</blockquote>
+
       
     </div>
 
@@ -1873,12 +2112,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">75k</span>
+    <span title="站点总字数">86k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:08</span>
+    <span title="站点阅读时长">1:18</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
