@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Kernel Inside!说是要做zns ssd存储开发，但是好像离不开linux内核，既然如此，那就开始愉快的Linux内核之旅吧！ 用到的参考资料包括（其实就是kernel inside 的学习笔记）：  Kernel Inside  深入理解Linux内核  Booting启动！ From the boot loader to the kernelThe Magical Power But">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kernelInside">
+<meta property="og:url" content="http://example.com/2023/11/10/kernelInside/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Kernel Inside!说是要做zns ssd存储开发，但是好像离不开linux内核，既然如此，那就开始愉快的Linux内核之旅吧！ 用到的参考资料包括（其实就是kernel inside 的学习笔记）：  Kernel Inside  深入理解Linux内核  Booting启动！ From the boot loader to the kernelThe Magical Power But">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2010.58.21.png">
+<meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.14.17.png">
+<meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.16.57.png">
+<meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.32.50.png">
+<meta property="article:published_time" content="2023-11-10T10:35:09.000Z">
+<meta property="article:modified_time" content="2023-11-11T03:34:30.573Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2010.58.21.png">
+
+<link rel="canonical" href="http://example.com/2023/11/10/kernelInside/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>kernelInside | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/10/kernelInside/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          kernelInside
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-10 18:35:09" itemprop="dateCreated datePublished" datetime="2023-11-10T18:35:09+08:00">2023-11-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-11 11:34:30" itemprop="dateModified" datetime="2023-11-11T11:34:30+08:00">2023-11-11</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Kernel-Inside"><a href="#Kernel-Inside" class="headerlink" title="Kernel Inside!"></a>Kernel Inside!</h1><p>说是要做<code>zns ssd</code>存储开发，但是好像离不开<code>linux</code>内核，既然如此，那就开始<del>愉快的</del>Linux内核之旅吧！</p>
+<p>用到的参考资料包括（其实就是kernel inside 的学习笔记）：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://0xax.gitbooks.io/linux-insides/content/">Kernel Inside</a> </li>
+<li>深入理解Linux内核</li>
+</ul>
+<h1 id="Booting"><a href="#Booting" class="headerlink" title="Booting"></a>Booting</h1><p>启动！</p>
+<h2 id="From-the-boot-loader-to-the-kernel"><a href="#From-the-boot-loader-to-the-kernel" class="headerlink" title="From the boot loader to the kernel"></a>From the boot loader to the kernel</h2><h3 id="The-Magical-Power-Button-What-happens-next"><a href="#The-Magical-Power-Button-What-happens-next" class="headerlink" title="The Magical Power Button, What happens next?"></a>The Magical Power Button, What happens next?</h3><p>​	当按下开机键后，计算机首先会唤醒<code>cpu</code>，<code>80386</code>及之后的<code>cpu</code>会在其寄存器中定义如下数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IP						0xfff0</span><br><span class="line">CS selector		0xf000</span><br><span class="line">CS base				0xffff0000</span><br></pre></td></tr></table></figure>
+
+<p>​	处理器会在实模式<code>(real mode)</code>下运行</p>
+<blockquote>
+<ul>
+<li><code>real mode</code>：所有的<code>x86</code>机器支持实模式，<code>8086</code>处理器的总线地址有20位，能处理<code>0 - 0xfffff</code>地址空间，但是该处理器的寄存器只有<code>16 bit</code>，只能处理<code>0-0xffff</code>位。</li>
+<li><code>Memory segmentation</code>：使得所有地址空间都可以被访问，内存被分为小的，固定的<code>65536 bytes (64KB) segments</code>。但由于我们无法通过<code>16-bit</code>寻址<code>64KB</code>地址，下面会给出一个解决方法。</li>
+</ul>
+</blockquote>
+<p>因此，一个<code>address</code>包括：<code>a segment selector</code>，<code>offset</code>；物理地址的计算公式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PhysicalAddress = Segment Selector * 16 + Offset</span><br></pre></td></tr></table></figure>
+
+<p>但如果<code>segment selector</code>和<code>offset</code>太大了，就会发生溢出，如下所示</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hex((0xffff &lt;&lt; 4) + 0xffff) = 0x10ffef</span><br></pre></td></tr></table></figure>
+
+<p>由于实模式下只有20位地址位，所以<code>0x10ffef</code>会变成<code>0x00ffef</code>，这叫作<code>A20 line disabled</code>。</p>
+<p>回到开机后的寄存器值：</p>
+<p><code>CS register</code>包含：</p>
+<ul>
+<li><code>the visible segment selector</code></li>
+<li><code>the hidden base address</code></li>
+</ul>
+<p>结合之前定义的<code>CS</code>基址和<code>IP</code>值，<code>CS:IP</code>是<code>0xf000:0xfff0</code>，经过物理地址公式的计算得到<code>0xfff0</code>.</p>
+<p>该物理地址加上基址我们最终得到·存储在 <code>EIP register</code>中的值：<code>0xfffffff0</code>。</p>
+<blockquote>
+<ul>
+<li><code>Extended Instruction Pointer</code>：该寄存器的作用是存储CPU当前正在执行的指令的地址。当CPU执行程序时，EIP寄存器会连续更新，以指向下一条要执行的指令。这对于程序的流程控制至关重要。</li>
+</ul>
+</blockquote>
+<p>得到的值<code>0xfffffff0</code>被叫做复位向量<code>reset vector</code>，该内存地址是CPU在重置后希望找到第一个指令的地方。该内存地址包含一个<code>jump</code>指令，该指令通常指向<code>BIOS(Basic Input/ Output System)</code>入口。看看源代码，我们这里看的是 <a target="_blank" rel="noopener" href="https://www.coreboot.org`src/cpu/x86/16bit/reset16.inc%60%EF%BC%9A">https://www.coreboot.org`src/cpu/x86/16bit/reset16.inc`：</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> .section &quot;.reset&quot;, &quot;ax&quot;, %progbits</span><br><span class="line">    .code16</span><br><span class="line">.globl    _start</span><br><span class="line">_start:</span><br><span class="line">    .byte  0xe9</span><br><span class="line">    .int   _start16bit - ( . + 2 )</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><code>0xe9</code>是<code>jump</code>指令的<code>opcode</code>，目的地址是<code>_start16bit - ( . + 2 )</code>。</p>
+<p>同样，我们能找到之前说的其实地址是如何计算的<code>0xfffffff0 (src/cpu/x86/16bit/reset16.ld):</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">    /* Trigger an error if I have an unuseable start address */</span><br><span class="line">    _bogus = ASSERT(_start16bit &gt;= 0xffff0000, &quot;_start16bit too low. Please report.&quot;);</span><br><span class="line">    _ROMTOP = 0xfffffff0;</span><br><span class="line">    . = _ROMTOP;</span><br><span class="line">    .reset . : &#123;</span><br><span class="line">        *(.reset);</span><br><span class="line">        . = 15;</span><br><span class="line">        BYTE(0x00);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	<code>BIOS</code>启动，在检查完硬件后，<code>BIOS</code>需要找到一个可启动的设备，启动顺序是设定在<code>BIOS</code>中的，当尝试从硬盘中启动时，<code>BIOS</code>需要找到一个启动扇区<code>boot sector</code>。在硬盘上有一个分区叫作主引导记录<code>Main Boot Record</code>，<code>boot sector</code>在该分区的前<code>446</code>个字节，每个扇区有<code>512 bytes</code>，第一个扇区的最后两个字节为<code>0x55, 0xaa</code>，向<code>BIOS</code>说明该设备是可启动的。</p>
+<p>​	下表给出实模式下的内存映射：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table</span><br><span class="line">0x00000400 - 0x000004FF - BIOS Data Area</span><br><span class="line">0x00000500 - 0x00007BFF - Unused</span><br><span class="line">0x00007C00 - 0x00007DFF - Our Bootloader</span><br><span class="line">0x00007E00 - 0x0009FFFF - Unused</span><br><span class="line">0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory</span><br><span class="line">0x000B0000 - 0x000B7777 - Monochrome Video Memory</span><br><span class="line">0x000B8000 - 0x000BFFFF - Color Video Memory</span><br><span class="line">0x000C0000 - 0x000C7FFF - Video ROM BIOS</span><br><span class="line">0x000C8000 - 0x000EFFFF - BIOS Shadow Area</span><br><span class="line">0x000F0000 - 0x000FFFFF - System BIOS</span><br></pre></td></tr></table></figure>
+
+<p>​	之前我们说<code>CPU</code>尝试执行的第一个指令是存储在地址<code>0xffff fff0</code>中的，这比上表的地址大的多。<code>CPU</code>如何访问改地址？在<a target="_blank" rel="noopener" href="https://www.coreboot.org/Developer_Manual/Memory_map">coreboot</a>文档中给出了答案：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0xFFFE_0000 - 0xFFFF_FFFF: 128 kilobyte ROM mapped into address space</span><br></pre></td></tr></table></figure>
+
+<p>​	现在我们知道，<code>BIOS</code>程序是存储在<code>ROM</code>中的。</p>
+<h3 id="Bootloader"><a href="#Bootloader" class="headerlink" title="Bootloader"></a>Bootloader</h3><blockquote>
+<p>​	现在 BIOS 已经选择了一个启动设备，并且将控制权转移给了启动扇区中的代码，在我们的例子中，启动扇区代码是 <a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD">boot.img</a>。因为这段代码只能占用一个扇区，因此非常简单，只做一些必要的初始化，然后就跳转到 GRUB 2’s core image 去执行。 Core image 的代码请参考 <a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD">diskboot.img</a>，一般来说 core image 在磁盘上存储在启动扇区之后到第一个可用分区之前。core image 的初始化代码会把整个 core image （包括 GRUB 2的内核代码和文件系统驱动） 引导到内存中。 引导完成之后，<a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/kern/main.c">grub_main</a>将被调用。</p>
+<p>​	<code>grub_main</code> 初始化控制台，计算模块基地址，设置 root 设备，读取 grub 配置文件，加载模块。最后，将 GRUB 置于 normal 模式，在这个模式中，<code>grub_normal_execute</code>(from <code>grub-core/normal/main.c</code>) 将被调用以完成最后的准备工作，然后显示一个菜单列出所用可用的操作系统。当某个操作系统被选择之后，<code>grub_menu_execute_entry</code> 开始执行，它将调用 GRUB 的 <code>boot</code> 命令，来引导被选中的操作系统。</p>
+<p>​	就像 kernel boot protocol 所描述的，引导程序必须填充 kernel setup header （位于 kernel setup code 偏移 <code>0x01f1</code> 处） 的必要字段。kernel setup header的定义开始于<a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S">arch&#x2F;x86&#x2F;boot&#x2F;header.S</a>：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">	.globl	hdr</span><br><span class="line">hdr:</span><br><span class="line">setup_sects:	.byte 0			/* Filled in by build.c */</span><br><span class="line">root_flags:	.word ROOT_RDONLY</span><br><span class="line">syssize:	.long 0			/* Filled in by build.c */</span><br><span class="line">ram_size:	.word 0			/* Obsolete */</span><br><span class="line">vid_mode:	.word SVGA_MODE</span><br><span class="line">root_dev:	.word 0			/* Filled in by build.c */</span><br><span class="line">boot_flag:	.word 0xAA55</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li><code>.globl hdr</code>: <code>hdr</code>是一个全局符号，全局符号对程序的所有部分都是可见的，同时它也是一个标签，标记当前位置。</li>
+<li>在后续的数据中遵循：<code>varible: .type value</code>，即<code>变量：类型 值</code>的形式。<ul>
+<li><code>boot_flag:	.word 0xAA55</code>：<code>0xAA55</code>是可启动标志。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>​	我们将在<code>kernel boot protocol</code>中看到，内存在加载内核后是如何映射的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">         | Protected-mode kernel  |</span><br><span class="line">100000   +------------------------+</span><br><span class="line">         | I/O memory hole        |</span><br><span class="line">0A0000   +------------------------+</span><br><span class="line">         | Reserved for BIOS      | Leave as much as possible unused</span><br><span class="line">         ~                        ~</span><br><span class="line">         | Command line           | (Can also be below the X+10000 mark)</span><br><span class="line">X+10000  +------------------------+</span><br><span class="line">         | Stack/heap             | For use by the kernel real-mode code.</span><br><span class="line">X+08000  +------------------------+</span><br><span class="line">         | Kernel setup           | The kernel real-mode code.</span><br><span class="line">         | Kernel boot sector     | The kernel legacy boot sector.</span><br><span class="line">       X +------------------------+</span><br><span class="line">         | Boot loader            | &lt;- Boot sector entry point 0x7C00</span><br><span class="line">001000   +------------------------+</span><br><span class="line">         | Reserved for MBR/BIOS  |</span><br><span class="line">000800   +------------------------+</span><br><span class="line">         | Typically used by MBR  |</span><br><span class="line">000600   +------------------------+</span><br><span class="line">         | BIOS use only          |</span><br><span class="line">000000   +------------------------+</span><br></pre></td></tr></table></figure>
+
+<p>当启动程序把控制权交给内核后，内核将从:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X + sizeof(KernelBootSector) + 1</span><br></pre></td></tr></table></figure>
+
+<p><code>X</code>是内核启动扇区被加载的地址。启动程序现在加载<code>Linux</code>内核到内存中去，填充好头文件，然后跳转到相应的内存地址中去，我们去看内核建立程序。</p>
+<h3 id="The-Beginning-of-the-Kernel-Setup-Stage"><a href="#The-Beginning-of-the-Kernel-Setup-Stage" class="headerlink" title="The Beginning of the Kernel Setup Stage"></a>The Beginning of the Kernel Setup Stage</h3><p>​	首先内核需要建立，这包括一些配置，如解压器和一些内存管理相关的东西，仅举几例。完成所有这些事情之后，内核设置部分将解压实际的内核并跳转到它。在代码<code>arch/x86/boot/header.S</code>的 <code>__start</code>标签是<code>setup part</code>。</p>
+<pre><code> 为了能够作为`bootloader`来使用，`header.S`在开始处定义了 `MZ`，并且定义了`PE`头文件。
+</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#ifdef CONFIG_EFI_STUB</span><br><span class="line">	# &quot;MZ&quot;, MS-DOS header</span><br><span class="line">	.word	MZ_MAGIC</span><br><span class="line">#endif</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">#ifdef CONFIG_EFI_STUB</span><br><span class="line">pe_header:</span><br><span class="line">	.long	PE_MAGIC</span><br></pre></td></tr></table></figure>
+
+<p> 之所以代码需要这样写，这个是因为遵从 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">UEFI</a> 的硬件需要这样的结构才能正常引导操作系统。</p>
+<p>除开这些作为<code>bootloader</code>的代码，真正的内核建立从下面开始：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// header.S line 299</span><br><span class="line">_start:</span><br><span class="line">		# Explicitly enter this as bytes, or the assembler</span><br><span class="line">		# tries to generate a 3-byte jump here, which causes</span><br><span class="line">		# everything else to push off to the wrong offset.</span><br><span class="line">		.byte	0xeb		# short (2-byte) jump</span><br><span class="line">		.byte	start_of_setup-1f</span><br></pre></td></tr></table></figure>
+
+<p>bootloader 知道这个开始点，并且直接跳转到该点， 因此， bootloader将不会再从<code>.bstext section</code>开始。因为我们会在<code>arch/x86/boot/setup.ld</code>中看见：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">// arch/x86/boot/setup.ld</span><br><span class="line">//</span><br><span class="line">. = 0;                    // current position</span><br><span class="line">.bstext : &#123; *(.bstext) &#125;  // put .bstext section to position 0</span><br><span class="line">.bsdata : &#123; *(.bsdata) &#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	这段代码是一个连接器脚本的一部分，用于指定程序编译后在内存中的布局。</p>
+<blockquote>
+<ul>
+<li>设置当前位置：<code>. = 0;</code>设置连接器的当前位置指针为0。意味着紧接着的定义段将从内存地址0开始放置。</li>
+<li>定义了<code>.bstext</code>段：<code>.bstext : &#123; *(.bstext) &#125;</code>，这行代码定义了一个名为 <code>.bstext</code> 的段。<code>&#123; *(.bstext) &#125;</code> 的意思是将所有标记为 <code>.bstext</code> 的部分（即汇编代码中用 <code>.section &quot;.bstext&quot;</code> 定义的部分）集中到这个段里。由于当前位置已经设置为0，所以这个段的内容将被放置在内存的开始位置。</li>
+<li>定义了<code>.bsdata</code>段：<code>.bsdata : &#123; *(.bsdata) &#125;</code>：这行代码定义了一个名为 <code>.bsdata</code> 的段，并将所有标记为 <code>.bsdata</code> 的部分集中到这个段里。这允许链接器将这些数据放置在内存中的特定位置。</li>
+</ul>
+</blockquote>
+<p>接着我们来看看内核设置的进入点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">	# offset 512, entry point</span><br><span class="line"></span><br><span class="line">	.globl	_start</span><br><span class="line">_start:</span><br><span class="line">		# Explicitly enter this as bytes, or the assembler</span><br><span class="line">		# tries to generate a 3-byte jump here, which causes</span><br><span class="line">		# everything else to push off to the wrong offset.</span><br><span class="line">		.byte	0xeb		# short (2-byte) jump</span><br><span class="line">		.byte	start_of_setup-1f</span><br><span class="line">1:</span><br><span class="line"></span><br><span class="line">	# Part 2 of the header, from the old setup.S</span><br><span class="line"></span><br><span class="line">		.ascii	&quot;HdrS&quot;		# header signature</span><br><span class="line">		.word	0x020f		# header version number (&gt;= 0x0105)</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中， <code>0xeb</code>是<code>jmp</code>指令的<code>opcode</code>，表示将要跳转到<code>start_of_setup - 1f</code>。</p>
+<p><code>Nf</code>声明：<code>2f</code>表示<code>local label 2</code>。在上述代码中，<code>1f</code>就是后面的<code>1:</code>，这部分代码包含了剩余的<code>setup header</code>，当<code>setup header</code>结束后，我们会看见<code>.entrytext</code>代码段，在<code>start_of_setup</code>标签处开始。	</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># End of setup header #####################################################</span><br><span class="line">	.section &quot;.entrytext&quot;, &quot;ax&quot;</span><br><span class="line">start_of_setup:</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>这是第一段实际运行的代码。当内核配置<code>kernel setup</code>部分收到来自启动程序<code>bootloader</code>，第一个<code>jump</code>指令跳转到离内核起始点<code>(kernel real mode)``0x200 offset</code>。</p>
+<p>终于，代码跳转到了<code>start_of_setup</code>，接着内核会做如下几件事：</p>
+<ul>
+<li><p>保证所有的段寄存器<code>segment register</code>值是相等的。</p>
+</li>
+<li><p>如果需要的话，建配置一个正确的栈。</p>
+</li>
+<li><p>配置bss</p>
+<blockquote>
+<p>BSS（Block Started by Symbol）是一个用来描述可执行文件或内存中的一部分的术语，它代表了一个程序中未初始化的全局变量和静态变量的集合。在程序的二进制文件中，BSS段通常不占用实际的磁盘空间，因为它只是一系列的零值。然而，在程序加载到内存时，操作系统为BSS段分配内存，并将其全部初始化为零。</p>
+<p>BSS段的主要特点和作用包括：</p>
+<ol>
+<li><strong>未初始化的变量</strong>：BSS段用于存储程序中未显式初始化为特定值的全局变量和静态变量。这些变量在程序启动时默认被初始化为零。</li>
+<li><strong>节省空间</strong>：由于BSS段中的数据默认为零，因此在程序的磁盘文件中不需要为它们分配空间。这有助于减少程序的文件大小。</li>
+<li><strong>内存中的初始化</strong>：虽然在磁盘上不占用空间，但在程序加载到内存时，操作系统会为BSS段中的变量分配内存，并将它们初始化为零。</li>
+<li><strong>与数据段的区别</strong>：BSS段通常与数据段（用于存储已初始化的全局变量和静态变量）相区分。数据段中的变量在程序的二进制文件中会占用相应的存储空间，以保持它们的初始值。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>调转到c代码<code>arch/x86/boot/main.c</code></p>
+</li>
+</ul>
+<h3 id="Aligning-the-Segment-Registers"><a href="#Aligning-the-Segment-Registers" class="headerlink" title="Aligning the Segment Registers"></a>Aligning the Segment Registers</h3><p>首先，内核保证，<code>ds</code>和<code>es</code>段寄存器指向同一个地址。接着使用<code>cld</code>指令，清除方向标志<code>direction flag</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># Force %es = %ds</span><br><span class="line">	movw	%ds, %ax</span><br><span class="line">	movw	%ax, %es</span><br><span class="line">	cld</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li><p>Direction Flag：在x86架构的CPU中，direction flag是标志寄存器（Flags Register）的一部分，用于控制字符串操作指令（如 <code>movsb</code>, <code>movsw</code>, <code>movsd</code>, <code>stosb</code>, <code>stosw</code>, <code>stosd</code>, <code>lodsb</code>, <code>lodsw</code>, <code>lodsd</code>, <code>scasb</code>, <code>scasw</code>, <code>scasd</code> 等）的处理方向。</p>
+<p><code>direction flag = 1</code>时，这些操作指令处理字符串时会从高地址向底地址移动。为0时则相反。</p>
+</li>
+<li><p><code>cld</code>指令：<code>clear Direction Flag</code>，会将<code>Direction Flag</code>置为0。</p>
+</li>
+<li><p><code>es</code>：附加段寄存器</p>
+</li>
+<li><p><code>ds</code>：数据段寄存器</p>
+</li>
+<li><p><code>cs</code>：代码段寄存器</p>
+</li>
+<li><p><code>ss</code>：段寄存器</p>
+</li>
+<li><p><code>sp</code>：堆栈指针寄存器</p>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">segment = grub_linux_real_target &gt;&gt; 4;</span><br><span class="line">state.gs = state.fs = state.es = state.ds = state.ss = segment;</span><br><span class="line">state.cs = segment + 0x20; // cs = 0x1000 + 0x20 = 0x1020</span><br></pre></td></tr></table></figure>
+
+<p><code>grub2</code>默认将<code>kernel setup</code>代码，加载到地址<code>0x10000</code>处，而<code>cs</code>是在<code>0x1020</code>处，这是因为代码的执行不会在文件的起始位置开始，而是跳转到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">_start:</span><br><span class="line">    .byte 0xeb</span><br><span class="line">    .byte start_of_setup-1f</span><br></pre></td></tr></table></figure>
+
+<p>这段代码是位于 <code>4d 5a</code>的<code>512 bytes</code>偏移处。之后开始配置栈。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> We will have entered with %cs = %ds+0x20, normalize %cs so</span><br><span class="line"># it is on par with the other segments.</span><br><span class="line">	pushw	%ds</span><br><span class="line">	pushw	$6f</span><br><span class="line">	lretw</span><br></pre></td></tr></table></figure>
+
+<p>这段代码将 <code>ds</code>的值推入栈，紧跟着的是标签<code>6</code>的地址也推入栈，然后执行<code>lretw</code>。当执行<code>lretw</code>时，它将标签<code>6</code>的地址加载到<code>instruction pointer register</code>中，将<code>ds</code>的值加载到<code>cs</code>中。最终，<code>cs</code>和<code>ds</code>的值会保持一致。</p>
+<blockquote>
+<p><code>lretw</code>：这是一个远返回指令，用于从子程序返回。<code>lretw</code> 会从堆栈中弹出返回地址，并将其加载到指令指针寄存器（%ip）中。同时，它还会从堆栈中弹出一个值加载到代码段寄存器（%cs）中，这是远调用和远返回的特性。</p>
+</blockquote>
+<h3 id="Stack-Setup"><a href="#Stack-Setup" class="headerlink" title="Stack Setup"></a>Stack Setup</h3><p>​	几乎所有的配置代码是为了准备实模式下的<code>c</code>语言环境。下一个步骤是判断并纠正<code>ss</code>寄存器的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Force %es = %ds</span><br><span class="line">	movw	%ds, %ax</span><br><span class="line">	movw	%ax, %es</span><br><span class="line">	cld</span><br><span class="line"></span><br><span class="line"># Apparently some ancient versions of LILO invoked the kernel with %ss != %ds,</span><br><span class="line"># which happened to work by accident for the old code.  Recalculate the stack</span><br><span class="line"># pointer if %ss is invalid.  Otherwise leave it alone, LOADLIN sets up the</span><br><span class="line"># stack behind its own code, so we can&#x27;t blindly put it directly past the heap.</span><br><span class="line"></span><br><span class="line">	movw	%ss, %dx</span><br><span class="line">	cmpw	%ax, %dx	# %ds == %ss?</span><br><span class="line">	movw	%sp, %dx 	# move %sp to %dx</span><br></pre></td></tr></table></figure>
+
+<p>我们首先要保证<code>%ss == %ds</code>，会出现三种情况：</p>
+<p><code>ss</code>值合法</p>
+<p><code>ss</code>值不合法且<code>CAN_USE_HEAP</code>被设置。</p>
+<p><code>ss</code>值不合法且<code>CAN_USE_HEAP</code>未被设置。</p>
+<ul>
+<li>当<code>ss</code>值<code>(0x1000)</code>合法时，程序跳转到标签2：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2:	# Now %dx should point to the end of our stack space</span><br><span class="line">	andw	$~3, %dx	# dword align (might as well...)</span><br><span class="line">	jnz	3f					# jump if not zero</span><br><span class="line">	movw	$0xfffc, %dx	# Make sure we&#x27;re not zero</span><br><span class="line">3:	movw	%ax, %ss</span><br><span class="line">	movzwl	%dx, %esp	# Clear upper half of %esp</span><br><span class="line">	sti			# Now we should have a working stack</span><br></pre></td></tr></table></figure>
+
+<p>​	首先将3取反得到<code>1111 1111 1111 1111 1111 1111 1111 1100</code> 之后和<code>%dx</code>做与运算，这将使 <code>%dx</code>的最后两位为0，以达到<code>dword align</code>双字对齐。即如果一个地址是4的倍数，我们就可以说它是双字对齐的。接着判断<code>andw</code>操作后的结果是否为0。如果为0，我们要将<code>%dx</code>的值设置为<code>0xfffc</code>（这是在 <code>64KB segment</code> 下的最大按四字对齐的地址）以保证<code>%dx</code>不为0。反之直接跳转到标签3。</p>
+<p>​	标签3将<code>%ax</code>的值赋值给<code>%ss</code>。得到一个正确的栈：</p>
+<p>​	<img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2010.58.21.png" alt="截屏2023-11-11 10.58.21"></p>
+<ul>
+<li>当<code>ss</code>值不合法且<code>CAN_USE_HEAP</code>被设置</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Invalid %ss, make up a new stack</span><br><span class="line">	movw	$_end, %dx</span><br><span class="line">	testb	$CAN_USE_HEAP, loadflags</span><br><span class="line">	jz	1f</span><br><span class="line">	movw	heap_end_ptr, %dx</span><br><span class="line">1:	addw	$STACK_SIZE, %dx</span><br><span class="line">jnc	2f</span><br><span class="line">xorw	%dx, %dx	# Prevent wraparound</span><br></pre></td></tr></table></figure>
+
+<p>我们首先将<code>$_end</code>赋值给 <code>%dx</code>，然后检查 <code>loadflag</code>中的 <code> $CAN_USE_HEAP</code>位。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L320">loadflags</a> is a bitmask header defined as:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LOADED_HIGH     (1&lt;&lt;0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> QUIET_FLAG      (1&lt;&lt;5)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> KEEP_SEGMENTS   (1&lt;&lt;6)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CAN_USE_HEAP    (1&lt;&lt;7)</span></span><br></pre></td></tr></table></figure>
+
+<p>我们在<code>boot protocol</code>中了解到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Field name: loadflags</span><br><span class="line"></span><br><span class="line">  This field is a bitmask.</span><br><span class="line"></span><br><span class="line">  Bit 7 (write): CAN_USE_HEAP</span><br><span class="line">    Set this bit to 1 to indicate that the value entered in the</span><br><span class="line">    heap_end_ptr is valid.  If this field is clear, some setup code</span><br><span class="line">    functionality will be disabled.</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>因此，如果<code>CAN_USE_HEAP</code>为1时 ，代表<code>heap_end_ptr</code>是合法的（指向栈底：<code>_end</code>）。然后将<code>%dx</code>加上一个<code>$STACK_SIZE</code>（这可能使得<code>%dx</code>指向栈顶）。如果没有溢出，则跳转到标签2，继续配置一个正确的栈。</p>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.14.17.png" alt="截屏2023-11-11 11.14.17"></p>
+<ul>
+<li>当<code>ss</code>值不合法且<code>CAN_USE_HEAP</code>未被设置。那就只能用一个最小的栈，大小为from <code>_end</code> to <code>_end + STACK_SIZE</code></li>
+</ul>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.16.57.png" alt="截屏2023-11-11 11.16.57"></p>
+<h3 id="BSS-Setup"><a href="#BSS-Setup" class="headerlink" title="BSS Setup"></a>BSS Setup</h3><p>在我们能跳向<code>main C code</code>之前，还有两个步骤需要配置，一个是配置<code>BSS</code>，第二个是检查<code>magic</code>签名。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Check signature at end of setup</span><br><span class="line">	cmpl	$0x5a5aaa55, setup_sig</span><br><span class="line">	jne	setup_bad</span><br></pre></td></tr></table></figure>
+
+<p>检查签名，如果不对，会报告一个<code>fatal error</code>。</p>
+<p>签名匹配后，我们拥有了正确的段寄存器和栈，现在只需要配置正确的<code>BSS</code>段就可以跳转到<code>C</code>代码了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># Zero the bss</span><br><span class="line">	movw	$__bss_start, %di</span><br><span class="line">	movw	$_end+3, %cx</span><br><span class="line">	xorl	%eax, %eax</span><br><span class="line">	subw	%di, %cx</span><br><span class="line">	shrw	$2, %cx</span><br><span class="line">	rep; stosl</span><br></pre></td></tr></table></figure>
+
+<p><code>__bss_start</code>的地址赋值给<code>%di</code>，接着<code>__end + 3</code>的结果赋值给<code>%cx</code>。通过异或操作清空<code>%eax</code>的值。计算<code>cx -di</code>得到<code>bss section</code>的大小并存储到<code>cx</code>中。 <code>cx</code>除以4（右移2位）并重复执行<code>stosl</code>，该命令将持续把<code>eax</code>中的值（这里是0）存到<code>di</code>指向的地址中去，并将<code>di</code>的值增加4（这也是为什么<code>cx</code>要除以4的原因）。直到<code>cx</code>的值递减到0。以上的操作将<code>BSS section</code>的所有内存赋值为0：</p>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.32.50.png" alt="截屏2023-11-11 11.32.50"></p>
+<h3 id="Jump-to-main"><a href="#Jump-to-main" class="headerlink" title="Jump to main"></a>Jump to main</h3><p>现在我们跳转到主函数，<code>arch/x86/boot/main.c</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Jump to C code (should not return)</span><br><span class="line">	calll	main</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/31/NVMeBaseSpecStudy/" rel="prev" title="NVMeBaseSpecStudy">
+      <i class="fa fa-chevron-left"></i> NVMeBaseSpecStudy
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-Inside"><span class="nav-number">1.</span> <span class="nav-text">Kernel Inside!</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Booting"><span class="nav-number">2.</span> <span class="nav-text">Booting</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#From-the-boot-loader-to-the-kernel"><span class="nav-number">2.1.</span> <span class="nav-text">From the boot loader to the kernel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#The-Magical-Power-Button-What-happens-next"><span class="nav-number">2.1.1.</span> <span class="nav-text">The Magical Power Button, What happens next?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bootloader"><span class="nav-number">2.1.2.</span> <span class="nav-text">Bootloader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-Beginning-of-the-Kernel-Setup-Stage"><span class="nav-number">2.1.3.</span> <span class="nav-text">The Beginning of the Kernel Setup Stage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Aligning-the-Segment-Registers"><span class="nav-number">2.1.4.</span> <span class="nav-text">Aligning the Segment Registers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Stack-Setup"><span class="nav-number">2.1.5.</span> <span class="nav-text">Stack Setup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BSS-Setup"><span class="nav-number">2.1.6.</span> <span class="nav-text">BSS Setup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jump-to-main"><span class="nav-number">2.1.7.</span> <span class="nav-text">Jump to main</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不舍昼夜</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:51</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

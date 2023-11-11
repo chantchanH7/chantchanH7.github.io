@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Framewave tutorial安装：​	去官网下载压缩包，解压后打开readme按照readme里面的步骤来就好了。  提示：readme里面的ExampleDir直接换成绝对路径。 提示：后面那个export操作笔者没做出来，不过大概意思是把这个链接放到全局链接里去  Framewave(FW)是做什么的：​	Framewave (FW) is a collection of librar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="framewave_study">
+<meta property="og:url" content="http://example.com/2023/10/24/framewave-study/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Framewave tutorial安装：​	去官网下载压缩包，解压后打开readme按照readme里面的步骤来就好了。  提示：readme里面的ExampleDir直接换成绝对路径。 提示：后面那个export操作笔者没做出来，不过大概意思是把这个链接放到全局链接里去  Framewave(FW)是做什么的：​	Framewave (FW) is a collection of librar">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-10-24T11:49:26.000Z">
+<meta property="article:modified_time" content="2023-10-25T11:00:37.305Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2023/10/24/framewave-study/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>framewave_study | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/24/framewave-study/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          framewave_study
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-10-24 19:49:26" itemprop="dateCreated datePublished" datetime="2023-10-24T19:49:26+08:00">2023-10-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-25 19:00:37" itemprop="dateModified" datetime="2023-10-25T19:00:37+08:00">2023-10-25</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Framewave-tutorial"><a href="#Framewave-tutorial" class="headerlink" title="Framewave tutorial"></a>Framewave tutorial</h1><h2 id="安装："><a href="#安装：" class="headerlink" title="安装："></a>安装：</h2><p>​	去官网下载压缩包，解压后打开<code>readme</code>按照readme里面的步骤来就好了。</p>
+<ul>
+<li>提示：<code>readme</code>里面的<code>ExampleDir</code>直接换成绝对路径。</li>
+<li>提示：后面那个<code>export</code>操作笔者没做出来，不过大概意思是把这个链接放到全局链接里去</li>
+</ul>
+<h2 id="Framewave-FW-是做什么的："><a href="#Framewave-FW-是做什么的：" class="headerlink" title="Framewave(FW)是做什么的："></a>Framewave(FW)是做什么的：</h2><p>​	Framewave (FW) is a collection of libraries that contain highly-optimized functions for use in a variety of programming domains. All implementations of the libraries provide C and C++ programmers ANSI C style interfaces.</p>
+<p>​	Framewave consists of the following libraries:</p>
+<ul>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_010.html#fw_section_010">Base Library</a> functions are essential for primary tasks such as memory allocation and functions that manage the performance of other library functions.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_020.html#fw_section_020">Image Processing Library</a> functions perform a variety of tasks related to image processing.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_030.html#fw_section_030">JPEG Library</a> functions perform a variety of tasks related to Joint Photographic Experts Group image manipulation.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_040.html#fw_section_040">Signal Processing Library</a> functions perform a variety of tasks related to signal processing.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_050.html#fw_section_050">Video Library</a> functions perform video manipulation, encoding and decoding.</li>
+</ul>
+<h1 id="RTFM！！！！！"><a href="#RTFM！！！！！" class="headerlink" title="RTFM！！！！！"></a>RTFM！！！！！</h1><p>​	现在的任务就是读手册，手册里写的很清楚了！！！</p>
+<p>​	</p>
+<h2 id="Base-Library："><a href="#Base-Library：" class="headerlink" title="Base Library："></a>Base Library：</h2><p>​	This chapter provides an overview of the information contained in the functional descriptions. Base library functional descriptions include the following types of information.</p>
+<h3 id="Data-Structures"><a href="#Data-Structures" class="headerlink" title="Data Structures"></a>Data Structures</h3><ul>
+<li><strong>FwLibraryVersion</strong> Library version information.</li>
+<li><strong>FwRoundMode</strong> Rounding mode used in data type conversion.</li>
+<li><strong>FwWinType</strong> Type of window used to generate FIR filter coefficients.</li>
+</ul>
+<h3 id="Enumerator"><a href="#Enumerator" class="headerlink" title="Enumerator"></a>Enumerator</h3><ul>
+<li><strong>FwBool</strong> Type of Boolean values.</li>
+<li><strong>FwCmpOp</strong> Type of comparison operation.</li>
+<li><strong>FwCpuType</strong> Type of CPU with presence of streaming SIMD extensions.</li>
+<li><strong>FwHintAlgorithm</strong> Hint to favor speed or accuracy.</li>
+</ul>
+<h3 id="Parameter-Glossary"><a href="#Parameter-Glossary" class="headerlink" title="Parameter Glossary"></a>Parameter Glossary</h3><ul>
+<li><em>StsCode</em> Specifies the status code used by the FwStatus function</li>
+<li><em>alignBytes</em> Specifies the number of bytes for alignment, must be a power of 2. NULL is returned if the value is less than 2.</li>
+<li><em>cpu</em> Specifies a CPU type.</li>
+<li><em>length</em> Specifies a number of bytes to be allocated.</li>
+<li><em>numThr</em>  Specifies the maximum number of threads that can be used by any Framewave function.</li>
+<li><em>param</em> Specifies some parameter.</li>
+<li><em>ptr</em>  Pointer to a memory buffer.</li>
+<li><em>workFn</em> Specifies work function.</li>
+</ul>
+<h3 id="Core-Function"><a href="#Core-Function" class="headerlink" title="Core Function:"></a>Core Function:</h3><p>​	好像被标上<code>This function is reserved for FW internal use.</code>（此功能保留给FW内部使用）和程序员的关系不大。</p>
+<ul>
+<li><h4 id="GetStatusString"><a href="#GetStatusString" class="headerlink" title="GetStatusString"></a>GetStatusString</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/* </span><br><span class="line"> *	获取状态信息字符串</span><br><span class="line"> *  StsCode 指定FwStatus函数使用的状态代码。</span><br><span class="line"> *	返回一个字符串，该字符串描述了任何FwStatus枚举整数的含义。</span><br><span class="line"> */</span><br><span class="line">const char * fwGetStatusString ( FwStatus StsCode );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetCpuType"><a href="#GetCpuType" class="headerlink" title="GetCpuType"></a>GetCpuType</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	获取 CPU 类型</span><br><span class="line"> *	返回存在的SSE支持级别。</span><br><span class="line"> *  它可用于识别CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwCpuType fwGetCpuType();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetCpuClocks"><a href="#GetCpuClocks" class="headerlink" title="GetCpuClocks"></a>GetCpuClocks</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 获取 CPU 时钟周期</span><br><span class="line"> * Fw64u 表示 64位 unsigned int 类型</span><br><span class="line"> * 此功能返回自CPU开机以来经过的CPU时钟周期数。</span><br><span class="line"> * 可以通过在两个不同点调用函数，然后从第二个返回值中减去第一个返回值来计时代码段。</span><br><span class="line">*/</span><br><span class="line">Fw64u fwGetCpuClocks();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="StaticInit"><a href="#StaticInit" class="headerlink" title="StaticInit"></a>StaticInit</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 初始化为适当的CPU类型</span><br><span class="line"> * 此功能初始化FW内部调度器，</span><br><span class="line"> * 以使用最合适的CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwStatus fwStaticInit();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="StaticInitCpu"><a href="#StaticInitCpu" class="headerlink" title="StaticInitCpu"></a>StaticInitCpu</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	初始化为指定的CPU类型</span><br><span class="line"> *  参数cpu： 初始化为指定的CPU类型</span><br><span class="line"> *	此函数初始化FW内部调度器以使用指定的CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwStaticInitCpu	(	FwCpuType cpu );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="SetNumThreads"><a href="#SetNumThreads" class="headerlink" title="SetNumThreads"></a>SetNumThreads</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *  设置线程数</span><br><span class="line"> *  参数numThr：指定任何Framewave函数可以使用的最大线程数。</span><br><span class="line"> *  此函数定义了任何FW函数可以使用的最大线程数。将numThr设置为1以关闭线程。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwSetNumThreads	(	unsigned int numThr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetNumThreads"><a href="#GetNumThreads" class="headerlink" title="GetNumThreads"></a>GetNumThreads</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	获取线程数</span><br><span class="line"> *	此函数返回任何FW函数可以使用的最大线程数。</span><br><span class="line">*/</span><br><span class="line">Fw32u	 	fwGetNumThreads	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h3 id="Allocate-memory"><a href="#Allocate-memory" class="headerlink" title="Allocate memory"></a>Allocate memory</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	分配空间</span><br><span class="line"> *	参数length:	指定分配的字节数量</span><br><span class="line"> *	此函数分配一个长度字节的内存缓冲区，并返回一个指针。</span><br><span class="line">*/</span><br><span class="line">void *	 	fwMalloc	(	int length );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="Free"><a href="#Free" class="headerlink" title="Free"></a>Free</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	释放空间</span><br><span class="line"> *	ptr	 	Pointer to a memory buffer.</span><br><span class="line"> *	此函数释放ptr指向的内存缓冲区。</span><br><span class="line">*/</span><br><span class="line">void	 	fwFree	(	void * ptr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="AlignPtr"><a href="#AlignPtr" class="headerlink" title="AlignPtr"></a>AlignPtr</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	对齐缓冲区</span><br><span class="line"> *	alignBytes	指定对齐的字节数，必须是2的幂。如果值小于2，则返回NULL。 </span><br><span class="line"> *  ptr	指向内存缓冲区的指针。</span><br><span class="line"> *	此函数将ptr指向的缓冲区对齐到指定的对齐边界。</span><br><span class="line"> */</span><br><span class="line"> void *	 	fwAlignPtr	(	void * ptr, int alignBytes );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="SetNumThreads-local"><a href="#SetNumThreads-local" class="headerlink" title="SetNumThreads_local"></a>SetNumThreads_local</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	设置局部的线程数量</span><br><span class="line"> *	numThr	指定任何Framewave函数可以使用的最大线程数。</span><br><span class="line"> *	此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwSetNumThreads_local	(	unsigned int numThr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	运行？</span><br><span class="line"> *	param	 	Specifies some parameter.</span><br><span class="line"> *	workFn	 	Specifies work function.</span><br><span class="line"> * 	此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">void	 	fwRun	(	WorkFn workFn, void* param );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="Wait"><a href="#Wait" class="headerlink" title="Wait"></a>Wait</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	等待</span><br><span class="line"> *  此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">void	 	fwWait	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetInitType"><a href="#GetInitType" class="headerlink" title="GetInitType"></a>GetInitType</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	GetInitType</span><br><span class="line"> *	此功能保留给FW内部使用</span><br><span class="line">*/</span><br><span class="line">int	 	fwGetInitType	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="BaseData"><a href="#BaseData" class="headerlink" title="BaseData"></a>BaseData</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	BaseData</span><br><span class="line"> *	This function is reserved for FW internal use.</span><br><span class="line">*/</span><br><span class="line">void *	 	fwBaseData	(	  );</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Signal-Processing-Library"><a href="#Signal-Processing-Library" class="headerlink" title="Signal Processing Library:"></a>Signal Processing Library:</h2><p>​	这个库里面的函数大概就是本次作业的重点了，大部分是关于向量加减乘除法的，现在我们看着lab1的代码，直接在手册中找到对应的代码进行替换就可以了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">fwsCosh_64f_A53					  MT</span><br><span class="line">fwsAddC_64f_I							MT</span><br><span class="line">fwsMalloc_64f					not	MT</span><br><span class="line">fwsAdd_64f								MT</span><br><span class="line">fwsMulC_64f_I							MT</span><br><span class="line">fwsSqrt_64f								MT</span><br><span class="line">fwsFree								not	MT</span><br><span class="line">fwsThreshold_LT_64f				MT</span><br><span class="line">fwSetNumThreads				not	MT</span><br><span class="line">fwsDivC_64f_I							MT</span><br><span class="line">fwsCopy_64fc							MT</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/20/parallelComputingLab/" rel="prev" title="parallelComputingLab">
+      <i class="fa fa-chevron-left"></i> parallelComputingLab
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/31/NVMeBaseSpecStudy/" rel="next" title="NVMeBaseSpecStudy">
+      NVMeBaseSpecStudy <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Framewave-tutorial"><span class="nav-number">1.</span> <span class="nav-text">Framewave tutorial</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">安装：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Framewave-FW-%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">Framewave(FW)是做什么的：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RTFM%EF%BC%81%EF%BC%81%EF%BC%81%EF%BC%81%EF%BC%81"><span class="nav-number">2.</span> <span class="nav-text">RTFM！！！！！</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Base-Library%EF%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">Base Library：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-Structures"><span class="nav-number">2.1.1.</span> <span class="nav-text">Data Structures</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Enumerator"><span class="nav-number">2.1.2.</span> <span class="nav-text">Enumerator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Parameter-Glossary"><span class="nav-number">2.1.3.</span> <span class="nav-text">Parameter Glossary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Core-Function"><span class="nav-number">2.1.4.</span> <span class="nav-text">Core Function:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GetStatusString"><span class="nav-number">2.1.4.1.</span> <span class="nav-text">GetStatusString</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GetCpuType"><span class="nav-number">2.1.4.2.</span> <span class="nav-text">GetCpuType</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GetCpuClocks"><span class="nav-number">2.1.4.3.</span> <span class="nav-text">GetCpuClocks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#StaticInit"><span class="nav-number">2.1.4.4.</span> <span class="nav-text">StaticInit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#StaticInitCpu"><span class="nav-number">2.1.4.5.</span> <span class="nav-text">StaticInitCpu</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SetNumThreads"><span class="nav-number">2.1.4.6.</span> <span class="nav-text">SetNumThreads</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GetNumThreads"><span class="nav-number">2.1.4.7.</span> <span class="nav-text">GetNumThreads</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Allocate-memory"><span class="nav-number">2.1.5.</span> <span class="nav-text">Allocate memory</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Free"><span class="nav-number">2.1.5.1.</span> <span class="nav-text">Free</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AlignPtr"><span class="nav-number">2.1.5.2.</span> <span class="nav-text">AlignPtr</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SetNumThreads-local"><span class="nav-number">2.1.5.3.</span> <span class="nav-text">SetNumThreads_local</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RUN"><span class="nav-number">2.1.5.4.</span> <span class="nav-text">RUN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Wait"><span class="nav-number">2.1.5.5.</span> <span class="nav-text">Wait</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GetInitType"><span class="nav-number">2.1.5.6.</span> <span class="nav-text">GetInitType</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BaseData"><span class="nav-number">2.1.5.7.</span> <span class="nav-text">BaseData</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Signal-Processing-Library"><span class="nav-number">2.2.</span> <span class="nav-text">Signal Processing Library:</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不舍昼夜</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:51</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

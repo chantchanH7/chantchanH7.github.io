@@ -22,19 +22,21 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="不舍昼夜">
+  <meta name="description" content="NVM Express Base Specification 阅读简介：NVM Express interface 允许主机软件和 NVM subsystem 进行通信。NVMe familty of Specifications： NVM Express Base Specification 定义了主机软件通过各种基于内存的传输和基于消息的传输与非易失性内存子系统通信的协议。 NVM Expre">
 <meta property="og:type" content="article">
-<meta property="og:title" content="learnCTheHardWay">
-<meta property="og:url" content="http://example.com/2023/08/10/learnCTheHardWay/index.html">
+<meta property="og:title" content="NVMeBaseSpecStudy">
+<meta property="og:url" content="http://example.com/2023/10/31/NVMeBaseSpecStudy/index.html">
 <meta property="og:site_name" content="talk is cheap, show me the code.">
-<meta property="og:description" content="不舍昼夜">
+<meta property="og:description" content="NVM Express Base Specification 阅读简介：NVM Express interface 允许主机软件和 NVM subsystem 进行通信。NVMe familty of Specifications： NVM Express Base Specification 定义了主机软件通过各种基于内存的传输和基于消息的传输与非易失性内存子系统通信的协议。 NVM Expre">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-08-10T08:02:51.000Z">
-<meta property="article:modified_time" content="2023-08-10T08:02:51.143Z">
+<meta property="og:image" content="http://example.com/images/NVMeBaseSpecStudy/%E6%88%AA%E5%B1%8F2023-10-31%2009.16.04.png">
+<meta property="article:published_time" content="2023-10-31T01:11:16.000Z">
+<meta property="article:modified_time" content="2023-10-31T01:19:18.324Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/NVMeBaseSpecStudy/%E6%88%AA%E5%B1%8F2023-10-31%2009.16.04.png">
 
-<link rel="canonical" href="http://example.com/2023/08/10/learnCTheHardWay/">
+<link rel="canonical" href="http://example.com/2023/10/31/NVMeBaseSpecStudy/">
 
 
 <script id="page-configurations">
@@ -47,7 +49,7 @@
   };
 </script>
 
-  <title>learnCTheHardWay | talk is cheap, show me the code.</title>
+  <title>NVMeBaseSpecStudy | talk is cheap, show me the code.</title>
   
 
 
@@ -167,7 +169,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/10/learnCTheHardWay/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/31/NVMeBaseSpecStudy/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/touxiang.JPG">
@@ -180,7 +182,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          learnCTheHardWay
+          NVMeBaseSpecStudy
         </h1>
 
         <div class="post-meta">
@@ -189,8 +191,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2023-08-10 16:02:51" itemprop="dateCreated datePublished" datetime="2023-08-10T16:02:51+08:00">2023-08-10</time>
+              <time title="创建时间：2023-10-31 09:11:16 / 修改时间：09:19:18" itemprop="dateCreated datePublished" datetime="2023-10-31T09:11:16+08:00">2023-10-31</time>
             </span>
 
           
@@ -206,7 +209,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
+              <span>423</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -225,7 +228,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h1 id="NVM-Express-Base-Specification-阅读"><a href="#NVM-Express-Base-Specification-阅读" class="headerlink" title="NVM Express Base Specification 阅读"></a>NVM Express Base Specification 阅读</h1><h2 id="简介："><a href="#简介：" class="headerlink" title="简介："></a>简介：</h2><h5 id="NVM-Express-interface-允许主机软件和-NVM-subsystem-进行通信。"><a href="#NVM-Express-interface-允许主机软件和-NVM-subsystem-进行通信。" class="headerlink" title="NVM Express interface 允许主机软件和 NVM subsystem 进行通信。"></a>NVM Express interface 允许主机软件和 NVM subsystem 进行通信。</h5><h2 id="NVMe-familty-of-Specifications："><a href="#NVMe-familty-of-Specifications：" class="headerlink" title="NVMe familty of Specifications："></a>NVMe familty of Specifications：</h2><h2 id=""><a href="#" class="headerlink" title=""></a><img src="/../images/NVMeBaseSpecStudy/%E6%88%AA%E5%B1%8F2023-10-31%2009.16.04.png" alt="截屏2023-10-31 09.16.04"></h2><ul>
+<li>NVM Express Base Specification 定义了主机软件通过各种基于内存的传输和基于消息的传输与非易失性内存子系统通信的协议。</li>
+<li>NVM Express Management Interface  Specification 为所有NVM Express子系统定义了一个可选的管理接口。</li>
+<li>NVM Express I&#x2F;O Command Set specifications 定义扩展NVM Express Base规范的数据结构、功能、日志页面、命令和状态值。</li>
+<li>NVM Express Transport specifications 定义NVMe协议的绑定，包括控制器属性对特定传输的绑定。</li>
+</ul>
+
     </div>
 
     
@@ -240,12 +249,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/08/10/regularExpression/" rel="prev" title="regularExpression">
-      <i class="fa fa-chevron-left"></i> regularExpression
+    <a href="/2023/10/24/framewave-study/" rel="prev" title="framewave_study">
+      <i class="fa fa-chevron-left"></i> framewave_study
     </a></div>
       <div class="post-nav-item">
-    <a href="/2023/08/15/digital-design-and-computer-architecture/" rel="next" title="digital design and computer architecture">
-      digital design and computer architecture <i class="fa fa-chevron-right"></i>
+    <a href="/2023/11/10/kernelInside/" rel="next" title="kernelInside">
+      kernelInside <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -305,6 +314,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#NVM-Express-Base-Specification-%E9%98%85%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">NVM Express Base Specification 阅读</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">简介：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#NVM-Express-interface-%E5%85%81%E8%AE%B8%E4%B8%BB%E6%9C%BA%E8%BD%AF%E4%BB%B6%E5%92%8C-NVM-subsystem-%E8%BF%9B%E8%A1%8C%E9%80%9A%E4%BF%A1%E3%80%82"><span class="nav-number">1.1.0.0.1.</span> <span class="nav-text">NVM Express interface 允许主机软件和 NVM subsystem 进行通信。</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NVMe-familty-of-Specifications%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">NVMe familty of Specifications：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link"><span class="nav-number">1.3.</span> <span class="nav-text"></span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

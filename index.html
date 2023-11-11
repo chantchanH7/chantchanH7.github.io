@@ -164,6 +164,521 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/10/kernelInside/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/11/10/kernelInside/" class="post-title-link" itemprop="url">kernelInside</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-10 18:35:09" itemprop="dateCreated datePublished" datetime="2023-11-10T18:35:09+08:00">2023-11-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-11 11:34:30" itemprop="dateModified" datetime="2023-11-11T11:34:30+08:00">2023-11-11</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Kernel-Inside"><a href="#Kernel-Inside" class="headerlink" title="Kernel Inside!"></a>Kernel Inside!</h1><p>说是要做<code>zns ssd</code>存储开发，但是好像离不开<code>linux</code>内核，既然如此，那就开始<del>愉快的</del>Linux内核之旅吧！</p>
+<p>用到的参考资料包括（其实就是kernel inside 的学习笔记）：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://0xax.gitbooks.io/linux-insides/content/">Kernel Inside</a> </li>
+<li>深入理解Linux内核</li>
+</ul>
+<h1 id="Booting"><a href="#Booting" class="headerlink" title="Booting"></a>Booting</h1><p>启动！</p>
+<h2 id="From-the-boot-loader-to-the-kernel"><a href="#From-the-boot-loader-to-the-kernel" class="headerlink" title="From the boot loader to the kernel"></a>From the boot loader to the kernel</h2><h3 id="The-Magical-Power-Button-What-happens-next"><a href="#The-Magical-Power-Button-What-happens-next" class="headerlink" title="The Magical Power Button, What happens next?"></a>The Magical Power Button, What happens next?</h3><p>​	当按下开机键后，计算机首先会唤醒<code>cpu</code>，<code>80386</code>及之后的<code>cpu</code>会在其寄存器中定义如下数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IP						0xfff0</span><br><span class="line">CS selector		0xf000</span><br><span class="line">CS base				0xffff0000</span><br></pre></td></tr></table></figure>
+
+<p>​	处理器会在实模式<code>(real mode)</code>下运行</p>
+<blockquote>
+<ul>
+<li><code>real mode</code>：所有的<code>x86</code>机器支持实模式，<code>8086</code>处理器的总线地址有20位，能处理<code>0 - 0xfffff</code>地址空间，但是该处理器的寄存器只有<code>16 bit</code>，只能处理<code>0-0xffff</code>位。</li>
+<li><code>Memory segmentation</code>：使得所有地址空间都可以被访问，内存被分为小的，固定的<code>65536 bytes (64KB) segments</code>。但由于我们无法通过<code>16-bit</code>寻址<code>64KB</code>地址，下面会给出一个解决方法。</li>
+</ul>
+</blockquote>
+<p>因此，一个<code>address</code>包括：<code>a segment selector</code>，<code>offset</code>；物理地址的计算公式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PhysicalAddress = Segment Selector * 16 + Offset</span><br></pre></td></tr></table></figure>
+
+<p>但如果<code>segment selector</code>和<code>offset</code>太大了，就会发生溢出，如下所示</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hex((0xffff &lt;&lt; 4) + 0xffff) = 0x10ffef</span><br></pre></td></tr></table></figure>
+
+<p>由于实模式下只有20位地址位，所以<code>0x10ffef</code>会变成<code>0x00ffef</code>，这叫作<code>A20 line disabled</code>。</p>
+<p>回到开机后的寄存器值：</p>
+<p><code>CS register</code>包含：</p>
+<ul>
+<li><code>the visible segment selector</code></li>
+<li><code>the hidden base address</code></li>
+</ul>
+<p>结合之前定义的<code>CS</code>基址和<code>IP</code>值，<code>CS:IP</code>是<code>0xf000:0xfff0</code>，经过物理地址公式的计算得到<code>0xfff0</code>.</p>
+<p>该物理地址加上基址我们最终得到·存储在 <code>EIP register</code>中的值：<code>0xfffffff0</code>。</p>
+<blockquote>
+<ul>
+<li><code>Extended Instruction Pointer</code>：该寄存器的作用是存储CPU当前正在执行的指令的地址。当CPU执行程序时，EIP寄存器会连续更新，以指向下一条要执行的指令。这对于程序的流程控制至关重要。</li>
+</ul>
+</blockquote>
+<p>得到的值<code>0xfffffff0</code>被叫做复位向量<code>reset vector</code>，该内存地址是CPU在重置后希望找到第一个指令的地方。该内存地址包含一个<code>jump</code>指令，该指令通常指向<code>BIOS(Basic Input/ Output System)</code>入口。看看源代码，我们这里看的是 <a target="_blank" rel="noopener" href="https://www.coreboot.org`src/cpu/x86/16bit/reset16.inc%60%EF%BC%9A">https://www.coreboot.org`src/cpu/x86/16bit/reset16.inc`：</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> .section &quot;.reset&quot;, &quot;ax&quot;, %progbits</span><br><span class="line">    .code16</span><br><span class="line">.globl    _start</span><br><span class="line">_start:</span><br><span class="line">    .byte  0xe9</span><br><span class="line">    .int   _start16bit - ( . + 2 )</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><code>0xe9</code>是<code>jump</code>指令的<code>opcode</code>，目的地址是<code>_start16bit - ( . + 2 )</code>。</p>
+<p>同样，我们能找到之前说的其实地址是如何计算的<code>0xfffffff0 (src/cpu/x86/16bit/reset16.ld):</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">    /* Trigger an error if I have an unuseable start address */</span><br><span class="line">    _bogus = ASSERT(_start16bit &gt;= 0xffff0000, &quot;_start16bit too low. Please report.&quot;);</span><br><span class="line">    _ROMTOP = 0xfffffff0;</span><br><span class="line">    . = _ROMTOP;</span><br><span class="line">    .reset . : &#123;</span><br><span class="line">        *(.reset);</span><br><span class="line">        . = 15;</span><br><span class="line">        BYTE(0x00);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	<code>BIOS</code>启动，在检查完硬件后，<code>BIOS</code>需要找到一个可启动的设备，启动顺序是设定在<code>BIOS</code>中的，当尝试从硬盘中启动时，<code>BIOS</code>需要找到一个启动扇区<code>boot sector</code>。在硬盘上有一个分区叫作主引导记录<code>Main Boot Record</code>，<code>boot sector</code>在该分区的前<code>446</code>个字节，每个扇区有<code>512 bytes</code>，第一个扇区的最后两个字节为<code>0x55, 0xaa</code>，向<code>BIOS</code>说明该设备是可启动的。</p>
+<p>​	下表给出实模式下的内存映射：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table</span><br><span class="line">0x00000400 - 0x000004FF - BIOS Data Area</span><br><span class="line">0x00000500 - 0x00007BFF - Unused</span><br><span class="line">0x00007C00 - 0x00007DFF - Our Bootloader</span><br><span class="line">0x00007E00 - 0x0009FFFF - Unused</span><br><span class="line">0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory</span><br><span class="line">0x000B0000 - 0x000B7777 - Monochrome Video Memory</span><br><span class="line">0x000B8000 - 0x000BFFFF - Color Video Memory</span><br><span class="line">0x000C0000 - 0x000C7FFF - Video ROM BIOS</span><br><span class="line">0x000C8000 - 0x000EFFFF - BIOS Shadow Area</span><br><span class="line">0x000F0000 - 0x000FFFFF - System BIOS</span><br></pre></td></tr></table></figure>
+
+<p>​	之前我们说<code>CPU</code>尝试执行的第一个指令是存储在地址<code>0xffff fff0</code>中的，这比上表的地址大的多。<code>CPU</code>如何访问改地址？在<a target="_blank" rel="noopener" href="https://www.coreboot.org/Developer_Manual/Memory_map">coreboot</a>文档中给出了答案：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0xFFFE_0000 - 0xFFFF_FFFF: 128 kilobyte ROM mapped into address space</span><br></pre></td></tr></table></figure>
+
+<p>​	现在我们知道，<code>BIOS</code>程序是存储在<code>ROM</code>中的。</p>
+<h3 id="Bootloader"><a href="#Bootloader" class="headerlink" title="Bootloader"></a>Bootloader</h3><blockquote>
+<p>​	现在 BIOS 已经选择了一个启动设备，并且将控制权转移给了启动扇区中的代码，在我们的例子中，启动扇区代码是 <a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD">boot.img</a>。因为这段代码只能占用一个扇区，因此非常简单，只做一些必要的初始化，然后就跳转到 GRUB 2’s core image 去执行。 Core image 的代码请参考 <a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD">diskboot.img</a>，一般来说 core image 在磁盘上存储在启动扇区之后到第一个可用分区之前。core image 的初始化代码会把整个 core image （包括 GRUB 2的内核代码和文件系统驱动） 引导到内存中。 引导完成之后，<a target="_blank" rel="noopener" href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/kern/main.c">grub_main</a>将被调用。</p>
+<p>​	<code>grub_main</code> 初始化控制台，计算模块基地址，设置 root 设备，读取 grub 配置文件，加载模块。最后，将 GRUB 置于 normal 模式，在这个模式中，<code>grub_normal_execute</code>(from <code>grub-core/normal/main.c</code>) 将被调用以完成最后的准备工作，然后显示一个菜单列出所用可用的操作系统。当某个操作系统被选择之后，<code>grub_menu_execute_entry</code> 开始执行，它将调用 GRUB 的 <code>boot</code> 命令，来引导被选中的操作系统。</p>
+<p>​	就像 kernel boot protocol 所描述的，引导程序必须填充 kernel setup header （位于 kernel setup code 偏移 <code>0x01f1</code> 处） 的必要字段。kernel setup header的定义开始于<a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S">arch&#x2F;x86&#x2F;boot&#x2F;header.S</a>：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">	.globl	hdr</span><br><span class="line">hdr:</span><br><span class="line">setup_sects:	.byte 0			/* Filled in by build.c */</span><br><span class="line">root_flags:	.word ROOT_RDONLY</span><br><span class="line">syssize:	.long 0			/* Filled in by build.c */</span><br><span class="line">ram_size:	.word 0			/* Obsolete */</span><br><span class="line">vid_mode:	.word SVGA_MODE</span><br><span class="line">root_dev:	.word 0			/* Filled in by build.c */</span><br><span class="line">boot_flag:	.word 0xAA55</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li><code>.globl hdr</code>: <code>hdr</code>是一个全局符号，全局符号对程序的所有部分都是可见的，同时它也是一个标签，标记当前位置。</li>
+<li>在后续的数据中遵循：<code>varible: .type value</code>，即<code>变量：类型 值</code>的形式。<ul>
+<li><code>boot_flag:	.word 0xAA55</code>：<code>0xAA55</code>是可启动标志。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>​	我们将在<code>kernel boot protocol</code>中看到，内存在加载内核后是如何映射的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">         | Protected-mode kernel  |</span><br><span class="line">100000   +------------------------+</span><br><span class="line">         | I/O memory hole        |</span><br><span class="line">0A0000   +------------------------+</span><br><span class="line">         | Reserved for BIOS      | Leave as much as possible unused</span><br><span class="line">         ~                        ~</span><br><span class="line">         | Command line           | (Can also be below the X+10000 mark)</span><br><span class="line">X+10000  +------------------------+</span><br><span class="line">         | Stack/heap             | For use by the kernel real-mode code.</span><br><span class="line">X+08000  +------------------------+</span><br><span class="line">         | Kernel setup           | The kernel real-mode code.</span><br><span class="line">         | Kernel boot sector     | The kernel legacy boot sector.</span><br><span class="line">       X +------------------------+</span><br><span class="line">         | Boot loader            | &lt;- Boot sector entry point 0x7C00</span><br><span class="line">001000   +------------------------+</span><br><span class="line">         | Reserved for MBR/BIOS  |</span><br><span class="line">000800   +------------------------+</span><br><span class="line">         | Typically used by MBR  |</span><br><span class="line">000600   +------------------------+</span><br><span class="line">         | BIOS use only          |</span><br><span class="line">000000   +------------------------+</span><br></pre></td></tr></table></figure>
+
+<p>当启动程序把控制权交给内核后，内核将从:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X + sizeof(KernelBootSector) + 1</span><br></pre></td></tr></table></figure>
+
+<p><code>X</code>是内核启动扇区被加载的地址。启动程序现在加载<code>Linux</code>内核到内存中去，填充好头文件，然后跳转到相应的内存地址中去，我们去看内核建立程序。</p>
+<h3 id="The-Beginning-of-the-Kernel-Setup-Stage"><a href="#The-Beginning-of-the-Kernel-Setup-Stage" class="headerlink" title="The Beginning of the Kernel Setup Stage"></a>The Beginning of the Kernel Setup Stage</h3><p>​	首先内核需要建立，这包括一些配置，如解压器和一些内存管理相关的东西，仅举几例。完成所有这些事情之后，内核设置部分将解压实际的内核并跳转到它。在代码<code>arch/x86/boot/header.S</code>的 <code>__start</code>标签是<code>setup part</code>。</p>
+<pre><code> 为了能够作为`bootloader`来使用，`header.S`在开始处定义了 `MZ`，并且定义了`PE`头文件。
+</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#ifdef CONFIG_EFI_STUB</span><br><span class="line">	# &quot;MZ&quot;, MS-DOS header</span><br><span class="line">	.word	MZ_MAGIC</span><br><span class="line">#endif</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">#ifdef CONFIG_EFI_STUB</span><br><span class="line">pe_header:</span><br><span class="line">	.long	PE_MAGIC</span><br></pre></td></tr></table></figure>
+
+<p> 之所以代码需要这样写，这个是因为遵从 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">UEFI</a> 的硬件需要这样的结构才能正常引导操作系统。</p>
+<p>除开这些作为<code>bootloader</code>的代码，真正的内核建立从下面开始：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// header.S line 299</span><br><span class="line">_start:</span><br><span class="line">		# Explicitly enter this as bytes, or the assembler</span><br><span class="line">		# tries to generate a 3-byte jump here, which causes</span><br><span class="line">		# everything else to push off to the wrong offset.</span><br><span class="line">		.byte	0xeb		# short (2-byte) jump</span><br><span class="line">		.byte	start_of_setup-1f</span><br></pre></td></tr></table></figure>
+
+<p>bootloader 知道这个开始点，并且直接跳转到该点， 因此， bootloader将不会再从<code>.bstext section</code>开始。因为我们会在<code>arch/x86/boot/setup.ld</code>中看见：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">// arch/x86/boot/setup.ld</span><br><span class="line">//</span><br><span class="line">. = 0;                    // current position</span><br><span class="line">.bstext : &#123; *(.bstext) &#125;  // put .bstext section to position 0</span><br><span class="line">.bsdata : &#123; *(.bsdata) &#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	这段代码是一个连接器脚本的一部分，用于指定程序编译后在内存中的布局。</p>
+<blockquote>
+<ul>
+<li>设置当前位置：<code>. = 0;</code>设置连接器的当前位置指针为0。意味着紧接着的定义段将从内存地址0开始放置。</li>
+<li>定义了<code>.bstext</code>段：<code>.bstext : &#123; *(.bstext) &#125;</code>，这行代码定义了一个名为 <code>.bstext</code> 的段。<code>&#123; *(.bstext) &#125;</code> 的意思是将所有标记为 <code>.bstext</code> 的部分（即汇编代码中用 <code>.section &quot;.bstext&quot;</code> 定义的部分）集中到这个段里。由于当前位置已经设置为0，所以这个段的内容将被放置在内存的开始位置。</li>
+<li>定义了<code>.bsdata</code>段：<code>.bsdata : &#123; *(.bsdata) &#125;</code>：这行代码定义了一个名为 <code>.bsdata</code> 的段，并将所有标记为 <code>.bsdata</code> 的部分集中到这个段里。这允许链接器将这些数据放置在内存中的特定位置。</li>
+</ul>
+</blockquote>
+<p>接着我们来看看内核设置的进入点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">	# offset 512, entry point</span><br><span class="line"></span><br><span class="line">	.globl	_start</span><br><span class="line">_start:</span><br><span class="line">		# Explicitly enter this as bytes, or the assembler</span><br><span class="line">		# tries to generate a 3-byte jump here, which causes</span><br><span class="line">		# everything else to push off to the wrong offset.</span><br><span class="line">		.byte	0xeb		# short (2-byte) jump</span><br><span class="line">		.byte	start_of_setup-1f</span><br><span class="line">1:</span><br><span class="line"></span><br><span class="line">	# Part 2 of the header, from the old setup.S</span><br><span class="line"></span><br><span class="line">		.ascii	&quot;HdrS&quot;		# header signature</span><br><span class="line">		.word	0x020f		# header version number (&gt;= 0x0105)</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中， <code>0xeb</code>是<code>jmp</code>指令的<code>opcode</code>，表示将要跳转到<code>start_of_setup - 1f</code>。</p>
+<p><code>Nf</code>声明：<code>2f</code>表示<code>local label 2</code>。在上述代码中，<code>1f</code>就是后面的<code>1:</code>，这部分代码包含了剩余的<code>setup header</code>，当<code>setup header</code>结束后，我们会看见<code>.entrytext</code>代码段，在<code>start_of_setup</code>标签处开始。	</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># End of setup header #####################################################</span><br><span class="line">	.section &quot;.entrytext&quot;, &quot;ax&quot;</span><br><span class="line">start_of_setup:</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>这是第一段实际运行的代码。当内核配置<code>kernel setup</code>部分收到来自启动程序<code>bootloader</code>，第一个<code>jump</code>指令跳转到离内核起始点<code>(kernel real mode)``0x200 offset</code>。</p>
+<p>终于，代码跳转到了<code>start_of_setup</code>，接着内核会做如下几件事：</p>
+<ul>
+<li><p>保证所有的段寄存器<code>segment register</code>值是相等的。</p>
+</li>
+<li><p>如果需要的话，建配置一个正确的栈。</p>
+</li>
+<li><p>配置bss</p>
+<blockquote>
+<p>BSS（Block Started by Symbol）是一个用来描述可执行文件或内存中的一部分的术语，它代表了一个程序中未初始化的全局变量和静态变量的集合。在程序的二进制文件中，BSS段通常不占用实际的磁盘空间，因为它只是一系列的零值。然而，在程序加载到内存时，操作系统为BSS段分配内存，并将其全部初始化为零。</p>
+<p>BSS段的主要特点和作用包括：</p>
+<ol>
+<li><strong>未初始化的变量</strong>：BSS段用于存储程序中未显式初始化为特定值的全局变量和静态变量。这些变量在程序启动时默认被初始化为零。</li>
+<li><strong>节省空间</strong>：由于BSS段中的数据默认为零，因此在程序的磁盘文件中不需要为它们分配空间。这有助于减少程序的文件大小。</li>
+<li><strong>内存中的初始化</strong>：虽然在磁盘上不占用空间，但在程序加载到内存时，操作系统会为BSS段中的变量分配内存，并将它们初始化为零。</li>
+<li><strong>与数据段的区别</strong>：BSS段通常与数据段（用于存储已初始化的全局变量和静态变量）相区分。数据段中的变量在程序的二进制文件中会占用相应的存储空间，以保持它们的初始值。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>调转到c代码<code>arch/x86/boot/main.c</code></p>
+</li>
+</ul>
+<h3 id="Aligning-the-Segment-Registers"><a href="#Aligning-the-Segment-Registers" class="headerlink" title="Aligning the Segment Registers"></a>Aligning the Segment Registers</h3><p>首先，内核保证，<code>ds</code>和<code>es</code>段寄存器指向同一个地址。接着使用<code>cld</code>指令，清除方向标志<code>direction flag</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># Force %es = %ds</span><br><span class="line">	movw	%ds, %ax</span><br><span class="line">	movw	%ax, %es</span><br><span class="line">	cld</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li><p>Direction Flag：在x86架构的CPU中，direction flag是标志寄存器（Flags Register）的一部分，用于控制字符串操作指令（如 <code>movsb</code>, <code>movsw</code>, <code>movsd</code>, <code>stosb</code>, <code>stosw</code>, <code>stosd</code>, <code>lodsb</code>, <code>lodsw</code>, <code>lodsd</code>, <code>scasb</code>, <code>scasw</code>, <code>scasd</code> 等）的处理方向。</p>
+<p><code>direction flag = 1</code>时，这些操作指令处理字符串时会从高地址向底地址移动。为0时则相反。</p>
+</li>
+<li><p><code>cld</code>指令：<code>clear Direction Flag</code>，会将<code>Direction Flag</code>置为0。</p>
+</li>
+<li><p><code>es</code>：附加段寄存器</p>
+</li>
+<li><p><code>ds</code>：数据段寄存器</p>
+</li>
+<li><p><code>cs</code>：代码段寄存器</p>
+</li>
+<li><p><code>ss</code>：段寄存器</p>
+</li>
+<li><p><code>sp</code>：堆栈指针寄存器</p>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">segment = grub_linux_real_target &gt;&gt; 4;</span><br><span class="line">state.gs = state.fs = state.es = state.ds = state.ss = segment;</span><br><span class="line">state.cs = segment + 0x20; // cs = 0x1000 + 0x20 = 0x1020</span><br></pre></td></tr></table></figure>
+
+<p><code>grub2</code>默认将<code>kernel setup</code>代码，加载到地址<code>0x10000</code>处，而<code>cs</code>是在<code>0x1020</code>处，这是因为代码的执行不会在文件的起始位置开始，而是跳转到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">_start:</span><br><span class="line">    .byte 0xeb</span><br><span class="line">    .byte start_of_setup-1f</span><br></pre></td></tr></table></figure>
+
+<p>这段代码是位于 <code>4d 5a</code>的<code>512 bytes</code>偏移处。之后开始配置栈。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> We will have entered with %cs = %ds+0x20, normalize %cs so</span><br><span class="line"># it is on par with the other segments.</span><br><span class="line">	pushw	%ds</span><br><span class="line">	pushw	$6f</span><br><span class="line">	lretw</span><br></pre></td></tr></table></figure>
+
+<p>这段代码将 <code>ds</code>的值推入栈，紧跟着的是标签<code>6</code>的地址也推入栈，然后执行<code>lretw</code>。当执行<code>lretw</code>时，它将标签<code>6</code>的地址加载到<code>instruction pointer register</code>中，将<code>ds</code>的值加载到<code>cs</code>中。最终，<code>cs</code>和<code>ds</code>的值会保持一致。</p>
+<blockquote>
+<p><code>lretw</code>：这是一个远返回指令，用于从子程序返回。<code>lretw</code> 会从堆栈中弹出返回地址，并将其加载到指令指针寄存器（%ip）中。同时，它还会从堆栈中弹出一个值加载到代码段寄存器（%cs）中，这是远调用和远返回的特性。</p>
+</blockquote>
+<h3 id="Stack-Setup"><a href="#Stack-Setup" class="headerlink" title="Stack Setup"></a>Stack Setup</h3><p>​	几乎所有的配置代码是为了准备实模式下的<code>c</code>语言环境。下一个步骤是判断并纠正<code>ss</code>寄存器的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Force %es = %ds</span><br><span class="line">	movw	%ds, %ax</span><br><span class="line">	movw	%ax, %es</span><br><span class="line">	cld</span><br><span class="line"></span><br><span class="line"># Apparently some ancient versions of LILO invoked the kernel with %ss != %ds,</span><br><span class="line"># which happened to work by accident for the old code.  Recalculate the stack</span><br><span class="line"># pointer if %ss is invalid.  Otherwise leave it alone, LOADLIN sets up the</span><br><span class="line"># stack behind its own code, so we can&#x27;t blindly put it directly past the heap.</span><br><span class="line"></span><br><span class="line">	movw	%ss, %dx</span><br><span class="line">	cmpw	%ax, %dx	# %ds == %ss?</span><br><span class="line">	movw	%sp, %dx 	# move %sp to %dx</span><br></pre></td></tr></table></figure>
+
+<p>我们首先要保证<code>%ss == %ds</code>，会出现三种情况：</p>
+<p><code>ss</code>值合法</p>
+<p><code>ss</code>值不合法且<code>CAN_USE_HEAP</code>被设置。</p>
+<p><code>ss</code>值不合法且<code>CAN_USE_HEAP</code>未被设置。</p>
+<ul>
+<li>当<code>ss</code>值<code>(0x1000)</code>合法时，程序跳转到标签2：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2:	# Now %dx should point to the end of our stack space</span><br><span class="line">	andw	$~3, %dx	# dword align (might as well...)</span><br><span class="line">	jnz	3f					# jump if not zero</span><br><span class="line">	movw	$0xfffc, %dx	# Make sure we&#x27;re not zero</span><br><span class="line">3:	movw	%ax, %ss</span><br><span class="line">	movzwl	%dx, %esp	# Clear upper half of %esp</span><br><span class="line">	sti			# Now we should have a working stack</span><br></pre></td></tr></table></figure>
+
+<p>​	首先将3取反得到<code>1111 1111 1111 1111 1111 1111 1111 1100</code> 之后和<code>%dx</code>做与运算，这将使 <code>%dx</code>的最后两位为0，以达到<code>dword align</code>双字对齐。即如果一个地址是4的倍数，我们就可以说它是双字对齐的。接着判断<code>andw</code>操作后的结果是否为0。如果为0，我们要将<code>%dx</code>的值设置为<code>0xfffc</code>（这是在 <code>64KB segment</code> 下的最大按四字对齐的地址）以保证<code>%dx</code>不为0。反之直接跳转到标签3。</p>
+<p>​	标签3将<code>%ax</code>的值赋值给<code>%ss</code>。得到一个正确的栈：</p>
+<p>​	<img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2010.58.21.png" alt="截屏2023-11-11 10.58.21"></p>
+<ul>
+<li>当<code>ss</code>值不合法且<code>CAN_USE_HEAP</code>被设置</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Invalid %ss, make up a new stack</span><br><span class="line">	movw	$_end, %dx</span><br><span class="line">	testb	$CAN_USE_HEAP, loadflags</span><br><span class="line">	jz	1f</span><br><span class="line">	movw	heap_end_ptr, %dx</span><br><span class="line">1:	addw	$STACK_SIZE, %dx</span><br><span class="line">jnc	2f</span><br><span class="line">xorw	%dx, %dx	# Prevent wraparound</span><br></pre></td></tr></table></figure>
+
+<p>我们首先将<code>$_end</code>赋值给 <code>%dx</code>，然后检查 <code>loadflag</code>中的 <code> $CAN_USE_HEAP</code>位。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L320">loadflags</a> is a bitmask header defined as:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LOADED_HIGH     (1&lt;&lt;0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> QUIET_FLAG      (1&lt;&lt;5)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> KEEP_SEGMENTS   (1&lt;&lt;6)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CAN_USE_HEAP    (1&lt;&lt;7)</span></span><br></pre></td></tr></table></figure>
+
+<p>我们在<code>boot protocol</code>中了解到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Field name: loadflags</span><br><span class="line"></span><br><span class="line">  This field is a bitmask.</span><br><span class="line"></span><br><span class="line">  Bit 7 (write): CAN_USE_HEAP</span><br><span class="line">    Set this bit to 1 to indicate that the value entered in the</span><br><span class="line">    heap_end_ptr is valid.  If this field is clear, some setup code</span><br><span class="line">    functionality will be disabled.</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>因此，如果<code>CAN_USE_HEAP</code>为1时 ，代表<code>heap_end_ptr</code>是合法的（指向栈底：<code>_end</code>）。然后将<code>%dx</code>加上一个<code>$STACK_SIZE</code>（这可能使得<code>%dx</code>指向栈顶）。如果没有溢出，则跳转到标签2，继续配置一个正确的栈。</p>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.14.17.png" alt="截屏2023-11-11 11.14.17"></p>
+<ul>
+<li>当<code>ss</code>值不合法且<code>CAN_USE_HEAP</code>未被设置。那就只能用一个最小的栈，大小为from <code>_end</code> to <code>_end + STACK_SIZE</code></li>
+</ul>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.16.57.png" alt="截屏2023-11-11 11.16.57"></p>
+<h3 id="BSS-Setup"><a href="#BSS-Setup" class="headerlink" title="BSS Setup"></a>BSS Setup</h3><p>在我们能跳向<code>main C code</code>之前，还有两个步骤需要配置，一个是配置<code>BSS</code>，第二个是检查<code>magic</code>签名。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Check signature at end of setup</span><br><span class="line">	cmpl	$0x5a5aaa55, setup_sig</span><br><span class="line">	jne	setup_bad</span><br></pre></td></tr></table></figure>
+
+<p>检查签名，如果不对，会报告一个<code>fatal error</code>。</p>
+<p>签名匹配后，我们拥有了正确的段寄存器和栈，现在只需要配置正确的<code>BSS</code>段就可以跳转到<code>C</code>代码了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># Zero the bss</span><br><span class="line">	movw	$__bss_start, %di</span><br><span class="line">	movw	$_end+3, %cx</span><br><span class="line">	xorl	%eax, %eax</span><br><span class="line">	subw	%di, %cx</span><br><span class="line">	shrw	$2, %cx</span><br><span class="line">	rep; stosl</span><br></pre></td></tr></table></figure>
+
+<p><code>__bss_start</code>的地址赋值给<code>%di</code>，接着<code>__end + 3</code>的结果赋值给<code>%cx</code>。通过异或操作清空<code>%eax</code>的值。计算<code>cx -di</code>得到<code>bss section</code>的大小并存储到<code>cx</code>中。 <code>cx</code>除以4（右移2位）并重复执行<code>stosl</code>，该命令将持续把<code>eax</code>中的值（这里是0）存到<code>di</code>指向的地址中去，并将<code>di</code>的值增加4（这也是为什么<code>cx</code>要除以4的原因）。直到<code>cx</code>的值递减到0。以上的操作将<code>BSS section</code>的所有内存赋值为0：</p>
+<p><img src="/../images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.32.50.png" alt="截屏2023-11-11 11.32.50"></p>
+<h3 id="Jump-to-main"><a href="#Jump-to-main" class="headerlink" title="Jump to main"></a>Jump to main</h3><p>现在我们跳转到主函数，<code>arch/x86/boot/main.c</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Jump to C code (should not return)</span><br><span class="line">	calll	main</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/31/NVMeBaseSpecStudy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/31/NVMeBaseSpecStudy/" class="post-title-link" itemprop="url">NVMeBaseSpecStudy</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-10-31 09:11:16 / 修改时间：09:19:18" itemprop="dateCreated datePublished" datetime="2023-10-31T09:11:16+08:00">2023-10-31</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>423</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="NVM-Express-Base-Specification-阅读"><a href="#NVM-Express-Base-Specification-阅读" class="headerlink" title="NVM Express Base Specification 阅读"></a>NVM Express Base Specification 阅读</h1><h2 id="简介："><a href="#简介：" class="headerlink" title="简介："></a>简介：</h2><h5 id="NVM-Express-interface-允许主机软件和-NVM-subsystem-进行通信。"><a href="#NVM-Express-interface-允许主机软件和-NVM-subsystem-进行通信。" class="headerlink" title="NVM Express interface 允许主机软件和 NVM subsystem 进行通信。"></a>NVM Express interface 允许主机软件和 NVM subsystem 进行通信。</h5><h2 id="NVMe-familty-of-Specifications："><a href="#NVMe-familty-of-Specifications：" class="headerlink" title="NVMe familty of Specifications："></a>NVMe familty of Specifications：</h2><h2 id=""><a href="#" class="headerlink" title=""></a><img src="/../images/NVMeBaseSpecStudy/%E6%88%AA%E5%B1%8F2023-10-31%2009.16.04.png" alt="截屏2023-10-31 09.16.04"></h2><ul>
+<li>NVM Express Base Specification 定义了主机软件通过各种基于内存的传输和基于消息的传输与非易失性内存子系统通信的协议。</li>
+<li>NVM Express Management Interface  Specification 为所有NVM Express子系统定义了一个可选的管理接口。</li>
+<li>NVM Express I&#x2F;O Command Set specifications 定义扩展NVM Express Base规范的数据结构、功能、日志页面、命令和状态值。</li>
+<li>NVM Express Transport specifications 定义NVMe协议的绑定，包括控制器属性对特定传输的绑定。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/24/framewave-study/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/24/framewave-study/" class="post-title-link" itemprop="url">framewave_study</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-10-24 19:49:26" itemprop="dateCreated datePublished" datetime="2023-10-24T19:49:26+08:00">2023-10-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-25 19:00:37" itemprop="dateModified" datetime="2023-10-25T19:00:37+08:00">2023-10-25</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Framewave-tutorial"><a href="#Framewave-tutorial" class="headerlink" title="Framewave tutorial"></a>Framewave tutorial</h1><h2 id="安装："><a href="#安装：" class="headerlink" title="安装："></a>安装：</h2><p>​	去官网下载压缩包，解压后打开<code>readme</code>按照readme里面的步骤来就好了。</p>
+<ul>
+<li>提示：<code>readme</code>里面的<code>ExampleDir</code>直接换成绝对路径。</li>
+<li>提示：后面那个<code>export</code>操作笔者没做出来，不过大概意思是把这个链接放到全局链接里去</li>
+</ul>
+<h2 id="Framewave-FW-是做什么的："><a href="#Framewave-FW-是做什么的：" class="headerlink" title="Framewave(FW)是做什么的："></a>Framewave(FW)是做什么的：</h2><p>​	Framewave (FW) is a collection of libraries that contain highly-optimized functions for use in a variety of programming domains. All implementations of the libraries provide C and C++ programmers ANSI C style interfaces.</p>
+<p>​	Framewave consists of the following libraries:</p>
+<ul>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_010.html#fw_section_010">Base Library</a> functions are essential for primary tasks such as memory allocation and functions that manage the performance of other library functions.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_020.html#fw_section_020">Image Processing Library</a> functions perform a variety of tasks related to image processing.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_030.html#fw_section_030">JPEG Library</a> functions perform a variety of tasks related to Joint Photographic Experts Group image manipulation.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_040.html#fw_section_040">Signal Processing Library</a> functions perform a variety of tasks related to signal processing.</li>
+<li>The <a target="_blank" rel="noopener" href="https://framewave.sourceforge.net/Manual/fw_section_050.html#fw_section_050">Video Library</a> functions perform video manipulation, encoding and decoding.</li>
+</ul>
+<h1 id="RTFM！！！！！"><a href="#RTFM！！！！！" class="headerlink" title="RTFM！！！！！"></a>RTFM！！！！！</h1><p>​	现在的任务就是读手册，手册里写的很清楚了！！！</p>
+<p>​	</p>
+<h2 id="Base-Library："><a href="#Base-Library：" class="headerlink" title="Base Library："></a>Base Library：</h2><p>​	This chapter provides an overview of the information contained in the functional descriptions. Base library functional descriptions include the following types of information.</p>
+<h3 id="Data-Structures"><a href="#Data-Structures" class="headerlink" title="Data Structures"></a>Data Structures</h3><ul>
+<li><strong>FwLibraryVersion</strong> Library version information.</li>
+<li><strong>FwRoundMode</strong> Rounding mode used in data type conversion.</li>
+<li><strong>FwWinType</strong> Type of window used to generate FIR filter coefficients.</li>
+</ul>
+<h3 id="Enumerator"><a href="#Enumerator" class="headerlink" title="Enumerator"></a>Enumerator</h3><ul>
+<li><strong>FwBool</strong> Type of Boolean values.</li>
+<li><strong>FwCmpOp</strong> Type of comparison operation.</li>
+<li><strong>FwCpuType</strong> Type of CPU with presence of streaming SIMD extensions.</li>
+<li><strong>FwHintAlgorithm</strong> Hint to favor speed or accuracy.</li>
+</ul>
+<h3 id="Parameter-Glossary"><a href="#Parameter-Glossary" class="headerlink" title="Parameter Glossary"></a>Parameter Glossary</h3><ul>
+<li><em>StsCode</em> Specifies the status code used by the FwStatus function</li>
+<li><em>alignBytes</em> Specifies the number of bytes for alignment, must be a power of 2. NULL is returned if the value is less than 2.</li>
+<li><em>cpu</em> Specifies a CPU type.</li>
+<li><em>length</em> Specifies a number of bytes to be allocated.</li>
+<li><em>numThr</em>  Specifies the maximum number of threads that can be used by any Framewave function.</li>
+<li><em>param</em> Specifies some parameter.</li>
+<li><em>ptr</em>  Pointer to a memory buffer.</li>
+<li><em>workFn</em> Specifies work function.</li>
+</ul>
+<h3 id="Core-Function"><a href="#Core-Function" class="headerlink" title="Core Function:"></a>Core Function:</h3><p>​	好像被标上<code>This function is reserved for FW internal use.</code>（此功能保留给FW内部使用）和程序员的关系不大。</p>
+<ul>
+<li><h4 id="GetStatusString"><a href="#GetStatusString" class="headerlink" title="GetStatusString"></a>GetStatusString</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/* </span><br><span class="line"> *	获取状态信息字符串</span><br><span class="line"> *  StsCode 指定FwStatus函数使用的状态代码。</span><br><span class="line"> *	返回一个字符串，该字符串描述了任何FwStatus枚举整数的含义。</span><br><span class="line"> */</span><br><span class="line">const char * fwGetStatusString ( FwStatus StsCode );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetCpuType"><a href="#GetCpuType" class="headerlink" title="GetCpuType"></a>GetCpuType</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	获取 CPU 类型</span><br><span class="line"> *	返回存在的SSE支持级别。</span><br><span class="line"> *  它可用于识别CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwCpuType fwGetCpuType();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetCpuClocks"><a href="#GetCpuClocks" class="headerlink" title="GetCpuClocks"></a>GetCpuClocks</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 获取 CPU 时钟周期</span><br><span class="line"> * Fw64u 表示 64位 unsigned int 类型</span><br><span class="line"> * 此功能返回自CPU开机以来经过的CPU时钟周期数。</span><br><span class="line"> * 可以通过在两个不同点调用函数，然后从第二个返回值中减去第一个返回值来计时代码段。</span><br><span class="line">*/</span><br><span class="line">Fw64u fwGetCpuClocks();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="StaticInit"><a href="#StaticInit" class="headerlink" title="StaticInit"></a>StaticInit</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 初始化为适当的CPU类型</span><br><span class="line"> * 此功能初始化FW内部调度器，</span><br><span class="line"> * 以使用最合适的CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwStatus fwStaticInit();</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="StaticInitCpu"><a href="#StaticInitCpu" class="headerlink" title="StaticInitCpu"></a>StaticInitCpu</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	初始化为指定的CPU类型</span><br><span class="line"> *  参数cpu： 初始化为指定的CPU类型</span><br><span class="line"> *	此函数初始化FW内部调度器以使用指定的CPU类型。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwStaticInitCpu	(	FwCpuType cpu );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="SetNumThreads"><a href="#SetNumThreads" class="headerlink" title="SetNumThreads"></a>SetNumThreads</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *  设置线程数</span><br><span class="line"> *  参数numThr：指定任何Framewave函数可以使用的最大线程数。</span><br><span class="line"> *  此函数定义了任何FW函数可以使用的最大线程数。将numThr设置为1以关闭线程。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwSetNumThreads	(	unsigned int numThr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetNumThreads"><a href="#GetNumThreads" class="headerlink" title="GetNumThreads"></a>GetNumThreads</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	获取线程数</span><br><span class="line"> *	此函数返回任何FW函数可以使用的最大线程数。</span><br><span class="line">*/</span><br><span class="line">Fw32u	 	fwGetNumThreads	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h3 id="Allocate-memory"><a href="#Allocate-memory" class="headerlink" title="Allocate memory"></a>Allocate memory</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	分配空间</span><br><span class="line"> *	参数length:	指定分配的字节数量</span><br><span class="line"> *	此函数分配一个长度字节的内存缓冲区，并返回一个指针。</span><br><span class="line">*/</span><br><span class="line">void *	 	fwMalloc	(	int length );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="Free"><a href="#Free" class="headerlink" title="Free"></a>Free</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	释放空间</span><br><span class="line"> *	ptr	 	Pointer to a memory buffer.</span><br><span class="line"> *	此函数释放ptr指向的内存缓冲区。</span><br><span class="line">*/</span><br><span class="line">void	 	fwFree	(	void * ptr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="AlignPtr"><a href="#AlignPtr" class="headerlink" title="AlignPtr"></a>AlignPtr</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	对齐缓冲区</span><br><span class="line"> *	alignBytes	指定对齐的字节数，必须是2的幂。如果值小于2，则返回NULL。 </span><br><span class="line"> *  ptr	指向内存缓冲区的指针。</span><br><span class="line"> *	此函数将ptr指向的缓冲区对齐到指定的对齐边界。</span><br><span class="line"> */</span><br><span class="line"> void *	 	fwAlignPtr	(	void * ptr, int alignBytes );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="SetNumThreads-local"><a href="#SetNumThreads-local" class="headerlink" title="SetNumThreads_local"></a>SetNumThreads_local</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	设置局部的线程数量</span><br><span class="line"> *	numThr	指定任何Framewave函数可以使用的最大线程数。</span><br><span class="line"> *	此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">FwStatus	 	fwSetNumThreads_local	(	unsigned int numThr );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	运行？</span><br><span class="line"> *	param	 	Specifies some parameter.</span><br><span class="line"> *	workFn	 	Specifies work function.</span><br><span class="line"> * 	此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">void	 	fwRun	(	WorkFn workFn, void* param );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="Wait"><a href="#Wait" class="headerlink" title="Wait"></a>Wait</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	等待</span><br><span class="line"> *  此功能保留给FW内部使用。</span><br><span class="line">*/</span><br><span class="line">void	 	fwWait	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="GetInitType"><a href="#GetInitType" class="headerlink" title="GetInitType"></a>GetInitType</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	GetInitType</span><br><span class="line"> *	此功能保留给FW内部使用</span><br><span class="line">*/</span><br><span class="line">int	 	fwGetInitType	(	  );</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="BaseData"><a href="#BaseData" class="headerlink" title="BaseData"></a>BaseData</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> *	BaseData</span><br><span class="line"> *	This function is reserved for FW internal use.</span><br><span class="line">*/</span><br><span class="line">void *	 	fwBaseData	(	  );</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Signal-Processing-Library"><a href="#Signal-Processing-Library" class="headerlink" title="Signal Processing Library:"></a>Signal Processing Library:</h2><p>​	这个库里面的函数大概就是本次作业的重点了，大部分是关于向量加减乘除法的，现在我们看着lab1的代码，直接在手册中找到对应的代码进行替换就可以了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">fwsCosh_64f_A53					  MT</span><br><span class="line">fwsAddC_64f_I							MT</span><br><span class="line">fwsMalloc_64f					not	MT</span><br><span class="line">fwsAdd_64f								MT</span><br><span class="line">fwsMulC_64f_I							MT</span><br><span class="line">fwsSqrt_64f								MT</span><br><span class="line">fwsFree								not	MT</span><br><span class="line">fwsThreshold_LT_64f				MT</span><br><span class="line">fwSetNumThreads				not	MT</span><br><span class="line">fwsDivC_64f_I							MT</span><br><span class="line">fwsCopy_64fc							MT</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/20/parallelComputingLab/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -268,7 +783,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-23 15:41:24" itemprop="dateModified" datetime="2023-10-23T15:41:24+08:00">2023-10-23</time>
+                <time title="修改时间：2023-10-23 15:43:40" itemprop="dateModified" datetime="2023-10-23T15:43:40+08:00">2023-10-23</time>
               </span>
 
           <br>
@@ -1815,364 +2330,6 @@ endmodule
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/15/digital-design-and-computer-architecture/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不舍昼夜">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/08/15/digital-design-and-computer-architecture/" class="post-title-link" itemprop="url">digital design and computer architecture</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-08-15 13:41:34" itemprop="dateCreated datePublished" datetime="2023-08-15T13:41:34+08:00">2023-08-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-22 15:20:12" itemprop="dateModified" datetime="2023-08-22T15:20:12+08:00">2023-08-22</time>
-              </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="数字设计和计算机体系结构"><a href="#数字设计和计算机体系结构" class="headerlink" title="数字设计和计算机体系结构"></a>数字设计和计算机体系结构</h1><h2 id="第二章-组合逻辑设计"><a href="#第二章-组合逻辑设计" class="headerlink" title="第二章 组合逻辑设计"></a>第二章 组合逻辑设计</h2><ul>
-<li><p>与或范式</p>
-</li>
-<li><p>或与范式</p>
-</li>
-<li><p>等式化简，展开一个蕴含式:</p>
-<p><img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2014.27.49-2080877-2089511.png" alt="截屏2023-08-15 14.27.49-2080877-2089511"></p>
-</li>
-<li><p>原理图</p>
-<ul>
-<li>两条线交叉地方有个点表示之间有连接</li>
-<li>两条线交叉地方没有点表示没有连接</li>
-</ul>
-</li>
-<li><p>用符号<code>X</code>表示不需要考虑的输入</p>
-</li>
-<li><p>推气泡</p>
-<ol>
-<li>从电路的输出端开始向输入方向推。</li>
-<li>将气泡从最后的输出端向输入端推，可以读出输出<code>(Y)</code>的布尔表达式，而非输出的补<code>(^Y)</code>。</li>
-<li>继续向后推，以消除每个门的气泡。如果当前的门有一个输入的气泡，则在前面门的输出加上气泡。如果当前的门不带输入气泡，前面的门也不带输出气泡。</li>
-<li>气泡式串联删除的，可以忽略中间门的输出气泡和最右边门的输入气泡。</li>
-</ol>
-</li>
-</ul>
-<p><img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.00.08-2082815-2089536-2688523.png" alt="截屏2023-08-15 15.00.08-2082815-2089536"></p>
-<ul>
-<li><code>X</code>和<code>Z</code>：布尔代数局限于0和1.然而，真实的电路中会出现非法值和浮空现象，分别用<code>X</code>和<code>Z</code>表示。<ul>
-<li>一个典型的误解是将浮空或者未被驱动的节点和逻辑0等同。事实上浮空节点可能是0或1或之间的电压。</li>
-</ul>
-</li>
-<li>三态缓冲器：<ul>
-<li>三种可能输出：高电平<code>(1)</code>，低电平<code>(0)</code>，浮空<code>(Z)</code><ul>
-<li>使能端<code>E</code>，高电平有效，作为一个简单的缓冲器，低电平无效，输出被置为高电阻<code>(Z)</code>。2-41反之。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p><img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.13.21-2083606-2089571-2688548.png" alt="截屏2023-08-15 15.13.21-2083606-2089571"></p>
-<ul>
-<li><p>卡诺图：一个图形化的化简布尔表达式方法</p>
-<ol>
-<li>用最少的圈来圈住全部所有的1；</li>
-<li>圈中的所有方格必须都为1；</li>
-<li>每个圈必须是矩形，其每边长必须是2的整数次幂（1，2，4）；</li>
-<li>每个圈必须尽可能大；</li>
-<li>圈可以环绕卡诺图的边界；</li>
-<li>如果可以使用更少数量的圈，卡诺图中一个为1的方格可以被多次圈住；</li>
-<li>如0果可以用较少和较大的圈覆盖1，这些无关项也可以被圈起来。<br><img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2015.35.01-2084907-2089594-2688805.png" alt="截屏2023-08-15 15.35.01-2084907-2089594"></li>
-</ol>
-</li>
-<li><p>多路选择器，可用于实现逻辑，真值表中的每一行和多路选择器的一个输入相对应。</p>
-</li>
-<li><p>时序</p>
-<ul>
-<li>传输延迟<code>(propagation delay)</code>和最小延迟<code>(contamination delay)</code></li>
-<li>关键路径和最短路径</li>
-<li>传输延迟是关键路径上每个元件的传输延迟之和</li>
-<li>最小延迟是在最短路径上每个元件的最小延迟之和</li>
-</ul>
-</li>
-<li><p>毛刺：<img src="/../images/digital-design-and-computer-architecture/%E6%88%AA%E5%B1%8F2023-08-15%2016.25.58.png" alt="截屏2023-08-15 16.25.58"></p>
-<ul>
-<li>只要读取输出之前的等待时间和传输延迟一样长，出现毛刺是不会有问题的，这是因为输出最终将稳定在正确的值。</li>
-</ul>
-</li>
-</ul>
-<h2 id="第三章-时序逻辑设计"><a href="#第三章-时序逻辑设计" class="headerlink" title="第三章 时序逻辑设计"></a>第三章 时序逻辑设计</h2><ul>
-<li>锁存器和触发器<ul>
-<li>SR锁存器</li>
-<li>D锁存器，电平敏感的</li>
-<li>D触发器，边沿触发的</li>
-<li>寄存器</li>
-<li>带使能端的触发器，<code>EN = 0</code> 时将忽略时钟，保持原来的状态不变。</li>
-<li>带复位功能的触发器，<code>RESET = 1</code>，带复位功能的触发器忽略<code>D</code>并且将输出Q复位为0。同步复位的触发器仅仅在时钟上升沿时进行复位，异步复位只需要<code>RESET = 1</code>时就可以复位</li>
-<li>同步时序电路<ul>
-<li>每一个电路元件是寄存器或组合电路</li>
-<li>至少有一个电路元件是寄存器</li>
-<li>所有寄存器接收同一个时钟信号</li>
-<li>每一个环路至少包含一个寄存器</li>
-</ul>
-</li>
-<li>时序逻辑电路的时序</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/10/learnCTheHardWay/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不舍昼夜">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/08/10/learnCTheHardWay/" class="post-title-link" itemprop="url">learnCTheHardWay</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-08-10 16:02:51" itemprop="dateCreated datePublished" datetime="2023-08-10T16:02:51+08:00">2023-08-10</time>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/10/regularExpression/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不舍昼夜">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/08/10/regularExpression/" class="post-title-link" itemprop="url">regularExpression</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2023-08-10 13:54:58 / 修改时间：15:58:48" itemprop="dateCreated datePublished" datetime="2023-08-10T13:54:58+08:00">2023-08-10</time>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a><strong>正则表达式</strong></h1><h2 id="课程"><a href="#课程" class="headerlink" title="课程"></a>课程</h2><h2 id="课程-1：简介和字母-ABCs"><a href="#课程-1：简介和字母-ABCs" class="headerlink" title="课程 1：简介和字母 ABCs"></a>课程 1：简介和字母 ABCs</h2><p>​	abc就匹配abc</p>
-<h2 id="课程-1½：数字-123s"><a href="#课程-1½：数字-123s" class="headerlink" title="课程 1½：数字 123s"></a>课程 1½：数字 123s</h2><p>​	123就匹配123</p>
-<h2 id="课程-2：点-Dot"><a href="#课程-2：点-Dot" class="headerlink" title="课程 2：点 Dot"></a>课程 2：点 Dot</h2><p>​	<code>.</code>	匹配任意字符(包括字母，数字，空格等)</p>
-<p>​	匹配点需要加转义字符<code>\</code> ，即<code>\.</code></p>
-<h2 id="课程-3：匹配特定字符"><a href="#课程-3：匹配特定字符" class="headerlink" title="课程 3：匹配特定字符"></a>课程 3：匹配特定字符</h2><p>​	<code>[abc]</code>匹配字符串，a或b或c</p>
-<h2 id="课程-4：排除特定字符"><a href="#课程-4：排除特定字符" class="headerlink" title="课程 4：排除特定字符"></a>课程 4：排除特定字符</h2><p>​	<code>[^abc]</code> 将匹配除<code>abc</code>外任意单个字符</p>
-<h2 id="课程-5：字符范围"><a href="#课程-5：字符范围" class="headerlink" title="课程 5：字符范围"></a>课程 5：字符范围</h2><p>​	字母数字 (alphanumeric) 元字符<code>\w</code> 相当于字符范围 <code>[A-Za-z0-9_]</code></p>
-<h2 id="课程-6：匹配重复字符-注意：有的正则表达式实现不支持下文重复语法的某些部分。"><a href="#课程-6：匹配重复字符-注意：有的正则表达式实现不支持下文重复语法的某些部分。" class="headerlink" title="课程 6：匹配重复字符(注意：有的正则表达式实现不支持下文重复语法的某些部分。)"></a>课程 6：匹配重复字符(<em>注意：有的正则表达式实现不支持下文重复语法的某些部分。</em>)</h2><ul>
-<li><p>使用花括号表示法指定要匹配多少个字符，<code>a&#123;3&#125;</code>将匹配a字符正好三次，a{1,3}将匹配a字符至少1次，至多3次。</p>
-</li>
-<li><p>这个量词</u> (quantifier) 可以与任意字符或特殊的元字符一起使用，例如 <strong><code>w&#123;3&#125;</code></strong> (三个 w)、**<code>[wxy]&#123;5&#125;</code>** (五个字符，每个字符可以是 w、x 或 y) 和 <strong><code>.&#123;2,6&#125;</code></strong> (两到六个<strong>任意</strong>字符)。</p>
-</li>
-<li><p>花括号中的最大重复次数也可以省略：**<code>&#123;n,&#125;</code>** 表示重复至少 n 次，至多无限制。</p>
-</li>
-</ul>
-<h2 id="课程-7：Kleene-操作符"><a href="#课程-7：Kleene-操作符" class="headerlink" title="课程 7：Kleene 操作符"></a>课程 7：Kleene 操作符</h2><ul>
-<li><code>\d*</code>来匹配任意数量的数字</li>
-<li><code>\d+</code>确保输入的字符串至少有一个数字</li>
-<li>这些量词 (quantifiers) 可以与任意字符或特殊的元字符一起使用，例如 <strong><code>a+</code></strong> (一个或多个 a)、**<code>[abc]+</code><strong>(一个或多个字符 a、b 或 c) 和 <strong><code>.\*</code></strong> (零个或多个</strong>任意**字符)。</li>
-</ul>
-<h2 id="课程-8：可选字符"><a href="#课程-8：可选字符" class="headerlink" title="课程 8：可选字符"></a>课程 8：可选字符</h2><ul>
-<li><strong><code>?</code></strong> (问号) 元字符表示<strong>可选性</strong>。这个元字符允许您匹配前面的零个或一个字符或组。</li>
-<li>例如，模式 <strong><code>ab?c</code></strong> 将匹配字符串 “abc” 或 “ac”，因为 b 被认为是可选的。</li>
-<li>问号是一个特殊字符，您必须使用斜杠 <strong><code>\?</code></strong> 匹配字符串中的普通问号字符。</li>
-</ul>
-<h2 id="课程-9：空白字符"><a href="#课程-9：空白字符" class="headerlink" title="课程 9：空白字符"></a>课程 9：空白字符</h2><ul>
-<li><strong><code>\s</code></strong> 能够匹配上面的<strong>任意</strong>空白符，包括<strong>空格 (␣)<strong>、</strong>制表符 (\t)<strong>、</strong>换行 (\n)</strong> 和<strong>回车 (\r)</strong></li>
-</ul>
-<h2 id="课程-10：开始与结束"><a href="#课程-10：开始与结束" class="headerlink" title="课程 10：开始与结束"></a>课程 10：开始与结束</h2><ul>
-<li><strong><code>^</code> (hat)</strong> 和 <strong><code>$</code> (美元符号)</strong> 来描述一行的开始和结束。</li>
-<li>模式 <strong><code>^success</code></strong> 来<strong>只</strong>匹配以单词 “success” 开头的行，而不匹配 “Error: unsuccessful operation”。如果我们把 <code>^</code> 和 <code>$</code> 结合起来，就能实现一个匹配从开头到结尾一整行的模式。</li>
-<li>请注意，**<code>^</code>** 和方括号 <strong><code>[^...]</code></strong> 中用于排除字符的 hat 不同，这在读取正则表达式时容易混淆。</li>
-</ul>
-<h2 id="课程-11：捕获组"><a href="#课程-11：捕获组" class="headerlink" title="课程 11：捕获组"></a>课程 11：捕获组</h2><ul>
-<li>正则表达式不仅允许我们匹配文本，还允许我们提取信息以便进一步处理。这是通过定义<strong>字符组 (groups of characters)</strong> 并使用特殊的圆括号 <strong>(</strong> 和 <strong>)</strong> 元字符捕获它们来实现的。一对括号内的任何子模式 (subpattern) 都将被<strong>捕获</strong> (capture) 为一个组 (group)。<img src="/../images/regularExpression/%E6%88%AA%E5%B1%8F2023-08-10%2015.38.16.png" alt="截屏2023-08-10 15.38.16"></li>
-</ul>
-<h2 id="课程-12：嵌套组"><a href="#课程-12：嵌套组" class="headerlink" title="课程 12：嵌套组"></a>课程 12：嵌套组</h2><ul>
-<li>如果每个图像文件的文件名中都有一个连续的图片编号，我们可以通过编写 <strong><code>^(IMG(\d+))\.png$</code></strong> 之类的表达式 (使用嵌套的括号来捕获数字)，使用同一个模式同时提取文件名和图片编号。</li>
-<li>在模式中，嵌套组按照从左到右的<em>左括号</em>出现的顺序定义，第一个捕获组是第一个括号里的内容，以此类推。捕获的结果也按照这个顺序排列。</li>
-</ul>
-<h2 id="课程-13：关于分组的更多内容"><a href="#课程-13：关于分组的更多内容" class="headerlink" title="课程 13：关于分组的更多内容"></a>课程 13：关于分组的更多内容</h2><ul>
-<li>所有的量词 (quantifiers) ——包括星号 **<code>\*</code>**、加号 **<code>+</code>**、重复 <strong><code>&#123;m，n&#125;</code></strong> 和问号 <strong><code>?</code></strong> ——都可以在捕获组模式中使用。</li>
-<li>例如，如果我们知道一个电话号码可能包含区号，也可能不包含区号，那么正确的模式是测试整个数字组是否存在 **<code>(\d&#123;3&#125;)?</code>**，而不是测试单个字符本身 (这是错误的)。</li>
-</ul>
-<h2 id="课程-14：条件"><a href="#课程-14：条件" class="headerlink" title="课程 14：条件"></a>课程 14：条件</h2><ul>
-<li>使用 <strong><code>|</code> (逻辑或 locigal OR，也就是管道 pipe)</strong> 来表示<strong>可能的不同的字符集</strong>，尤其是在使用组的时候。</li>
-</ul>
-<h2 id="课程-15：其他元字符"><a href="#课程-15：其他元字符" class="headerlink" title="课程 15：其他元字符"></a>课程 15：其他元字符</h2><ul>
-<li>元字符 **<code>\b</code>**，它匹配单词和非单词字符之间的边界。它在捕获整个单词时最有用，例如模式 **<code>\w+\b</code>**。</li>
-</ul>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h2 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h2>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2244,7 +2401,7 @@ endmodule
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2289,12 +2446,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">105k</span>
+    <span title="站点总字数">122k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:36</span>
+    <span title="站点阅读时长">1:51</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
