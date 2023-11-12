@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Linux Zoned Storage Support OverviewOverview​	应用程序开发者可以通过多种 I&#x2F;O 路径使用分区块设备，可以用不同的编程接口来控制它们，并且可以以不同的方式暴露分区块设备。下面的图表简单表示了各种访问路径。   POSIX：Portable Operating System Interface，它是一系列 IEEE 标准，旨在确保不同操作系统之">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ZNSLinuxKernelSupport">
+<meta property="og:url" content="http://example.com/2023/11/11/ZNSLinuxKernelSupport/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Linux Zoned Storage Support OverviewOverview​	应用程序开发者可以通过多种 I&#x2F;O 路径使用分区块设备，可以用不同的编程接口来控制它们，并且可以以不同的方式暴露分区块设备。下面的图表简单表示了各种访问路径。   POSIX：Portable Operating System Interface，它是一系列 IEEE 标准，旨在确保不同操作系统之">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2013.15.44.png">
+<meta property="og:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2014.07.43.png">
+<meta property="article:published_time" content="2023-11-11T04:01:17.000Z">
+<meta property="article:modified_time" content="2023-11-12T02:33:56.869Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2013.15.44.png">
+
+<link rel="canonical" href="http://example.com/2023/11/11/ZNSLinuxKernelSupport/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ZNSLinuxKernelSupport | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/11/ZNSLinuxKernelSupport/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不舍昼夜">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ZNSLinuxKernelSupport
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-11 12:01:17" itemprop="dateCreated datePublished" datetime="2023-11-11T12:01:17+08:00">2023-11-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-12 10:33:56" itemprop="dateModified" datetime="2023-11-12T10:33:56+08:00">2023-11-12</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>19k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>17 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Linux-Zoned-Storage-Support-Overview"><a href="#Linux-Zoned-Storage-Support-Overview" class="headerlink" title="Linux Zoned Storage Support Overview"></a>Linux Zoned Storage Support Overview</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>​	应用程序开发者可以通过多种 I&#x2F;O 路径使用分区块设备，可以用不同的编程接口来控制它们，并且可以以不同的方式暴露分区块设备。下面的图表简单表示了各种访问路径。</p>
+<blockquote>
+<ul>
+<li><code>POSIX</code>：<code>Portable Operating System Interface</code>，它是一系列 IEEE 标准，旨在确保不同操作系统之间的兼容性。</li>
+</ul>
+</blockquote>
+<p><img src="/../images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2013.15.44.png" alt="截屏2023-11-11 13.15.44"></p>
+<ul>
+<li><code>File Access Interface</code>：文件访问接口。上图中<code>Legacy Application</code>有两种文件访问方式：<ul>
+<li><code>ZBD Compliant File System</code>：文件系统被修改，可以将随机写转换为适合<code>Zoned Block Devices</code>的顺序写。例如，<code>F2FS</code>。</li>
+<li><code>Legacy File System</code>：文件系统未经修改，设备的顺序写入限制由一个设备映射器目标处理器<code>dm-zoned</code>处理。</li>
+</ul>
+</li>
+<li><code>Raw Block Access Interface</code>：应用程序直接访问设备上的数据，该接口类似于<code>legacy File System</code>，使用<code>dm-zoned</code>设备映射器目标驱动实现的，以便对应用程序隐藏顺序写入的限制。</li>
+</ul>
+<p>​	为遵守分区块设备的顺序写入约束而编写或修改的应用程序可以使用三个额外的接口。这些接口直接将设备约束暴露给应用程序，这些应用程序必须确保数据使用从区域的写入指针位置开始的顺序流进行写入。</p>
+<ul>
+<li><code>File Access Interface</code>：该接口专门适配<a target="_blank" rel="noopener" href="https://zonedstorage.io/docs/linux/fs#zonefs"><code>zonefs</code></a>文件系统。该文件系统将<code>zoned block device</code>的每一个<code>zone</code>作为一个文件。但有所不同的是，设备中的顺序写不由<code>zonefs</code>管理，区域的顺序写应交给上层的应用程序负责。</li>
+<li><code>Zoned Raw Block Access Interface</code>：该接口没有任何中间驱动来处理设备限制。应用程序可以直接打开分区块设备的设备文件来使用这个接口，以获取对区块信息和块层提供的管理操作的访问。</li>
+<li><code>Passthrough Device Access Interface</code>：该接口由<code>SCSI</code>通用驱动<code>SG</code>和<code>NVMe</code>驱动提供，它允许应用程序直接向设备发送<code>SCSI</code>和<code>NVMe</code>命令。在这个接口中，内核对应用程序发送的命令干预非常小，这导致需要应用程序自己处理所有的设备限制（例如，逻辑和物理扇区大小，区域边界，命令超时，命令重试次数等）。如<code>libzbc</code>和<code>libnvme</code>这样的用户级库可以大大简化使用这个接口的应用程序的实现。</li>
+</ul>
+<h2 id="Kernel-Versions"><a href="#Kernel-Versions" class="headerlink" title="Kernel Versions"></a>Kernel Versions</h2><p><img src="/../images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2014.07.43.png" alt="截屏2023-11-11 14.07.43"></p>
+<ul>
+<li><code>Passthrough Access Support (SG Access)</code>：内核支持通过<code>SCSI</code>通用<code>(SG)</code>接口访问主机管理的<code>ZBC/ZAC</code>硬盘。对于符合条件的 SCSI 硬盘或连接到兼容 SAS HBA 的 SATA 硬盘，用户可以通过 SG 驱动创建的节点文件来访问这些主机管理的磁盘。这允许用户通过 SG 接口与这些磁盘交互。</li>
+<li><code>Zoned Block Device Access and F2FS Support</code>：4.10以后的内核支持主机以管理常规磁盘的方式将ZBC&#x2F;ZAC<code>磁盘当作block device files</code>管理。</li>
+<li><code>Device Mapper and dm-zoned Support</code>：在内核4.13.0中，对分区块设备的支持被添加到了设备映射器基础架构中。这项支持允许在分区块设备之上使用 dm-linear 和 dm-flakey 设备映射器目标。此外，还添加了 dm-zoned 设备映射器目标驱动程序。</li>
+<li><code>Block multi-queue and SCSI multi-queue Support</code>：支持块多队列和SCSI多队列。</li>
+<li><code>zonefs</code>：支持<code>zonefs file system</code>，将分区块设备的区域作为常规文件暴露出来，支持所有类型的分区块设备。</li>
+<li><code>Zone Append Operation Support</code>：追加写操作。</li>
+<li><code>NVM Express Zoned Namespaces</code>：支持<code>NVMe ZNS</code>命令集。</li>
+</ul>
+<h1 id="Kernel-Configuration"><a href="#Kernel-Configuration" class="headerlink" title="Kernel Configuration"></a>Kernel Configuration</h1><p>内核中一些关于zoned block device 的配置</p>
+<h2 id="Block-Layer"><a href="#Block-Layer" class="headerlink" title="Block Layer"></a>Block Layer</h2><h3 id="Zoned-Block-Devices-Core-Support"><a href="#Zoned-Block-Devices-Core-Support" class="headerlink" title="Zoned Block Devices Core Support"></a>Zoned Block Devices Core Support</h3><p>通过make menuconfig 打开Linux配置菜单，选择 <code>Zoned block device support</code>。</p>
+<h3 id="Write-Ordering-Control"><a href="#Write-Ordering-Control" class="headerlink" title="Write Ordering Control"></a>Write Ordering Control</h3><p>​	写入顺序控制通过<code>deadline</code>（遗留的单队列块I&#x2F;O路径）和mq-deadkine（多队列块I&#x2F;O路径）块 I&#x2F;O 调度器实现的（见写入顺序控制）。如果设置了 CONFIG_BLK_DEV_ZONED 配置选项，则自动启用 deadline 和 mq-deadline 分区块设备支持。</p>
+<p>​	对于分区块设备，启用这个调度器是必须的。配置选项 CONFIG_MQ_IOSCHED_DEADLINE 启用 mq-deadline 调度器。配置选项 CONFIG_IOSCHED_DEADLINE 启用 deadline 调度器。这两个选项都可以从 IO 调度器顶级菜单中选择。</p>
+<p>​	不过在后续的版本中，<code>CONFIG_MQ_IOSCHED_DEADLINE</code>会随着<code>CONFIG_BLK_DEV_ZONED</code>配置而配置。</p>
+<h2 id="Device-Drivers-Configuration"><a href="#Device-Drivers-Configuration" class="headerlink" title="Device Drivers Configuration"></a>Device Drivers Configuration</h2><ul>
+<li><code>null_blk</code> Logic Device</li>
+<li><code>ZBC</code> and &#96;ZAC Hard-Disks Support</li>
+<li><code>NVMe Zoned Namespace Solid State Disks Support</code></li>
+</ul>
+<h2 id="Device-Mapper"><a href="#Device-Mapper" class="headerlink" title="Device Mapper"></a>Device Mapper</h2><p>设置了 CONFIG_BLK_DEV_ZONED 选项时，设备映射器子系统对分区块设备的支持会自动启用。这使得 dm-linear 和 dm-flakey 目标得到支持。请注意，必须启用 dm-zoned 设备映射器目标才能使用。</p>
+<p>通过在菜单“设备驱动程序 –&gt; 多设备驱动支持（RAID 和 LVM）–&gt; 设备映射器支持 –&gt; 驱动管理的分区块设备目标支持”中选择 CONFIG_DM_ZONED 选项来启用 dm-zoned 目标。</p>
+<h2 id="File-Systems"><a href="#File-Systems" class="headerlink" title="File Systems"></a>File Systems</h2><h3 id="F2fs"><a href="#F2fs" class="headerlink" title="F2fs"></a>F2fs</h3><p>当<code>CONFIG_BLK_DEV_ZONED</code>配置时，<code>f2fs file system</code>也自动被配置。</p>
+<h3 id="zonefs"><a href="#zonefs" class="headerlink" title="zonefs"></a>zonefs</h3><p>这个要在 <code>menu File system -&gt; zonefs</code>中手动配置</p>
+<h3 id="Kernel-Installation"><a href="#Kernel-Installation" class="headerlink" title="Kernel Installation"></a>Kernel Installation</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo make modules_install install</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo make headers_install</span><br></pre></td></tr></table></figure>
+
+<h1 id="Zoned-Block-Device-user-Interface"><a href="#Zoned-Block-Device-user-Interface" class="headerlink" title="Zoned Block Device user Interface"></a>Zoned Block Device user Interface</h1><p>用户程序可以通过两种接口访问<code>zone information</code>和管理<code>zoned block device</code>中的<code>zones</code></p>
+<ol>
+<li><code>sysfs attribute files</code>：可以直接作为常规文件由应用程序访问，或者通过脚本语言访问。</li>
+<li><code>ioctl() system call</code>：适用于从 C 程序或其他具有等效系统调用绑定的编程语言中使用。</li>
+</ol>
+<h2 id="Sysfs-Interface"><a href="#Sysfs-Interface" class="headerlink" title="Sysfs Interface"></a>Sysfs Interface</h2><table>
+<thead>
+<tr>
+<th align="center">File</th>
+<th>Kernel version</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;zoned</td>
+<td>4.10.0</td>
+<td>Device zoned model</td>
+</tr>
+<tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;chunk_sectors</td>
+<td>4.10.0</td>
+<td>Device zone size</td>
+</tr>
+<tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;nr_zones</td>
+<td>4.20.0</td>
+<td>Total number of zones</td>
+</tr>
+<tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;zone_append_max_bytes</td>
+<td>5.8.0</td>
+<td>Maximum size in bytes of a zone append write operation</td>
+</tr>
+<tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;max_open_zones</td>
+<td>5.9.0</td>
+<td>Maximum number of open zones</td>
+</tr>
+<tr>
+<td align="center">&#x2F;sys&#x2F;block&#x2F;<em>dev name</em>&#x2F;queue&#x2F;max_active_zones</td>
+<td>5.9.0</td>
+<td>Maximum number of active zones</td>
+</tr>
+</tbody></table>
+<h3 id="Device-Zoned-Model"><a href="#Device-Zoned-Model" class="headerlink" title="Device Zoned Model"></a>Device Zoned Model</h3><p><code>zone model</code>（<code>host-managed</code>和<code>host-awared</code>）可以通过<code>zoned</code>设备队列 查看，例如，如果一个<code>zoned block device</code>叫做<code>sdb</code>，则通过命令查看模式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /sys/block/sdb/queue/zoned</span></span><br><span class="line">host-managed</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>none</td>
+<td>Regular block device, including drive-managed SMR disks</td>
+</tr>
+<tr>
+<td>host-aware</td>
+<td>Host-aware device model</td>
+</tr>
+<tr>
+<td>host-managed</td>
+<td>Host-managed device model</td>
+</tr>
+</tbody></table>
+<h3 id="Zone-Size"><a href="#Zone-Size" class="headerlink" title="Zone Size"></a>Zone Size</h3><p>设备的区域大小<code>zone size</code>可以从<code>sysfs</code>队列属性文件读取，命令如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /sys/block/sdb/queue/chunk_sectors</span></span><br><span class="line">524288</span><br></pre></td></tr></table></figure>
+
+<p>该值以512字节扇区的数量显示，不论设备的实际逻辑和物理大小如何。在上文中，设备分区的大小为<code>524288 * 512 = 256 MB</code></p>
+<h3 id="Number-of-Zones"><a href="#Number-of-Zones" class="headerlink" title="Number of Zones"></a>Number of Zones</h3><p>同样，<code>zoned device</code>的<code>zones</code>的数量可以通过如下命令获取</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /sys/block/sdb/queue/nr_zones</span></span><br><span class="line">55880</span><br></pre></td></tr></table></figure>
+
+<p>对于普通块设备，这个参数为0。</p>
+<h3 id="Zone-Resources"><a href="#Zone-Resources" class="headerlink" title="Zone Resources"></a>Zone Resources</h3><p>设备区域资源可以从<code>sysfs queue</code>参数文件中读取，分别是<code>max_open_zones</code>和<code>max_active_zones</code>。</p>
+<p>命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /sys/block/sdb/queue/max_open_zones</span></span><br><span class="line">128</span><br></pre></td></tr></table></figure>
+
+<p>该命令给出了能被显示或者隐示打开的<code>zones</code>的数量为<code>128</code>。如果为0，则表示设备没有限制最大zones的打开数量。</p>
+<p>接下来的命令给出了<code>zones</code>是<code>active</code>状态<code>(open or closed state)</code>的最大数量，同上，0表示没有限制：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /sys/block/sdb/queue/max_active_zones</span></span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+
+<p>当我们通过<code>null_blk</code>,<code>QEMU</code>,或者<code>tcmu-runner</code>模拟一个<code>zoned device</code>，以上参数是可以被人工设置的。</p>
+<h2 id="ioctl-Application-Programming-Interface"><a href="#ioctl-Application-Programming-Interface" class="headerlink" title="ioctl() Application Programming Interface"></a><em>ioctl()</em> Application Programming Interface</h2><p>用户可以通过头文件<del>&#x2F;usr&#x2F;include&#x2F;linux&#x2F;blkzoned.h</del>，在kernel 5.10中，头文件在<code>include/uapi/linux/blkzone.h</code>，中定义的宏和数据结构获取<code>zoned block device</code>的信息并管理他们。</p>
+<h3 id="Zone-Information-Data-Structures"><a href="#Zone-Information-Data-Structures" class="headerlink" title="Zone Information Data Structures"></a>Zone Information Data Structures</h3><p><code>struct blk_zone</code>定义了一个<code>zone-descriptor</code>结构，该结构包含了zone的所有描述。</p>
+<ul>
+<li><code>zone&#39;s location on device</code></li>
+<li><code>zone type</code></li>
+<li><code>zone state</code></li>
+<li><code>position of zone write pointer</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * struct blk_zone - Zone descriptor for BLKREPORTZONE ioctl.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @start: Zone start in 512 B sector units </span></span><br><span class="line"><span class="comment"> * @len: Zone length in 512 B sector units</span></span><br><span class="line"><span class="comment"> * @wp: Zone write pointer location in 512 B sector units</span></span><br><span class="line"><span class="comment"> * @type: see enum blk_zone_type for possible values</span></span><br><span class="line"><span class="comment"> * @cond: see enum blk_zone_cond for possible values</span></span><br><span class="line"><span class="comment"> * @non_seq: Flag indicating that the zone is using non-sequential resources</span></span><br><span class="line"><span class="comment"> *           (for host-aware zoned block devices only).</span></span><br><span class="line"><span class="comment"> * @reset: Flag indicating that a zone reset is recommended.</span></span><br><span class="line"><span class="comment"> * @resv: Padding for 8B alignment.</span></span><br><span class="line"><span class="comment"> * @capacity: Zone usable capacity in 512 B sector units</span></span><br><span class="line"><span class="comment"> * @reserved: Padding to 64 B to match the ZBC, ZAC and ZNS defined zone</span></span><br><span class="line"><span class="comment"> *            descriptor size.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * start, len, capacity and wp use the regular 512 B sector unit, regardless</span></span><br><span class="line"><span class="comment"> * of the device logical block size. The overall structure size is 64 B to</span></span><br><span class="line"><span class="comment"> * match the ZBC, ZAC and ZNS defined zone descriptor and allow support for</span></span><br><span class="line"><span class="comment"> * future additional zone information.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone</span> &#123;</span></span><br><span class="line">	__u64	start;		<span class="comment">/* 分区的起始扇区。这是一个64位无符号整数，表示分区在存储设备上的起始位置，以512字节的扇区为单位计量。 */</span></span><br><span class="line">	__u64	len;		<span class="comment">/* 分区的长度，用扇区的数量表示。这同样是一个64位无符号整数，指示该分区包含多少个512字节的扇区。 */</span></span><br><span class="line">	__u64	wp;		<span class="comment">/* 分区的写入指针位置。这个值指示当前可写入数据的位置，在存储设备中也是以512字节扇区为单位表示。 */</span></span><br><span class="line">	__u8	type;		<span class="comment">/* 分区的类型。这是一个8位无符号整数，其值根据 enum blk_zone_type 中定义的类型来确定，比如常规分区、顺序写入分区等。 */</span></span><br><span class="line">	__u8	cond;		<span class="comment">/* 分区的状态。这个字段根据 enum blk_zone_cond 定义的值来确定分区的当前状态，例如空闲、满、只读等。*/</span></span><br><span class="line">	__u8	non_seq;	<span class="comment">/* 非顺序写入资源的标志。这是一个8位的标志位，用于指示该分区是否使用了非顺序写入资源，这通常仅适用于主动感知分区的块设备。 */</span></span><br><span class="line">	__u8	reset;		<span class="comment">/* 重置写入指针的推荐标志。这个字段表示是否推荐对该分区执行写入指针重置操作。 */</span></span><br><span class="line">	__u8	resv[<span class="number">4</span>];	<span class="comment">/*	 为了实现8字节对齐而设置的保留字段。	*/</span></span><br><span class="line">	__u64	capacity;	<span class="comment">/* 分区的可用容量，以512字节扇区为单位计量。*/</span></span><br><span class="line">	__u8	reserved[<span class="number">24</span>]; <span class="comment">/* 额外的保留字段，用来填充结构体大小，以确保整个结构体与 ZBC（Zoned Block Commands）、ZAC（Zoned ATA Commands）和 ZNS（Zoned Namespace）定义的分区描述符大小相匹配，即64字节。	*/</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	正如这个数据结构定义中的注释所指出的，用来表示（1）分区的起始位置、（2）分区的大小和（3）写入指针位置的单位是‘512字节的扇区大小’。这一点不受设备实际逻辑块大小的影响。即使是具有4KB逻辑扇区的设备，上述分区描述符字段也使用512字节扇区大小单位。”</p>
+<h3 id="Zone-Type"><a href="#Zone-Type" class="headerlink" title="Zone Type"></a>Zone Type</h3><p>一个zone的discriptor只有一种类别：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * enum blk_zone_type - Types of zones allowed in a zoned device.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_TYPE_CONVENTIONAL: The zone has no write pointer and can be writen</span></span><br><span class="line"><span class="comment"> *                              randomly. Zone reset has no effect on the zone.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_TYPE_SEQWRITE_REQ: The zone must be written sequentially</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_TYPE_SEQWRITE_PREF: The zone can be written non-sequentially</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Any other value not defined is reserved and must be considered as invalid.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">blk_zone_type</span> &#123;</span></span><br><span class="line">	BLK_ZONE_TYPE_CONVENTIONAL	= <span class="number">0x1</span>,</span><br><span class="line">	BLK_ZONE_TYPE_SEQWRITE_REQ	= <span class="number">0x2</span>,</span><br><span class="line">	BLK_ZONE_TYPE_SEQWRITE_PREF	= <span class="number">0x3</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Zone-Condition"><a href="#Zone-Condition" class="headerlink" title="Zone Condition"></a>Zone Condition</h3><p>每个zone也只有一种状态：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * enum blk_zone_cond - Condition [state] of a zone in a zoned device.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_NOT_WP: The zone has no write pointer, it is conventional.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_EMPTY: The zone is empty.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_IMP_OPEN: The zone is open, but not explicitly opened.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_EXP_OPEN: The zones was explicitly opened by an</span></span><br><span class="line"><span class="comment"> *                          OPEN ZONE command.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_CLOSED: The zone was [explicitly] closed after writing.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_FULL: The zone is marked as full, possibly by a zone</span></span><br><span class="line"><span class="comment"> *                      FINISH ZONE command.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_READONLY: The zone is read-only.</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_COND_OFFLINE: The zone is offline (sectors cannot be read/written).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The Zone Condition state machine in the ZBC/ZAC standards maps the above</span></span><br><span class="line"><span class="comment"> * deinitions as:</span></span><br><span class="line"><span class="comment"> *   - ZC1: Empty         | BLK_ZONE_COND_EMPTY</span></span><br><span class="line"><span class="comment"> *   - ZC2: Implicit Open | BLK_ZONE_COND_IMP_OPEN</span></span><br><span class="line"><span class="comment"> *   - ZC3: Explicit Open | BLK_ZONE_COND_EXP_OPEN</span></span><br><span class="line"><span class="comment"> *   - ZC4: Closed        | BLK_ZONE_COND_CLOSED</span></span><br><span class="line"><span class="comment"> *   - ZC5: Full          | BLK_ZONE_COND_FULL</span></span><br><span class="line"><span class="comment"> *   - ZC6: Read Only     | BLK_ZONE_COND_READONLY</span></span><br><span class="line"><span class="comment"> *   - ZC7: Offline       | BLK_ZONE_COND_OFFLINE</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Conditions 0x5 to 0xC are reserved by the current ZBC/ZAC spec and should</span></span><br><span class="line"><span class="comment"> * be considered invalid.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">blk_zone_cond</span> &#123;</span></span><br><span class="line">	BLK_ZONE_COND_NOT_WP	= <span class="number">0x0</span>,</span><br><span class="line">	BLK_ZONE_COND_EMPTY	= <span class="number">0x1</span>,</span><br><span class="line">	BLK_ZONE_COND_IMP_OPEN	= <span class="number">0x2</span>,</span><br><span class="line">	BLK_ZONE_COND_EXP_OPEN	= <span class="number">0x3</span>,</span><br><span class="line">	BLK_ZONE_COND_CLOSED	= <span class="number">0x4</span>,</span><br><span class="line">	BLK_ZONE_COND_READONLY	= <span class="number">0xD</span>,</span><br><span class="line">	BLK_ZONE_COND_FULL	= <span class="number">0xE</span>,</span><br><span class="line">	BLK_ZONE_COND_OFFLINE	= <span class="number">0xF</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>BLK_ZONE_COND_OFFLINE</code>和<code>BLK_ZONE_COND_READONLY</code>只能被设备本身设置，用来指示因硬件缺陷而能力受限的分区。</p>
+<p>用户操作可能导致状态的转变。使用内核<code>ioctl()</code>接口的应用程序可以发出分区管理命令。</p>
+<blockquote>
+<p>The SCSI Zoned Block Command specification (ZBC), the ATA Zoned Device ATA Command Set specification (ZAC) and the NVM Express Zoned Namespace Command Set specification (ZNS) define a zone condition state machine that governs the possible transitions of a zone from one condition to another depending on the commands executed.</p>
+</blockquote>
+<h3 id="ioctl-Commands"><a href="#ioctl-Commands" class="headerlink" title="ioctl() Commands"></a>ioctl() Commands</h3><p>下面是 ioctl()命令：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Zoned block device ioctl&#x27;s:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @BLKREPORTZONE: Get zone information. Takes a zone report as argument.</span></span><br><span class="line"><span class="comment"> *                 The zone report will start from the zone containing the</span></span><br><span class="line"><span class="comment"> *                 sector specified in the report request structure.</span></span><br><span class="line"><span class="comment"> * @BLKRESETZONE: Reset the write pointer of the zones in the specified</span></span><br><span class="line"><span class="comment"> *                sector range. The sector range must be zone aligned.</span></span><br><span class="line"><span class="comment"> * @BLKGETZONESZ: Get the device zone size in number of 512 B sectors.</span></span><br><span class="line"><span class="comment"> * @BLKGETNRZONES: Get the total number of zones of the device.</span></span><br><span class="line"><span class="comment"> * @BLKOPENZONE: Open the zones in the specified sector range.</span></span><br><span class="line"><span class="comment"> *               The 512 B sector range must be zone aligned.</span></span><br><span class="line"><span class="comment"> * @BLKCLOSEZONE: Close the zones in the specified sector range.</span></span><br><span class="line"><span class="comment"> *                The 512 B sector range must be zone aligned.</span></span><br><span class="line"><span class="comment"> * @BLKFINISHZONE: Mark the zones as full in the specified sector range.</span></span><br><span class="line"><span class="comment"> *                 The 512 B sector range must be zone aligned.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKREPORTZONE	_IOWR(0x12, 130, struct blk_zone_report)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKRESETZONE	_IOW(0x12, 131, struct blk_zone_range)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKGETZONESZ	_IOR(0x12, 132, __u32)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKGETNRZONES	_IOR(0x12, 133, __u32)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKOPENZONE	_IOW(0x12, 134, struct blk_zone_range)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKCLOSEZONE	_IOW(0x12, 135, struct blk_zone_range)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLKFINISHZONE	_IOW(0x12, 136, struct blk_zone_range)</span></span><br></pre></td></tr></table></figure>
+
+<p>以下是内核支持的命令：</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Kernel version</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BLKREPORTZONE</td>
+<td>4.10.0</td>
+<td>Get zone information</td>
+</tr>
+<tr>
+<td>BLKRESETZONE</td>
+<td>4.10.0</td>
+<td>Reset a zone write pointer</td>
+</tr>
+<tr>
+<td>BLKGETZONESZ</td>
+<td>4.20.0</td>
+<td>Get a device zone size</td>
+</tr>
+<tr>
+<td>BLKGETNRZONES</td>
+<td>4.20.0</td>
+<td>Get the total number of zones of a device</td>
+</tr>
+<tr>
+<td>BLKOPENZONE</td>
+<td>5.5.0</td>
+<td>Explicitly open a zone</td>
+</tr>
+<tr>
+<td>BLKCLOSEZONE</td>
+<td>5.5.0</td>
+<td>Close a zone</td>
+</tr>
+<tr>
+<td>BLKFINISHZONE</td>
+<td>5.5.0</td>
+<td>Finish a zone</td>
+</tr>
+</tbody></table>
+<h3 id="Obtaining-Zone-Information"><a href="#Obtaining-Zone-Information" class="headerlink" title="Obtaining Zone Information"></a>Obtaining Zone Information</h3><p><code>BLKREPORTZONE</code>命令允许应用以分区描述符数组的形式获取设备的分区消息，<code>struct blk_zone_report</code>的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * struct blk_zone_report - BLKREPORTZONE ioctl request/reply</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @sector: starting sector of report</span></span><br><span class="line"><span class="comment"> * @nr_zones: IN maximum / OUT actual</span></span><br><span class="line"><span class="comment"> * @flags: one or more flags as defined by enum blk_zone_report_flags.</span></span><br><span class="line"><span class="comment"> * @zones: Space to hold @nr_zones @zones entries on reply.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The array of at most @nr_zones must follow this structure in memory.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_report</span> &#123;</span></span><br><span class="line">	__u64		sector;</span><br><span class="line">	__u32		nr_zones;</span><br><span class="line">	__u8    reserved[<span class="number">4</span>];</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">blk_zone</span> <span class="title">zones</span>[0];</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>sector</code>：代表报告的起始扇区。指定分区报告应该从哪个扇区开始。</li>
+<li><code>nr_zones</code>：作为输入，指定调用者希望检索信息的最大分区数。作为输出，表示设备响应<code>BLKREPORTZONE</code>命令后报告的实际分区数。</li>
+<li><code>zones[0]</code>：这是一个灵活数组成员（由<code>[0]</code>表示），用于存储分区描述符。此数组中的元素数量由<code>nr_zones</code>指定。这个数组将包含设备返回的实际分区信息。数组中的每个元素都是<code>struct blk_zone</code>类型，其中包含了关于单个分区的详细信息。</li>
+</ul>
+<p>下面是一个简单的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ioctl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/blkzoned.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> start_sector = <span class="number">0</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_report</span> *<span class="title">hdr</span>;</span></span><br><span class="line"><span class="type">size_t</span> hdr_len;</span><br><span class="line"><span class="type">int</span> nr_zones = <span class="number">256</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 	文件头的长度 	*/</span></span><br><span class="line">hdr_len = <span class="keyword">sizeof</span>(<span class="keyword">struct</span> blk_zone_report) + nr_zones * <span class="keyword">sizeof</span>(<span class="keyword">struct</span> blkzone);</span><br><span class="line"><span class="comment">/* 	为文件头分配空间	 */</span></span><br><span class="line">hdr = <span class="built_in">malloc</span>(hdr_len);</span><br><span class="line"><span class="comment">/*	检查是否分配成功	*/</span></span><br><span class="line"><span class="keyword">if</span> (!hdr)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">		<span class="comment">/*	文件头的起始扇区	*/</span></span><br><span class="line">    hdr-&gt;sector = start_sector;</span><br><span class="line">    <span class="comment">/*	最大分区数	*/</span></span><br><span class="line">    hdr-&gt;nr_zones = nr_zones;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">/*	通过`ioctl`调用，使用BLKREPORTZONE命令获取分区信息	*/</span></span><br><span class="line">    ret = ioctl(fd, BLKREPORTZONE, hdr);</span><br><span class="line">    <span class="keyword">if</span> (ret)</span><br><span class="line">        <span class="keyword">goto</span> error;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">/*	如果没有报告任何分区，结束	*/</span></span><br><span class="line">    <span class="keyword">if</span> (!hdr-&gt;nr_zones) &#123;</span><br><span class="line">        <span class="comment">/* Done */</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Got %u zone descriptors\n&quot;</span>, hdr-&gt;nr_zones);</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* The next report must start after the last zone reported */</span></span><br><span class="line">    <span class="comment">/*	更新 start_sector 以便下一次报告从上一次报告的最后一个分区之后的扇区开始	*/</span></span><br><span class="line">    start_sector = hdr-&gt;zones[hdr-&gt;nr_zones - <span class="number">1</span>].start +</span><br><span class="line">               hdr-&gt;zones[hdr-&gt;nr_zones - <span class="number">1</span>].len;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>zone</code>描述符的数量存储在结构体<code>blk_zone_report</code>中的<code>nr_zones</code>并返回。 </p>
+<p>在5.9内核中，定义有所不同：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * enum blk_zone_report_flags - Feature flags of reported zone descriptors.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @BLK_ZONE_REP_CAPACITY: Zone descriptor has capacity field.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">blk_zone_report_flags</span> &#123;</span></span><br><span class="line">	BLK_ZONE_REP_CAPACITY	= (<span class="number">1</span> &lt;&lt; <span class="number">0</span>),</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * struct blk_zone_report - BLKREPORTZONE ioctl request/reply</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @sector: starting sector of report</span></span><br><span class="line"><span class="comment"> * @nr_zones: IN maximum / OUT actual</span></span><br><span class="line"><span class="comment"> * @flags: one or more flags as defined by enum blk_zone_report_flags.</span></span><br><span class="line"><span class="comment"> * @zones: Space to hold @nr_zones @zones entries on reply.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The array of at most @nr_zones must follow this structure in memory.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_report</span> &#123;</span></span><br><span class="line">    __u64       sector;</span><br><span class="line">    __u32       nr_zones;</span><br><span class="line">    __u32       flags;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">blk_zone</span> <span class="title">zones</span>[0];</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>flags</code>：包含一个或者多个<code>blk_zone_report_flags</code>的枚举类，枚举量为<code>BLK_ZONE_REP_CAPACITY</code>，</p>
+<p>如果该值为1，则<code>zone</code>描述符结构<code>blk_zone</code>体会设置<code>capacity</code>域可用。否则忽略该成员。</p>
+<p>下面的代码实例展示应用程序如何通过<code>autotool</code>构建环境中检查特定头文件和结构体成员的存在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># less configure.ac</span><br><span class="line">...</span><br><span class="line">AC_CHECK_HEADER(linux/blkzoned.h, [],</span><br><span class="line">                [AC_MSG_ERROR([Couldn&#x27;t find linux/blkzoned.h. Kernel too old ?])],</span><br><span class="line">                [[#include &lt;linux/blkzoned.h&gt;]])</span><br><span class="line"></span><br><span class="line">AC_CHECK_MEMBER([struct blk_zone.capacity],</span><br><span class="line">                [AC_DEFINE(HAVE_BLK_ZONE_REP_V2, [1], [report zones includes zone capacity])],</span><br><span class="line">                [], [[#include &lt;linux/blkzoned.h&gt;]])</span><br></pre></td></tr></table></figure>
+
+<p>在一些较新的Linux内核版本中，特别是从5.9版本开始，增加了对分区容量信息的支持。这意味着内核可以提供每个分区的容量信息。对于这些内核，宏<code>HAVE_BLK_ZONE_REP_V2</code>被定义，它的应用如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Handle kernel zone capacity support</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> HAVE_BLK_ZONE_REP_V2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLK_ZONE_REP_CAPACITY   (1 &lt;&lt; 0)</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_v2</span> &#123;</span></span><br><span class="line">        __u64   start;          <span class="comment">/* Zone start sector */</span></span><br><span class="line">        __u64   len;            <span class="comment">/* Zone length in number of sectors */</span></span><br><span class="line">        __u64   wp;             <span class="comment">/* Zone write pointer position */</span></span><br><span class="line">        __u8    type;           <span class="comment">/* Zone type */</span></span><br><span class="line">        __u8    cond;           <span class="comment">/* Zone condition */</span></span><br><span class="line">        __u8    non_seq;        <span class="comment">/* Non-sequential write resources active */</span></span><br><span class="line">        __u8    reset;          <span class="comment">/* Reset write pointer recommended */</span></span><br><span class="line">        __u8    resv[<span class="number">4</span>];</span><br><span class="line">        __u64   capacity;       <span class="comment">/* Zone capacity in number of sectors */</span></span><br><span class="line">        __u8    reserved[<span class="number">24</span>];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> blk_zone blk_zone_v2</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_report_v2</span> &#123;</span></span><br><span class="line">        __u64   sector;</span><br><span class="line">        __u32   nr_zones;</span><br><span class="line">        __u32   flags;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">blk_zone</span> <span class="title">zones</span>[0];</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> blk_zone_report blk_zone_report_v2</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* HAVE_BLK_ZONE_REP_V2 */</span></span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>对于不支持报告分区容量的内核，通过上述代码重新定义<code>blk_zone</code>。</p>
+<p>再次以libzbd库的源代码为例，分区报告回复的分区描述符可以按照以下方式处理。我们在上文中提到，结构体<code>struct blk_zone</code>内的成员的长度，都是以<code>512B</code>扇区计数的。而在函数<code>zbd_parse_zone</code>中，我们通过将<code>blk_zone</code>内的成员左移9位（即乘以512）得到对应的字节数量，并存储到对应的<code>struct zbd_zone * zone</code>中。</p>
+<p>这是因为，在内核层面，分区的起始位置、长度、容量和写入指针通常以扇区为单位进行存储和报告，而在许多高级应用和系统调用中，使用字节作为更通用和精确的度量单位更为常见。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * zbd_parse_zone - Fill a zone descriptor</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"> <span class="comment">/*	</span></span><br><span class="line"><span class="comment"> 	*	zbd_zone 	用于存储解析后的分区信息</span></span><br><span class="line"><span class="comment"> 	*	blk_zone	指向原始从内核获取的分区信息</span></span><br><span class="line"><span class="comment"> 	*	blk_zone_report 指向分区报告的结构体指针</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> <span class="title function_">zbd_parse_zone</span><span class="params">(<span class="keyword">struct</span> zbd_zone *zone, <span class="keyword">struct</span> blk_zone *blkz,</span></span><br><span class="line"><span class="params">                                  <span class="keyword">struct</span> blk_zone_report *rep)</span></span><br><span class="line">&#123;</span><br><span class="line">				<span class="comment">/*	将分区的起始扇区转换为字节单位存储在 zbd_zone	中	*/</span></span><br><span class="line">        zone-&gt;start = blkz-&gt;start &lt;&lt; SECTOR_SHIFT;</span><br><span class="line">        <span class="comment">/*	将分区的长度(以扇区为单位)转换为以字节为单位	SECTOR_SHIFT = 9，扇区大小为512B	*/</span></span><br><span class="line">        zone-&gt;len = blkz-&gt;len &lt;&lt; SECTOR_SHIFT;</span><br><span class="line">        <span class="comment">/*	判断capacity	*/</span></span><br><span class="line">        <span class="keyword">if</span> (rep-&gt;flags &amp; BLK_ZONE_REP_CAPACITY)</span><br><span class="line">                zone-&gt;capacity = blkz-&gt;capacity &lt;&lt; SECTOR_SHIFT;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">                zone-&gt;capacity = zone-&gt;len;</span><br><span class="line">        </span><br><span class="line">        zone-&gt;wp = blkz-&gt;wp &lt;&lt; SECTOR_SHIFT;</span><br><span class="line"></span><br><span class="line">        zone-&gt;type = blkz-&gt;type;</span><br><span class="line">        zone-&gt;cond = blkz-&gt;cond;</span><br><span class="line">        zone-&gt;flags = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (blkz-&gt;reset)</span><br><span class="line">                zone-&gt;flags |= ZBD_ZONE_RWP_RECOMMENDED;</span><br><span class="line">        <span class="keyword">if</span> (blkz-&gt;non_seq)</span><br><span class="line">                zone-&gt;flags |= ZBD_ZONE_NON_SEQ_RESOURCES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>命令行工具blkzone，作为util-linux项目的一部分，使用BLKREPORTZONE命令来实现其报告功能。其代码类似于上述方法进行了修改，以确保无论使用的是哪个版本的内核，都能正确编译和执行。</p>
+<h3 id="Resetting-a-Zone-Write-Pointer"><a href="#Resetting-a-Zone-Write-Pointer" class="headerlink" title="Resetting a Zone Write Pointer"></a>Resetting a Zone Write Pointer</h3><p>一个或多个连续写区域的写指针可以通过命令<code>BLKRESETZONE</code>重置，在重置一个写指针的时候，区域的状态同样会被更改为<code>BLK_ZONE_COND_EMPTY</code>。</p>
+<p>当多个区域需要被重置时，使用结构体<code>blk_zone_range</code>追踪这些区域，其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * struct blk_zone_range - BLKRESETZONE/BLKOPENZONE/</span></span><br><span class="line"><span class="comment"> *                         BLKCLOSEZONE/BLKFINISHZONE ioctl</span></span><br><span class="line"><span class="comment"> *                         requests</span></span><br><span class="line"><span class="comment"> * @sector: Starting sector of the first zone to operate on.</span></span><br><span class="line"><span class="comment"> * @nr_sectors: Total number of sectors of all zones to operate on.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_range</span> &#123;</span></span><br><span class="line">	__u64		sector;</span><br><span class="line">	__u64		nr_sectors;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>同样，该结构体也可以在，打开区域<code>BLKOPENZONE</code>，关闭区域<code>BLKCLOSEZONE</code>，完成区域<code>BLKFINISHZONE</code> <code>ioctl</code>中使用。</p>
+<p>下面是一个简单的例子，该例子重置一个区域起始在274726912位置，该区域大小为256MiB(524288 sectors of 512B)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ioctl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/blkzoned.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">blk_zone_range</span> <span class="title">zrange</span>;</span></span><br><span class="line"><span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">zrange.sector = <span class="number">274726912</span>;</span><br><span class="line">zrange.nr_sectors = <span class="number">524288</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*	调用BLKRESETZONE	*/</span></span><br><span class="line">ret = ioctl(fd, BLKRESETZONE, &amp;zrange);</span><br><span class="line"><span class="keyword">if</span> (ret)</span><br><span class="line">    <span class="keyword">goto</span> error;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>fd</code>为设备描述符，必须保证该设备是打开的。</p>
+<p>命令行工具blkzone使用BLKRESETZONE命令来实现其重置功能。</p>
+<h3 id="Opening-Closing-and-Finishing-Zones"><a href="#Opening-Closing-and-Finishing-Zones" class="headerlink" title="Opening. Closing and Finishing Zones"></a>Opening. Closing and Finishing Zones</h3><ul>
+<li><code>BLKOPENZONE</code>命令的参数和<code>BLKRESETZONE</code>的命令一样。</li>
+<li><code>BLKCLOSEZONE</code>命令关闭一个区域；<code>BLKFINISHZONE</code>会结束一个区域，这意味着将该区域的状态设置为满<code>BLK_ZONE_COND_FULL</code>。以上两个命令均需要指向<code>blk_zone_range</code>的指针，用来表明操作的区域范围。</li>
+</ul>
+<h3 id="Zone-Size-and-Number-of-Zones"><a href="#Zone-Size-and-Number-of-Zones" class="headerlink" title="Zone Size and Number of Zones"></a>Zone Size and Number of Zones</h3><ul>
+<li><code>BLKGETZONESZ</code>：获取分区设备的分区大小<code>zoned device&#39;s zone size</code>。</li>
+<li><code>BLKGETNRZONES</code>：获取设备的总分区数。</li>
+</ul>
+<p>以上两个命令均接受一个指向32位无符号整型的指针， 并返回对应的数量。下面给出例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ioctl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/blkzoned.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> nr_zones, zone_size;</span><br><span class="line"><span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">ret = ioctl(fd, ,BLKGETZONESZ, &amp;zone_size);</span><br><span class="line"><span class="keyword">if</span> (ret)</span><br><span class="line">    <span class="keyword">goto</span> error;</span><br><span class="line">ret = ioctl(fd, ,BLKGETNRZONES, &amp;nr_zones);</span><br><span class="line"><span class="keyword">if</span> (ret)</span><br><span class="line">    <span class="keyword">goto</span> error;</span><br><span class="line"></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;Device has %u zones of %u 512-Bytes sectors\n&quot;</span>,</span><br><span class="line">       nr_zones, zone_size);</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>我们发现，在调用<code>BLKGETNRZONES</code>等函数时，需要通过<code>ioctl</code>。</p>
+<p><code>BLKGETNRZONES</code>命令特别适用于分配足够大的分区描述符数组，以便对设备上所有分区进行分区报告</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/11/10/kernelInside/" rel="prev" title="kernelInside">
+      <i class="fa fa-chevron-left"></i> kernelInside
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux-Zoned-Storage-Support-Overview"><span class="nav-number">1.</span> <span class="nav-text">Linux Zoned Storage Support Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kernel-Versions"><span class="nav-number">1.2.</span> <span class="nav-text">Kernel Versions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-Configuration"><span class="nav-number">2.</span> <span class="nav-text">Kernel Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Block-Layer"><span class="nav-number">2.1.</span> <span class="nav-text">Block Layer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zoned-Block-Devices-Core-Support"><span class="nav-number">2.1.1.</span> <span class="nav-text">Zoned Block Devices Core Support</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ordering-Control"><span class="nav-number">2.1.2.</span> <span class="nav-text">Write Ordering Control</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Drivers-Configuration"><span class="nav-number">2.2.</span> <span class="nav-text">Device Drivers Configuration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Mapper"><span class="nav-number">2.3.</span> <span class="nav-text">Device Mapper</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#File-Systems"><span class="nav-number">2.4.</span> <span class="nav-text">File Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#F2fs"><span class="nav-number">2.4.1.</span> <span class="nav-text">F2fs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zonefs"><span class="nav-number">2.4.2.</span> <span class="nav-text">zonefs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kernel-Installation"><span class="nav-number">2.4.3.</span> <span class="nav-text">Kernel Installation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zoned-Block-Device-user-Interface"><span class="nav-number">3.</span> <span class="nav-text">Zoned Block Device user Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sysfs-Interface"><span class="nav-number">3.1.</span> <span class="nav-text">Sysfs Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Device-Zoned-Model"><span class="nav-number">3.1.1.</span> <span class="nav-text">Device Zoned Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size"><span class="nav-number">3.1.2.</span> <span class="nav-text">Zone Size</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Number-of-Zones"><span class="nav-number">3.1.3.</span> <span class="nav-text">Number of Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Resources"><span class="nav-number">3.1.4.</span> <span class="nav-text">Zone Resources</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ioctl-Application-Programming-Interface"><span class="nav-number">3.2.</span> <span class="nav-text">ioctl() Application Programming Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Information-Data-Structures"><span class="nav-number">3.2.1.</span> <span class="nav-text">Zone Information Data Structures</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Type"><span class="nav-number">3.2.2.</span> <span class="nav-text">Zone Type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Condition"><span class="nav-number">3.2.3.</span> <span class="nav-text">Zone Condition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ioctl-Commands"><span class="nav-number">3.2.4.</span> <span class="nav-text">ioctl() Commands</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Obtaining-Zone-Information"><span class="nav-number">3.2.5.</span> <span class="nav-text">Obtaining Zone Information</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Resetting-a-Zone-Write-Pointer"><span class="nav-number">3.2.6.</span> <span class="nav-text">Resetting a Zone Write Pointer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Opening-Closing-and-Finishing-Zones"><span class="nav-number">3.2.7.</span> <span class="nav-text">Opening. Closing and Finishing Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size-and-Number-of-Zones"><span class="nav-number">3.2.8.</span> <span class="nav-text">Zone Size and Number of Zones</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不舍昼夜</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">140k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:07</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
