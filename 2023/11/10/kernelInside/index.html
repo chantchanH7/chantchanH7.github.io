@@ -35,7 +35,7 @@
 <meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2011.32.50.png">
 <meta property="og:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-13%2011.10.19.png">
 <meta property="article:published_time" content="2023-11-10T10:35:09.000Z">
-<meta property="article:modified_time" content="2023-11-13T06:45:48.140Z">
+<meta property="article:modified_time" content="2023-11-13T07:14:02.139Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/kernelInside/%E6%88%AA%E5%B1%8F2023-11-11%2010.58.21.png">
@@ -203,7 +203,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-13 14:45:48" itemprop="dateModified" datetime="2023-11-13T14:45:48+08:00">2023-11-13</time>
+                <time title="修改时间：2023-11-13 15:14:02" itemprop="dateModified" datetime="2023-11-13T15:14:02+08:00">2023-11-13</time>
               </span>
 
           
@@ -219,14 +219,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>24k</span>
+              <span>26k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>22 分钟</span>
+              <span>23 分钟</span>
             </span>
 
         </div>
@@ -654,7 +654,7 @@
 <li><code>cx</code> 存储 <code>hdr</code> 的大小</li>
 </ul>
 <h2 id="Console-initialization"><a href="#Console-initialization" class="headerlink" title="Console initialization"></a>Console initialization</h2><p>使用函数<code>console_init</code>初始化控制台，该函数定义在<code>arch/x86/boot/early_serial_console.c</code>。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void console_init(void)</span><br><span class="line">&#123;</span><br><span class="line">	parse_earlyprintk();</span><br><span class="line"></span><br><span class="line">	if (!early_serial_base)</span><br><span class="line">		parse_console_uart8250();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">console_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	parse_earlyprintk();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!early_serial_base)</span><br><span class="line">		parse_console_uart8250();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>该函数在启动参数中寻找<code>earlyprintk</code>选项，如果成功找到，则解析端口地址和端口的波特率并初始化端口。<code>earlyprintk</code>命令行的参数是其中的下一个：</p>
 <ul>
@@ -662,6 +662,30 @@
 <li><code>serial, ttyS0, 115200</code></li>
 <li><code>ttyS0, 115200</code></li>
 </ul>
+<p>串行端口初始化成功后，我们会看见第一个输出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (cmdline_find_option_bool(<span class="string">&quot;debug&quot;</span>))</span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">&quot;early console in setup code\n&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>函数<code>puts</code>定义在：<code>arch/x86/boot/tty.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __section(<span class="string">&quot;.inittext&quot;</span>) <span class="built_in">putchar</span>(<span class="type">int</span> ch)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (ch == <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">		<span class="built_in">putchar</span>(<span class="string">&#x27;\r&#x27;</span>);	<span class="comment">/* \n -&gt; \r\n */</span></span><br><span class="line"></span><br><span class="line">	bios_putchar(ch);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (early_serial_base != <span class="number">0</span>)</span><br><span class="line">		serial_putchar(ch);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> __section(<span class="string">&quot;.inittext&quot;</span>) <span class="built_in">puts</span>(<span class="type">const</span> <span class="type">char</span> *str)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span> (*str)</span><br><span class="line">		<span class="built_in">putchar</span>(*str++);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>在c语言中，<code>__section</code>属性告诉编译器将特定的函数或者变量放置在指定的段<code>(section)</code>中。<code>&quot;.inittext&quot;</code>是一个段名，用于指定内核初始化代码的位置。</p>
+<p>即，指示连接器将<code>putchar</code>函数放置在<code>ELF</code>二进制文件的<code>.inittext</code>段中。这个段专门用于内核启动时需要执行，但是一旦完成初始化过程后就不再需要的代码。内核通常在启动完成后会释放这些初始化代码占用的内存，因为这段时间内核已经开始运行正常的运行时代码了。</p>
+<p>使用这个属性可以帮助减少内核的运行时内存占用，因为初始化代码在它不再需要之后不会占用宝贵的内存资源。这在嵌入式系统中尤其有用，其中内存资源可能非常有限。</p>
+</blockquote>
+<p>我们在链接文件<code>arch/x86/boot/setup.ld</code>可以看到上述代码的<code>.inittext</code>段的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> */</span><br><span class="line">OUTPUT_FORMAT(&quot;elf32-i386&quot;)</span><br><span class="line">OUTPUT_ARCH(i386)</span><br><span class="line">ENTRY(_start)</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">	. = 0;</span><br><span class="line">	.bstext		: &#123; *(.bstext) &#125;</span><br><span class="line">	.bsdata		: &#123; *(.bsdata) &#125;</span><br><span class="line"></span><br><span class="line">	. = 495;</span><br><span class="line">	.header		: &#123; *(.header) &#125;</span><br><span class="line">	.entrytext	: &#123; *(.entrytext) &#125;</span><br><span class="line">	.inittext	: &#123; *(.inittext) &#125;</span><br><span class="line">	.initdata	: &#123; *(.initdata) &#125;</span><br><span class="line">	__end_init = .;</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们回到函数<code>putchar</code>，该函数在将<code>\n</code>转换为<code>\r</code>后。调用<code>bios_putchar</code>，通过<code>0x10</code>中断，在<code>VGA screen</code>上输出。</p>
+<blockquote>
+<ul>
+<li>在计算机术语中，“VGA screen”指的是通过视频图形阵列（Video Graphics Array，VGA）接口显示的屏幕。</li>
+<li>BIOS（基本输入输出系统）提供了一系列的中断调用，用于低级别的硬件交互，其中<code>0x10</code>是视频服务的中断号。软件可以通过设置相应的寄存器，然后触发这个中断来执行特定的视频操作，如在屏幕上显示字符。</li>
+</ul>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> __section(<span class="string">&quot;.inittext&quot;</span>) bios_putchar(<span class="type">int</span> ch)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">biosregs</span> <span class="title">ireg</span>;</span></span><br><span class="line"></span><br><span class="line">	initregs(&amp;ireg);</span><br><span class="line">	ireg.bx = <span class="number">0x0007</span>;</span><br><span class="line">	ireg.cx = <span class="number">0x0001</span>;</span><br><span class="line">	ireg.ah = <span class="number">0x0e</span>;</span><br><span class="line">	ireg.al = ch;</span><br><span class="line">	intcall(<span class="number">0x10</span>, &amp;ireg, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>memset</code>函数将<code>biosregs ireg</code>置为0。</p>
 
     </div>
 
@@ -803,12 +827,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">152k</span>
+    <span title="站点总字数">154k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:19</span>
+    <span title="站点阅读时长">2:20</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
