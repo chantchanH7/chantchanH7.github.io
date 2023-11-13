@@ -528,7 +528,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-11 11:49:26" itemprop="dateModified" datetime="2023-11-11T11:49:26+08:00">2023-11-11</time>
+                <time title="修改时间：2023-11-13 08:56:27" itemprop="dateModified" datetime="2023-11-13T08:56:27+08:00">2023-11-13</time>
               </span>
 
           <br>
@@ -563,7 +563,7 @@
 <li>深入理解Linux内核</li>
 </ul>
 <h1 id="Booting"><a href="#Booting" class="headerlink" title="Booting"></a>Booting</h1><p>启动！</p>
-<h2 id="From-the-boot-loader-to-the-kernel"><a href="#From-the-boot-loader-to-the-kernel" class="headerlink" title="From the boot loader to the kernel"></a>From the boot loader to the kernel</h2><h3 id="The-Magical-Power-Button-What-happens-next"><a href="#The-Magical-Power-Button-What-happens-next" class="headerlink" title="The Magical Power Button, What happens next?"></a>The Magical Power Button, What happens next?</h3><p>​	当按下开机键后，计算机首先会唤醒<code>cpu</code>，<code>80386</code>及之后的<code>cpu</code>会在其寄存器中定义如下数据：</p>
+<h1 id="Kernel-booting-process-Part-1"><a href="#Kernel-booting-process-Part-1" class="headerlink" title="Kernel booting process. Part 1."></a>Kernel booting process. Part 1.</h1><h2 id="From-the-boot-loader-to-the-kernel"><a href="#From-the-boot-loader-to-the-kernel" class="headerlink" title="From the boot loader to the kernel"></a>From the boot loader to the kernel</h2><h3 id="The-Magical-Power-Button-What-happens-next"><a href="#The-Magical-Power-Button-What-happens-next" class="headerlink" title="The Magical Power Button, What happens next?"></a>The Magical Power Button, What happens next?</h3><p>​	当按下开机键后，计算机首先会唤醒<code>cpu</code>，<code>80386</code>及之后的<code>cpu</code>会在其寄存器中定义如下数据：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IP						0xfff0</span><br><span class="line">CS selector		0xf000</span><br><span class="line">CS base				0xffff0000</span><br></pre></td></tr></table></figure>
 
 <p>​	处理器会在实模式<code>(real mode)</code>下运行</p>
@@ -763,6 +763,25 @@
 <h3 id="Jump-to-main"><a href="#Jump-to-main" class="headerlink" title="Jump to main"></a>Jump to main</h3><p>现在我们跳转到主函数，<code>arch/x86/boot/main.c</code>：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Jump to C code (should not return)</span><br><span class="line">	calll	main</span><br></pre></td></tr></table></figure>
 
+<h1 id="Kernel-booting-process-Part-2"><a href="#Kernel-booting-process-Part-2" class="headerlink" title="Kernel booting process. Part 2."></a>Kernel booting process. Part 2.</h1><h2 id="First-steps-in-the-kernel-setup"><a href="#First-steps-in-the-kernel-setup" class="headerlink" title="First steps in the kernel setup"></a>First steps in the kernel setup</h2><p>现在我们将继续阅读<code>arch/x86/boot/main.c</code>，将学习如下内容：</p>
+<ul>
+<li>保护模式<code>protected mode</code>是什么。</li>
+<li>计算机是怎样进入保护模式。</li>
+<li>堆<code>heap</code>和控制台<code>console</code>的初始化。</li>
+<li>内存检测，CPU确认，键盘初始化。</li>
+<li><code>and much much more</code>。</li>
+</ul>
+<p>So, let‘s go ahead!</p>
+<h2 id="Protected-mode"><a href="#Protected-mode" class="headerlink" title="Protected mode"></a>Protected mode</h2><p>在我们在进入<code>intel Long Mode</code>之前，内核需要将<code>CPU</code>转换到保护模式。</p>
+<blockquote>
+<ul>
+<li><p>在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/X86-64">x86-64</a>处理器架构中，当处于<strong>长模式</strong>（Long mode）时，64位应用程序（或者是操作系统）可以使用64位指令和寄存器，而32位程序将以一种兼容子模式运行。<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%99%9B%E6%93%AC86%E6%A8%A1%E5%BC%8F">虚拟86模式</a>在长模式下不可用，也就是说，长模式不兼容16位程序。</p>
+</li>
+<li><p>不在长模式下运行时，处理器支持<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%AE%9E%E6%A8%A1%E5%BC%8F">实模式</a>和<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%BF%9D%E8%AD%B7%E6%A8%A1%E5%BC%8F">保护模式</a>两个子模式，在这两个模式下的x86-64处理器与<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/X86-32">x86-32</a>处理器运行方式完全相同。</p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/CPUID">CPUID</a>扩展属性域中的一个位可以令运行在实模式或者保护模式的程序得知处理器能否转换到长模式，这使得程序能够检测是否使用了x86-64处理器。这类似于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Intel">Intel</a> <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/IA-64">IA-64</a>处理器使用CPUID中的一个属性位来让程序检测自己是否运行在IA-32仿真模式下。</p>
+</li>
+</ul>
+</blockquote>
 
       
     </div>
@@ -2704,12 +2723,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">140k</span>
+    <span title="站点总字数">141k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:07</span>
+    <span title="站点阅读时长">2:08</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
