@@ -164,6 +164,242 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/13/ZNSSSDliterature/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/11/13/ZNSSSDliterature/" class="post-title-link" itemprop="url">ZNSSSDliterature</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-13 19:38:51" itemprop="dateCreated datePublished" datetime="2023-11-13T19:38:51+08:00">2023-11-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-14 16:11:07" itemprop="dateModified" datetime="2023-11-14T16:11:07+08:00">2023-11-14</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Critical-Thinking-Reading"><a href="#Critical-Thinking-Reading" class="headerlink" title="Critical Thinking - Reading"></a>Critical Thinking - Reading</h1><h2 id="Read-a-paper-and-consider"><a href="#Read-a-paper-and-consider" class="headerlink" title="Read a paper and consider:"></a>Read a paper and consider:</h2><h3 id="Do-I-like-it-Hate-it-opinion"><a href="#Do-I-like-it-Hate-it-opinion" class="headerlink" title="Do I like it? Hate it? (opinion)"></a>Do I like it? Hate it? (opinion)</h3><h3 id="What-problem-is-it-trying-to-solve"><a href="#What-problem-is-it-trying-to-solve" class="headerlink" title="What problem is it trying to solve"></a>What problem is it trying to solve</h3><h3 id="How-does-their-approach-differ-from-previous-ones"><a href="#How-does-their-approach-differ-from-previous-ones" class="headerlink" title="How does their approach differ from previous ones"></a>How does their approach differ from previous ones</h3><h3 id="how-much-previous-work-do-I-know-about-read-it-reference-chaining"><a href="#how-much-previous-work-do-I-know-about-read-it-reference-chaining" class="headerlink" title="(how much previous work do I know about - read it! (reference chaining))"></a>(how much previous work do I know about - read it! (reference chaining))</h3><h3 id="Does-it-work"><a href="#Does-it-work" class="headerlink" title="Does it work?"></a>Does it work?</h3><h3 id="What-could-be-improved"><a href="#What-could-be-improved" class="headerlink" title="What could be improved"></a>What could be improved</h3><h1 id="Optimizing-Data-Migration-for-Garbage-Collection-in-ZNS-SSDs"><a href="#Optimizing-Data-Migration-for-Garbage-Collection-in-ZNS-SSDs" class="headerlink" title="Optimizing Data Migration for Garbage Collection in ZNS SSDs"></a>Optimizing Data Migration for Garbage Collection in ZNS SSDs</h1><h2 id="Problem-to-be-solved"><a href="#Problem-to-be-solved" class="headerlink" title="Problem to be solved"></a>Problem to be solved</h2><p>在<code>zns ssd</code>中，程序被允许以一种高效的数据放置方法连续的写入不同的区域<code>zone</code>中。然而，在一个区域<code>zone</code>中的<strong>无效数据<code>invalid data</code>只有在整个区域的数据被擦除时才能被释放</strong>，这导致了空间低利用率。</p>
+<p>现阶段的研究集中在降低数据迁移的次数，但是他们的数据迁移方式并不高效。</p>
+<p>一方面，<code>ZNS SSD</code>中的数据迁移会导致不必要的端到端开销。</p>
+<blockquote>
+<p>这是因为在<code>ZNS SSD</code>的数据迁移由<code>host</code>管理，迁移时要先将数据读取到内存中，再由主机指定写入对应的区域<code>zone</code>中去。</p>
+</blockquote>
+<p>另一方面，两个区域<code>zone</code>之间，进行块到块<code>block-to-block</code>的数据迁移的开销也很大，会导致巨大的重写开销。</p>
+<p><strong>一种理想的方法是</strong>，将受害区域<code>victim zone</code>中的包含有效数据的块<code>blocks with valid data</code>重新映射到目标区域中<code>target zone</code>（通过这种映射，我们只需要擦除受害区域<code>victim zone</code>中的<code>blocks with invalid data </code>擦除，然后在目标区域<code>target zone</code>中开辟新的<code>block</code>并写入<code>blocks with invalid data</code>块中的有效数据即可）。</p>
+<p>仍然，<code>ZNS SSD</code>中的区域和块之间的映射基于芯片间的并行提前被定义好了。</p>
+<h2 id="Approaches"><a href="#Approaches" class="headerlink" title="Approaches"></a>Approaches</h2><p>提出一种新的<code>ZNS SSD</code>垃圾回收方式，<code>IS_AR</code>：</p>
+<ul>
+<li><h3 id="Zone-MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage-data-migration，以避免端到端的传输开销。"><a href="#Zone-MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage-data-migration，以避免端到端的传输开销。" class="headerlink" title="Zone_MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage data migration，以避免端到端的传输开销。"></a><code>Zone_MD</code>：提出的新<code>ZNS</code>命令，用于实现存储内部数据迁移<code>in-storage data migration</code>，以避免端到端的传输开销。</h3><p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.27.34.png" alt="截屏2023-11-13 20.27.34"></p>
+<p>如图所示，函数<code>Zone_MD(Src, Dst, Size)</code>接收三个参数：</p>
+<ul>
+<li><code>Src</code>：表示受害区域<code>victim zone</code>中的有效数据<code>valid data</code>的逻辑起始地址<code>starting logic address</code>。</li>
+<li><code>Dst</code>：表示目标区域<code>target zone</code>的写指针<code>write pointer</code>地址。</li>
+<li><code>Size</code>：表示要迁移的连续有效数据<code>continuous valid data</code>的大小。</li>
+</ul>
+<p>整个存储内数据迁移<code>in-storage data migration</code>在存储的内部通道<code>internal channel</code>的帮助下完成，避免了端到端传输。</p>
+<blockquote>
+<p><code>internal channel</code>是指固态硬盘（SSD）内部用于数据传输的通道。这个通道在硬盘的控制器内部进行操作，而不是通过主机的数据总线。这意味着数据迁移是在SSD设备内部完成的，而不需要数据经过主机（即计算机的CPU和主内存）。</p>
+<p>这种内部数据迁移通道通常由SSD的固件和控制器逻辑来管理。它能够直接访问闪存存储单元，执行读取、传输和写入操作。使用这样的通道，可以有效地将数据从一个区域（源区域，Src）移动到另一个区域（目标区域，Dst），而不必通过外部接口传输数据，这样可以极大地减少数据迁移的延迟和带宽消耗。</p>
+</blockquote>
+</li>
+<li><h3 id="AR：一种重映射策略remapping-strategy，该策略基于并行物理块，以减少block-to-block重写的开销。"><a href="#AR：一种重映射策略remapping-strategy，该策略基于并行物理块，以减少block-to-block重写的开销。" class="headerlink" title="AR：一种重映射策略remapping strategy，该策略基于并行物理块，以减少block-to-block重写的开销。"></a><code>AR</code>：一种重映射策略<code>remapping strategy</code>，该策略基于并行物理块，以减少<code>block-to-block</code>重写的开销。</h3></li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.39.07.png" alt="截屏2023-11-13 20.39.07"></p>
+<p>为保证对一个区域<code>zone</code>的并行写操作<code>parallelism of writing</code>，提出了一种基于并行块组<code>parallel block groups (PBGs)</code>动态的区域映射方法。</p>
+<blockquote>
+<p>笔者认为一个白色的小块对应一个<code>block</code>。</p>
+</blockquote>
+<ul>
+<li>首先将<code>SSD</code>中的芯片分组，形成多个并行芯片组<code>mutiple parallel chip groups (PCG)</code>。通过<code>PCG</code>，读写操作可以并行的执行。</li>
+<li>在每个并行芯片组<code>PCG</code>中，拥有相同偏移量<code>offset</code>的块被分到相同的并行块组中<code>PBG</code>，同样并行块组中的读写操作也能被并行的执行。</li>
+<li>我们把并行块组<code>(PBG)</code>作为最小的重映射单位，并保证了区域内的并行性。</li>
+<li>当一个区域被分配时，我们动态的将<code>PBGs</code>映射到区域上。</li>
+</ul>
+<p>现在我们讨论重映射策略。</p>
+<p>在受害区域<code>victim zone</code>中，有两种<code>PBG</code>区域需要被迁移：</p>
+<ul>
+<li><code>V1</code>：整个并行块组<code>PBG</code>都是合法数据。</li>
+<li><code>V2</code>：并行块组<code>PBG</code>的一部分是合法数据。</li>
+</ul>
+<p>在目标区域<code>target zone</code>，并行块组也分为两类：</p>
+<ul>
+<li><code>T1</code>：并行块组的所有部分均会被写入。</li>
+<li><code>T2</code>：并行块组只有一部分会被写入。</li>
+</ul>
+<p>两辆组合，产生四种重映射方法：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2008.44.24.png" alt="截屏2023-11-14 08.44.24"></p>
+<ul>
+<li><p><code>Fig.3.(1),(2)</code>：<code>V1</code>被重映射到包含<code>T1</code>或<code>T2</code>的区域<code>zone</code>。</p>
+<ul>
+<li><p><code>V1-&gt;T1</code>：<code>V1</code>的逻辑地址和物理地址直接重映射（这里的关键是没有提到数据从物理上的一个位置被复制到另一个位置，而是提到了逻辑空间（LS）到物理空间（PS）的映射直接重映射到目标区域，这通常涉及更新映射表（MT）而不是实际的数据移动。）到目标区域。同时，<code>Write Point</code>移动到<code>WP* = (WP + V1_Size)</code>，并在映射表<code>Mapping Table</code>上更新物理地址和逻辑地址。</p>
+</li>
+<li><p><code>V1-&gt;T2</code>：为了提高<code>T2</code>的空间利用率，<code>P1-P2</code>这段未被使用的空间的物理地址将被重映射到逻辑地址中去，其位置会在写指针<code>WP*</code>后面的<code>CW</code>处，长度不变。</p>
+<blockquote>
+<p><code>RT (Remapping Table)</code>：为了保持正确的索引关系，添加了一个新的重新映射表（RT），以记录逻辑地址与范围内的物理地址的偏移量（即具有相同偏移量相同的LS的连续段）粒度。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p><code>Fig.3.(3),(4)</code>：<code>V2</code>被重映射到包含<code>T1</code>或<code>T2</code>的区域<code>zone</code>。</p>
+<ul>
+<li><p><code>V2</code>的整个物理地址直接被重映射到目标区域的物理地址中。然而，只有<code>V2</code>中的有效数据的逻辑地址被重映射到目标区域，因为目标区域只需要有效数据。</p>
+<blockquote>
+<p>V2中的无效数据空间被保留，直到目标区域重置（即部分无效空间被目标区域暂时占据）。</p>
+</blockquote>
+<p>因此，我们使用<code>ZNS SSD</code>的当前空间占用率<code>current space utilization (su)</code>作为基准<code>benchmark</code>。</p>
+<p>如果<code>V2</code>中的有效数据的百分占比大于<code>su</code>，我们执行重映射。</p>
+<p>否则我们直接重写<code>V2</code>中的所有有效数据。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>​	通过上述方法，我们平衡了空间利用率和性能。</p>
+<h2 id="Does-it-work-1"><a href="#Does-it-work-1" class="headerlink" title="Does it work?"></a>Does it work?</h2><p>将<code>IS-AR</code>和传统的数据迁移策略<code>Trad-DM</code>（没有实现数据内迁移和重映射）进行比较。具体的实验参数如下：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2010.00.17.png" alt="截屏2023-11-14 10.00.17"></p>
+<p>表格上看，数据迁移的延迟确实降低了，而且提高了<code>ZNS SSD</code>的寿命。</p>
+<h2 id="What-could-be-improved？"><a href="#What-could-be-improved？" class="headerlink" title="What could be improved？"></a>What could be improved？</h2><p>论文中提到的<code>current space utilization</code>是如何选择的。</p>
+<h1 id="A-New-LSM-style-Garbage-Collection-Scheme-for-ZNS-SSDs"><a href="#A-New-LSM-style-Garbage-Collection-Scheme-for-ZNS-SSDs" class="headerlink" title="A New LSM-style Garbage Collection Scheme for ZNS SSDs"></a>A New LSM-style Garbage Collection Scheme for ZNS SSDs</h1><h2 id="Problem-to-be-solved-1"><a href="#Problem-to-be-solved-1" class="headerlink" title="Problem to be solved"></a>Problem to be solved</h2><p><code>ZNS SSD</code>的两面性：</p>
+<ul>
+<li>Pro：通过将不同的工作负载分类到不同的区域中减少写放大<code>WAF</code></li>
+<li>Cons：主机需要直接管理ZNS SSD，例如区域重置，并且它们具有顺序写入约束。</li>
+</ul>
+<p>简单的垃圾回收策略：</p>
+<ul>
+<li><code>LFS (log-structured File System)</code>：日志结构文件系统使用的段清理。</li>
+<li><code>FTL (Flash Transition Layer)</code>：闪存层使用的垃圾回收策略</li>
+</ul>
+<p>上述策略的区别是将垃圾回收应用在区域<code>zone</code>还是段<code>segment</code>中。然而，这种简单的垃圾回收策略会因为区域的大小而导致更长的延迟，相比段大小而言。</p>
+<h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><ul>
+<li>如下图所示，要解决的问题还是：区域间的垃圾回收策略导致的时间开销过大。并且，最好选择利用利用率低的区域作为垃圾回收的区域。</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.11.12.png" alt="截屏2023-11-14 15.11.12"></p>
+<ul>
+<li><p>另一个观察是，在读取一个区域时，对块进行单独读取的耗时比对块进行组读取的模式的耗时更高。</p>
+<blockquote>
+<p>结果显示，以组的方式访问比单独访问要快得多。这是因为它不仅可以减少请求的数量，而且还可以利用ZNS固态硬盘内部的并行性。一般来说，ZNS固态硬盘中的一个区域会分布在多个通道上，这使得可以并行处理连续块的请求，就像开放通道固态硬盘（OCSSDs）那样。这一观察激励我们设计我们的LSM风格垃圾收集方案。</p>
+</blockquote>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.20.00.png" alt="截屏2023-11-14 15.20.00"></p>
+</li>
+</ul>
+<h2 id="Approaches-1"><a href="#Approaches-1" class="headerlink" title="Approaches"></a>Approaches</h2><p>为了应对上文中提到的问题，提出了一个新的垃圾回收策略<code>LSM_ZGC</code>：</p>
+<ul>
+<li><code>LSM_ZGC</code>将区域分割为多个段，并分别管理这些段的信息。</li>
+<li>以<code>LSM</code>的风格进行垃圾回收，读取候选区域的所有数据，识别冷数据，将它们合并到一个区域，同时将剩余数据合并到另一个区域。</li>
+</ul>
+<p>以下是<code>LSM_ZGC</code>的优点：</p>
+<ul>
+<li>采用基于段<code>segment</code>（而不是基于区域<code>zone</code>）的方式，有利于冷热数据分割，并可以用流水线的方式实现策略。</li>
+<li>读取段中所有有效和无效的数据，可以通过利用区域中的内部并行性来减少垃圾收集开销。</li>
+<li>将冷热数据放入不同的区域，可以增加找到利用率较低的区域的机会。</li>
+</ul>
+<p>在<code>ZNS SSD</code>的垃圾回收策略中，最简单的方式<code>Basic_ZGC</code>是：</p>
+<ul>
+<li>选择一个利用率最低的区域。</li>
+<li>读取该区域中有效数据块并将它们写入新的区域中去。</li>
+<li>最后通过<code>reset command</code>重置选择的块。</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.26.30.png" alt="截屏2023-11-14 15.26.30"></p>
+<p>而<code>LSM_ZGC</code>的策略有三个不同之处：</p>
+<ul>
+<li><p>对于一个区域<code>zone</code>的垃圾回收会在段<code>segment</code>上实现。此外，它允许使用细粒度段单元执行区域垃圾收集，其中可以以管道方式读取、合并和写入段。</p>
+</li>
+<li><p>在垃圾回收阶段，它以<code>128KB</code>大小<code>IO</code>，不仅读取有效块，也读取无效块，而<code>Basic_ZGC</code>只读取有效块。</p>
+<blockquote>
+<p>读取所有快的原因是，我们在Figure 2中观察到，<code>in group manner</code>利用芯片的并行性提高读取速度。</p>
+<p>因此当块数量大于16时，我们采取全部读取的方式。（由于16个128KB大小的请求可以覆盖整个2MB的段数据，它会读取所有块。）</p>
+</blockquote>
+</li>
+<li><p><code>LSM_ZGC</code>通过鉴别冷数据<code>cold data</code>，并将冷数据合并到一个单独的区域中。</p>
+<p>为了到达这个目的，我们定义四种区域的状态：</p>
+<ul>
+<li><p><code>C0_zone</code></p>
+</li>
+<li><p><code>C1C_zone</code>：</p>
+<blockquote>
+<p>我们将利用率高于阈值的段（称为门槛冷）定义为冷。这一决定基于我们的观察，即具有相似寿命的数据显示出强大的空间局部性。<br>可能的原因：段中大部分空间被占用通常意味着其中的数据已经稳定下来，且变动不大。</p>
+</blockquote>
+</li>
+<li><p><code>C1H_zone</code></p>
+</li>
+<li><p><code>C2_zone</code></p>
+</li>
+</ul>
+<p>新到达的数据按顺序写入状态为<code>C0</code>区域的区域，删除的数据将离开图中所示的状态。</p>
+<ul>
+<li><p>将冷数据写入<code>C1C_zone</code>。</p>
+</li>
+<li><p>将其他数据写入<code>C1H_zone</code>中。</p>
+</li>
+</ul>
+<p>而当要回收的区域状态是<code>C1C_zone</code>或者<code>C1H_zone</code>时，<code>LSM_ZGC</code>将读取所有段，并把所有有效块看作冷数据。这是因为这些有效块在连续两次垃圾回收操作后都被保留了。最后这些块中的数据会被写入<code>C2_zone</code>中。</p>
+<p>我们预计这种机制能够将冷数据与其他数据隔离开来，从而增加在垃圾收集期间找到利用率较低的候选区的机会。</p>
+</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.42.42.png" alt="截屏2023-11-14 15.42.42"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/11/ZNSLinuxKernelSupport/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -528,7 +764,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-13 15:14:02" itemprop="dateModified" datetime="2023-11-13T15:14:02+08:00">2023-11-13</time>
+                <time title="修改时间：2023-11-13 20:38:17" itemprop="dateModified" datetime="2023-11-13T20:38:17+08:00">2023-11-13</time>
               </span>
 
           <br>
@@ -537,14 +773,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>26k</span>
+              <span>31k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>23 分钟</span>
+              <span>28 分钟</span>
             </span>
 
         </div>
@@ -1003,7 +1239,52 @@
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> __section(<span class="string">&quot;.inittext&quot;</span>) bios_putchar(<span class="type">int</span> ch)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">biosregs</span> <span class="title">ireg</span>;</span></span><br><span class="line"></span><br><span class="line">	initregs(&amp;ireg);</span><br><span class="line">	ireg.bx = <span class="number">0x0007</span>;</span><br><span class="line">	ireg.cx = <span class="number">0x0001</span>;</span><br><span class="line">	ireg.ah = <span class="number">0x0e</span>;</span><br><span class="line">	ireg.al = ch;</span><br><span class="line">	intcall(<span class="number">0x10</span>, &amp;ireg, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>通过<code>memset</code>函数将<code>biosregs ireg</code>置为0。</p>
+<p><code>initregs</code>调用<code>memset</code>函数将<code>biosregs ireg</code>置为0。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">initregs</span><span class="params">(<span class="keyword">struct</span> biosregs *reg)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">memset</span>(reg, <span class="number">0</span>, <span class="keyword">sizeof</span>(*reg));</span><br><span class="line">	reg-&gt;eflags |= X86_EFLAGS_CF;</span><br><span class="line">	reg-&gt;ds = ds();</span><br><span class="line">	reg-&gt;es = ds();</span><br><span class="line">	reg-&gt;fs = fs();</span><br><span class="line">	reg-&gt;gs = gs();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>阅读<code>memset</code>的汇编代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">SYM_FUNC_START_NOALIGN(memset)</span><br><span class="line">	pushw	%di</span><br><span class="line">	movw	%ax, %di</span><br><span class="line">	movzbl	%dl, %eax		# move with Zero-Extend from Byte to Longword	</span><br><span class="line">	imull	$0x01010101,%eax</span><br><span class="line">	pushw	%cx</span><br><span class="line">	shrw	$2, %cx</span><br><span class="line">	rep; stosl</span><br><span class="line">	popw	%cx</span><br><span class="line">	andw	$3, %cx</span><br><span class="line">	rep; stosb</span><br><span class="line">	popw	%di</span><br><span class="line">	retl</span><br><span class="line">SYM_FUNC_END(memset)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>同样接受三个参数，存放在<code>ax dx cx</code>中。</li>
+<li>将8位<code>%dl</code>零扩展到32位并移动到<code>%eax</code>中。</li>
+<li>然后通过<code>imull $0x01010101, %eax</code>将高<code>24</code>位全复制为低<code>8</code>位的值。</li>
+<li><code>stosl</code>：<code>Store String long</code>（存储字符串长字）。该指令将累加器（<code>AL</code>、<code>AX</code>或<code>EAX</code>）中的数据复制到目标索引寄存器（<code>DI</code>或<code>EDI</code>）指向的内存地址，并根据当前设置的方向标志（Direction Flag）在标志寄存器中自动增加或减少<code>DI</code>&#x2F;<code>EDI</code>的值。直到计数寄存器<code>cx</code>归<code>0</code>。</li>
+</ul>
+<h2 id="Heap-initialization"><a href="#Heap-initialization" class="headerlink" title="Heap initialization"></a>Heap initialization</h2><p>在<code>header.S</code>中，我们初始化了栈<code>stack</code>和<code>bss</code>段。现在内核需要使用<code>init_heap</code>初始化堆<code>heap</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">init_heap</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">char</span> *stack_end;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (boot_params.hdr.loadflags &amp; CAN_USE_HEAP) &#123;</span><br><span class="line">		<span class="keyword">asm</span>(<span class="string">&quot;leal %P1(%%esp),%0&quot;</span></span><br><span class="line">		    : <span class="string">&quot;=r&quot;</span> (stack_end) : <span class="string">&quot;i&quot;</span> (-STACK_SIZE));</span><br><span class="line"></span><br><span class="line">		heap_end = (<span class="type">char</span> *)</span><br><span class="line">			((<span class="type">size_t</span>)boot_params.hdr.heap_end_ptr + <span class="number">0x200</span>);</span><br><span class="line">		<span class="keyword">if</span> (heap_end &gt; stack_end)</span><br><span class="line">			heap_end = stack_end;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">/* Boot protocol 2.00 only, no heap available */</span></span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">&quot;WARNING: Ancient bootloader, some functionality &quot;</span></span><br><span class="line">		     <span class="string">&quot;may be limited!\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先检查启动文件头的<code>loadflag</code>中是否配置了<code>CAN_USE_HEAP</code>，如果配置了<code>CAN_USE_HEAP</code>，使用内链汇编代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">asm</span>(<span class="string">&quot;leal %P1(%%esp),%0&quot;</span></span><br><span class="line">		    : <span class="string">&quot;=r&quot;</span> (stack_end) : <span class="string">&quot;i&quot;</span> (-STACK_SIZE));</span><br></pre></td></tr></table></figure>
+
+<p>计算栈的结束位置。也即：<code>stack_end = esp - STACK_SIZE</code></p>
+<p>接着是计算堆结束位置</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">heap_end = (<span class="type">char</span> *)((<span class="type">size_t</span>)boot_params.hdr.heap_end_ptr + <span class="number">0x200</span>);</span><br></pre></td></tr></table></figure>
+
+<p>最后检查堆结束地址<code>heap_end</code>是否大于栈结束地址<code>stack_end</code>，如果是，则要保持<code>heap_end = stack_end</code>。</p>
+<p>堆初始化之后，我们可以使用<code>GET_HEAP</code>方法，在下一章我们会介绍它。</p>
+<h2 id="CPU确认"><a href="#CPU确认" class="headerlink" title="CPU确认"></a>CPU确认</h2><p>下一步是确认<code>CPU，函数</code>validate_cpu<code>定义在</code><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/cpu.c"><code>arch/x86/boot/cpu.c</code></a>中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">validate_cpu</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	u32 *err_flags;</span><br><span class="line">	<span class="type">int</span> cpu_level, req_level;</span><br><span class="line"></span><br><span class="line">	check_cpu(&amp;cpu_level, &amp;req_level, &amp;err_flags);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (cpu_level &lt; req_level) &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;This kernel requires an %s CPU, &quot;</span>,</span><br><span class="line">		       cpu_name(req_level));</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;but only detected an %s CPU.\n&quot;</span>,</span><br><span class="line">		       cpu_name(cpu_level));</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (err_flags) &#123;</span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">&quot;This kernel requires the following features &quot;</span></span><br><span class="line">		     <span class="string">&quot;not present on the CPU:\n&quot;</span>);</span><br><span class="line">		show_cap_strs(err_flags);</span><br><span class="line">		<span class="built_in">putchar</span>(<span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (check_knl_erratum()) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数<code>check_cpu</code>判断当前CPU等级<code>cpu_level</code>和需要的CPU等级<code>req_level</code>是否一致。该函数还检查CPU标志，对于x86_64（64位）CPU，它会检查长模式（long mode）是否存在，检查处理器的供应商，并为特定供应商做准备，比如如果AMD缺失SSE+SSE2，就关闭它们等等。</p>
+<p>当cpu被确认后，调用<code>set_bios_mode</code>，该函数告诉<code>BIOS</code>我们会在哪种<code>CPU</code>模式下运行。该函数只在<code>x86_64</code>模式下运行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Tell the BIOS what CPU mode we intend to run in.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">set_bios_mode</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_X86_64</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">biosregs</span> <span class="title">ireg</span>;</span></span><br><span class="line"></span><br><span class="line">	initregs(&amp;ireg);</span><br><span class="line">	ireg.ax = <span class="number">0xec00</span>;</span><br><span class="line">	ireg.bx = <span class="number">2</span>;</span><br><span class="line">	intcall(<span class="number">0x15</span>, &amp;ireg, <span class="literal">NULL</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该函数通过<code>0x15 BIOS</code>中断告诉<code>BIOS</code>使用长模式<code>long mode</code>。</p>
+<blockquote>
+<p>在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/X86-64">x86-64</a>处理器架构中，当处于<strong>长模式</strong>（Long mode）时，64位应用程序（或者是操作系统）可以使用64位指令和寄存器，而32位程序将以一种兼容子模式运行。</p>
+</blockquote>
+<h2 id="Memory-detection"><a href="#Memory-detection" class="headerlink" title="Memory detection"></a>Memory detection</h2><p>接着主函数会调用<code>detect_memory</code>检测内存，该函数为<code>CPU</code>提供了基础的<code>RAM</code>映射表。使用了不同的编程接口<code>0xe820 0xe801</code>和<code>0x88</code>用于内存检测。以<code>0xE820</code>为例，<code>detect_memory_e820</code>定义在<code>arch/x86/boot/memory.c</code>中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">detect_memory_e820</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> count = <span class="number">0</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">biosregs</span> <span class="title">ireg</span>, <span class="title">oreg</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">boot_e820_entry</span> *<span class="title">desc</span> =</span> boot_params.e820_table;</span><br><span class="line">	<span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">boot_e820_entry</span> <span class="title">buf</span>;</span> <span class="comment">/* static so it is zeroed */</span></span><br><span class="line"></span><br><span class="line">	initregs(&amp;ireg);</span><br><span class="line">	ireg.ax  = <span class="number">0xe820</span>;</span><br><span class="line">	ireg.cx  = <span class="keyword">sizeof</span>(buf);</span><br><span class="line">	ireg.edx = SMAP;</span><br><span class="line">	ireg.di  = (<span class="type">size_t</span>)&amp;buf;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Note: at least one BIOS is known which assumes that the</span></span><br><span class="line"><span class="comment">	 * buffer pointed to by one e820 call is the same one as</span></span><br><span class="line"><span class="comment">	 * the previous call, and only changes modified fields.  Therefore,</span></span><br><span class="line"><span class="comment">	 * we use a temporary buffer and copy the results entry by entry.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * This routine deliberately does not try to account for</span></span><br><span class="line"><span class="comment">	 * ACPI 3+ extended attributes.  This is because there are</span></span><br><span class="line"><span class="comment">	 * BIOSes in the field which report zero for the valid bit for</span></span><br><span class="line"><span class="comment">	 * all ranges, and we don&#x27;t currently make any use of the</span></span><br><span class="line"><span class="comment">	 * other attribute bits.  Revisit this if we see the extended</span></span><br><span class="line"><span class="comment">	 * attribute bits deployed in a meaningful way in the future.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">do</span> &#123;</span><br><span class="line">		intcall(<span class="number">0x15</span>, &amp;ireg, &amp;oreg);</span><br><span class="line">		ireg.ebx = oreg.ebx; <span class="comment">/* for next iteration... */</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">/* BIOSes which terminate the chain with CF = 1 as opposed</span></span><br><span class="line"><span class="comment">		   to %ebx = 0 don&#x27;t always report the SMAP signature on</span></span><br><span class="line"><span class="comment">		   the final, failing, probe. */</span></span><br><span class="line">		<span class="keyword">if</span> (oreg.eflags &amp; X86_EFLAGS_CF)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Some BIOSes stop returning SMAP in the middle of</span></span><br><span class="line"><span class="comment">		   the search loop.  We don&#x27;t know exactly how the BIOS</span></span><br><span class="line"><span class="comment">		   screwed up the map at that point, we might have a</span></span><br><span class="line"><span class="comment">		   partial map, the full map, or complete garbage, so</span></span><br><span class="line"><span class="comment">		   just return failure. */</span></span><br><span class="line">		<span class="keyword">if</span> (oreg.eax != SMAP) &#123;</span><br><span class="line">			count = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		*desc++ = buf;</span><br><span class="line">		count++;</span><br><span class="line">	&#125; <span class="keyword">while</span> (ireg.ebx &amp;&amp; count &lt; ARRAY_SIZE(boot_params.e820_table));</span><br><span class="line"></span><br><span class="line">	boot_params.e820_entries = count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该函数首先为寄存器填充调用<code>0xe820</code>所需的特定值。</p>
+<ul>
+<li><code>ax</code>：包含了函数的名字。</li>
+<li><code>cx</code>：缓存的大小，该缓存将用于存储内存中的数据。</li>
+<li><code>edx</code>：包含了<code>SMAP magic number</code>。</li>
+<li><code>es:di</code>：指向上面提到的缓存的地址（cx中）。</li>
+<li><code>ebx</code>：必须为0.</li>
+</ul>
 
       
     </div>
@@ -2653,184 +2934,6 @@ endmodule
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/17/Itsembedded/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不捨晝夜。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/08/17/Itsembedded/" class="post-title-link" itemprop="url">Itsembedded</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-08-17 13:25:10" itemprop="dateCreated datePublished" datetime="2023-08-17T13:25:10+08:00">2023-08-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-18 10:16:08" itemprop="dateModified" datetime="2023-08-18T10:16:08+08:00">2023-08-18</time>
-              </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Verilator教程"><a href="#Verilator教程" class="headerlink" title="Verilator教程"></a>Verilator教程</h1><p>详情见<a target="_blank" rel="noopener" href="https://itsembedded.com/dhd/verilator_1/">itsembedded.com</a></p>
-<h2 id="Verilator-Pt-1"><a href="#Verilator-Pt-1" class="headerlink" title="Verilator Pt.1"></a>Verilator Pt.1</h2><p>在开始Pt.1之前，请先自学数字电路并且具备一些c&#x2F;c++基础</p>
-<ol>
-<li><p>在GitHub上下载源码，切换到分支pt1</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/n-kremeris/verilator_basics</span><br><span class="line">git checkout verilator_pt1</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>为了检测verilator是如何工作的，我们需要一种 DUT (device under test)，观察目录下的alu.sv文件。</p>
-<ol>
-<li>开始定义了一个枚举类声明operation_t，包含add, sub, nop操作。</li>
-<li>定义alu模块，包含6个输入和2个输出。</li>
-<li>在always语法块中，左边的变量需要用logic或者register</li>
-<li>当 clk，rst中任意一个发生改变时，对输入进行更改。</li>
-<li>计算结果，用case判读需要进行的操作</li>
-<li>输出结果。</li>
-</ol>
-</li>
-<li><p>Verilator 通过c++进行测试，但是无法将SystemVerilog ALU文件加载到C++，testbench中，因此我们要先通过verilator把systemVerilgo ALU 转换为C++文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">verilator --cc alu.sv</span><br></pre></td></tr></table></figure>
-
-<p><code>--cc</code>告诉verilator转换为c++，<code>--sc</code>则转换为c。转换后的结果存放在<code>obj_dir</code>中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l obj_dir/</span><br><span class="line">Valu___024unit.cpp  Valu___024unit__Slow.cpp  Valu.cpp  Valu.mk</span><br><span class="line">Valu__Syms.cpp  Valu__ver.d Valu___024unit.h    Valu_classes.mk</span><br><span class="line">Valu.h    Valu__Slow.cpp  Valu__Syms.h    Valu__verFiles.dat</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p><code>.mk</code>文件就被<code>Make</code>命令使用来构造一个模拟可执行文件 。<code>.h</code>和<code>.cpp</code>文件包含执行源码。</p>
-<blockquote>
-<p>The two files we’re most interested right now are <code>Valu.h</code> and <code>Valu___024unit.h</code>:</p>
-<ul>
-<li><code>Valu.h</code> - This is the primary design header which  contains the converted “ALU” class definition - this is what we will  “instantiate” in our C++ testbench as the DUT.</li>
-<li><code>Valu___024unit.h</code> - This is an internal header for the “ALU” class, and it contains our <code>operation_t</code> type definition.</li>
-</ul>
-</blockquote>
-</li>
-<li><p>设计一个c++测试文件，下载的目录里面有一个叫<code>tb_alu.cpp</code>的文件，这就是我们的测试文件。打开并观察它。</p>
-<ol>
-<li><p>包含一些头文件，<code>&lt;verilated.h&gt;</code>和<code>&lt;verilated_vcd_c.h&gt;</code>有我们需要用到的verilator功能。<code>Valu.h</code>包含了ALU模组的类<code>Valu___024unit.h</code>包含了自定义的声明。</p>
-</li>
-<li><p><code>sim_time</code>表示模拟时间</p>
-</li>
-<li><p><code>Valu * dut = new Valu</code>声明了一个ALU模组实例。创建<code>m_trace</code>用于追踪<code>dut</code>,</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, char** argv, char** env) &#123;</span><br><span class="line">    Valu *dut = new Valu;</span><br><span class="line"></span><br><span class="line">    Verilated::traceEverOn(true);</span><br><span class="line">    VerilatedVcdC *m_trace = new VerilatedVcdC;</span><br><span class="line">    dut-&gt;trace(m_trace, 5);</span><br><span class="line">    m_trace-&gt;open(&quot;waveform.vcd&quot;);</span><br><span class="line"></span><br><span class="line">    /* &lt;...&gt; */</span><br><span class="line"></span><br><span class="line">    m_trace-&gt;close();</span><br><span class="line">    delete dut;</span><br><span class="line">    exit(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>这段代码用于更新模拟时间，<code>dut-&gt;eval();</code>评估所有信号，<code>m_trace-&gt;dump(sim_time);</code>将追踪的信号写入波形转储文件(waveform dump file)。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">while (sim_time &lt; MAX_SIM_TIME) &#123;</span><br><span class="line">    dut-&gt;clk ^= 1;</span><br><span class="line">    dut-&gt;eval();</span><br><span class="line">    m_trace-&gt;dump(sim_time);</span><br><span class="line">    sim_time++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-</li>
-<li><p>构建可执行模拟文件</p>
-<ol>
-<li><p>再次运行verilator产生包含c++测试文件的<code>.mk</code>文件</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">verilator -Wall --trace -cc alu.sv --exe tb_alu.cpp</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>--trace</code> 打开波形追踪</li>
-</ul>
-</li>
-<li><p>构建可执行文件</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -C obj_dir -f Valu.mk Valu</span><br></pre></td></tr></table></figure>
-
-<p><code>-C obj_dir</code>告诉<code>make</code>在<code>obj_dir</code>目录下工作。<code>-f Valu.mk</code>是makfie文件，Valu可执行文件的名字。构造完成后在<code>obj_dir</code>中会找到<code>Valu</code>二进制可执行文件。</p>
-</li>
-<li><p>执行<code>./obj_dir/Valu</code>后会出现<code>waveform.vcd</code>，通过命令<code>gtkwave waveform.vcd</code>观察波形文件</p>
-</li>
-</ol>
-</li>
-</ol>
-<h2 id="在开始Pt2前先学一点Makefile的知识"><a href="#在开始Pt2前先学一点Makefile的知识" class="headerlink" title="在开始Pt2前先学一点Makefile的知识"></a>在开始Pt2前先学一点Makefile的知识</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">target_name : dependency_1 dependency_2 dependency_3</span><br><span class="line">    bash_command_that_generates_the_target &lt;parameters&gt;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>make</code>    &lt;-build the first target that appears in the Makefile</li>
-<li><code>make target_name</code>    &lt;- build the target with the name <code>target_name</code></li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.PHONY: waves</span><br><span class="line">waves : adder_tb_snapshot.wdb</span><br><span class="line">    @echo &quot;### OPENING WAVES ###&quot;</span><br><span class="line">    xsim --gui adder_tb_snapshot.wdb</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>.PHONY: wave</code> marks the <code>waves</code> target as not generating any output files.</li>
-<li>The part <code>: adder_tb_snapshot.wdb</code> tells waves that this file is a required dependency for this target.</li>
-<li>“@” character before <code>echo</code> prevents printout of the actual <code>echo</code> command.</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">TB_TOP := tb</span><br><span class="line"></span><br><span class="line">.PHONY : waves</span><br><span class="line">waves : $(TB_TOP).wdb</span><br><span class="line">        @echo</span><br><span class="line">        @echo &quot;### OPENING WAVES ###&quot;</span><br><span class="line">        xsim --gui $(TB_TOP)_snapshot.wdb</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>store tb as a variable.</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ifeq ($(SOURCES),)</span><br><span class="line">some_target :</span><br><span class="line">    @echo &quot;Print message saying that step was skipped&quot;</span><br><span class="line">else</span><br><span class="line">some_target : $(SOURCES)</span><br><span class="line">    run_build_command $(SOURCES)</span><br><span class="line">endif</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>to check if the corresponding source variable is set with <code>make</code>‘s <code>ifeq</code> command</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.PHONY : clean</span><br><span class="line">clean :</span><br><span class="line">    rm -rf *.jou *.log *.pb *.wdb xsim.dir      # This deletes all files generated by Vivado</span><br><span class="line">    rm -rf .*.timestamp                         # This deletes all our timestamps</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>删除文件操作</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SUB ?= VHDL</span><br><span class="line">ifeq ($(SUB), VHDL)</span><br><span class="line">  $(info Building with VHDL subtractor)</span><br><span class="line">  DEFINES_SV := $(DEFINES_SV) -d SUBTRACTOR_VHDL</span><br><span class="line">else ifeq ($(SUB), SV)</span><br><span class="line">  $(info Building with SYSTEMVERILOG subtractor)</span><br><span class="line">  DEFINES_SV := $(DEFINES_SV) -d SUBTRACTOR_SV</span><br><span class="line">else</span><br><span class="line">  $(info )</span><br><span class="line">  $(info BAD SUBTRACTOR TYPE)</span><br><span class="line">  $(info Available options:)</span><br><span class="line">  $(info make SUB=VHDL &lt;target&gt;)</span><br><span class="line">  $(info make SUB=SV &lt;target&gt;)</span><br><span class="line">  $(error )</span><br><span class="line">endif</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>第一行将SUB设置为变量，如果没有SUB默认为VHDL，<code>make SUB=SV</code>命令将SUB赋值为SV</li>
-</ul>
-<h2 id="Verilator-Pt-2"><a href="#Verilator-Pt-2" class="headerlink" title="Verilator Pt.2"></a>Verilator Pt.2</h2>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2902,7 +3005,7 @@ endmodule
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2947,12 +3050,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">154k</span>
+    <span title="站点总字数">164k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:20</span>
+    <span title="站点阅读时长">2:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

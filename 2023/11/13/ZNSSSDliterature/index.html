@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Critical Thinking - ReadingRead a paper and consider:Do I like it? Hate it? (opinion)What problem is it trying to solveHow does their approach differ from previous ones(how much previous work do I kno">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ZNSSSDliterature">
+<meta property="og:url" content="http://example.com/2023/11/13/ZNSSSDliterature/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Critical Thinking - ReadingRead a paper and consider:Do I like it? Hate it? (opinion)What problem is it trying to solveHow does their approach differ from previous ones(how much previous work do I kno">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.27.34.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.39.07.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2008.44.24.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2010.00.17.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.11.12.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.20.00.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.26.30.png">
+<meta property="og:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.42.42.png">
+<meta property="article:published_time" content="2023-11-13T11:38:51.000Z">
+<meta property="article:modified_time" content="2023-11-14T08:11:07.851Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.27.34.png">
+
+<link rel="canonical" href="http://example.com/2023/11/13/ZNSSSDliterature/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ZNSSSDliterature | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/13/ZNSSSDliterature/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ZNSSSDliterature
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-13 19:38:51" itemprop="dateCreated datePublished" datetime="2023-11-13T19:38:51+08:00">2023-11-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-14 16:11:07" itemprop="dateModified" datetime="2023-11-14T16:11:07+08:00">2023-11-14</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Critical-Thinking-Reading"><a href="#Critical-Thinking-Reading" class="headerlink" title="Critical Thinking - Reading"></a>Critical Thinking - Reading</h1><h2 id="Read-a-paper-and-consider"><a href="#Read-a-paper-and-consider" class="headerlink" title="Read a paper and consider:"></a>Read a paper and consider:</h2><h3 id="Do-I-like-it-Hate-it-opinion"><a href="#Do-I-like-it-Hate-it-opinion" class="headerlink" title="Do I like it? Hate it? (opinion)"></a>Do I like it? Hate it? (opinion)</h3><h3 id="What-problem-is-it-trying-to-solve"><a href="#What-problem-is-it-trying-to-solve" class="headerlink" title="What problem is it trying to solve"></a>What problem is it trying to solve</h3><h3 id="How-does-their-approach-differ-from-previous-ones"><a href="#How-does-their-approach-differ-from-previous-ones" class="headerlink" title="How does their approach differ from previous ones"></a>How does their approach differ from previous ones</h3><h3 id="how-much-previous-work-do-I-know-about-read-it-reference-chaining"><a href="#how-much-previous-work-do-I-know-about-read-it-reference-chaining" class="headerlink" title="(how much previous work do I know about - read it! (reference chaining))"></a>(how much previous work do I know about - read it! (reference chaining))</h3><h3 id="Does-it-work"><a href="#Does-it-work" class="headerlink" title="Does it work?"></a>Does it work?</h3><h3 id="What-could-be-improved"><a href="#What-could-be-improved" class="headerlink" title="What could be improved"></a>What could be improved</h3><h1 id="Optimizing-Data-Migration-for-Garbage-Collection-in-ZNS-SSDs"><a href="#Optimizing-Data-Migration-for-Garbage-Collection-in-ZNS-SSDs" class="headerlink" title="Optimizing Data Migration for Garbage Collection in ZNS SSDs"></a>Optimizing Data Migration for Garbage Collection in ZNS SSDs</h1><h2 id="Problem-to-be-solved"><a href="#Problem-to-be-solved" class="headerlink" title="Problem to be solved"></a>Problem to be solved</h2><p>在<code>zns ssd</code>中，程序被允许以一种高效的数据放置方法连续的写入不同的区域<code>zone</code>中。然而，在一个区域<code>zone</code>中的<strong>无效数据<code>invalid data</code>只有在整个区域的数据被擦除时才能被释放</strong>，这导致了空间低利用率。</p>
+<p>现阶段的研究集中在降低数据迁移的次数，但是他们的数据迁移方式并不高效。</p>
+<p>一方面，<code>ZNS SSD</code>中的数据迁移会导致不必要的端到端开销。</p>
+<blockquote>
+<p>这是因为在<code>ZNS SSD</code>的数据迁移由<code>host</code>管理，迁移时要先将数据读取到内存中，再由主机指定写入对应的区域<code>zone</code>中去。</p>
+</blockquote>
+<p>另一方面，两个区域<code>zone</code>之间，进行块到块<code>block-to-block</code>的数据迁移的开销也很大，会导致巨大的重写开销。</p>
+<p><strong>一种理想的方法是</strong>，将受害区域<code>victim zone</code>中的包含有效数据的块<code>blocks with valid data</code>重新映射到目标区域中<code>target zone</code>（通过这种映射，我们只需要擦除受害区域<code>victim zone</code>中的<code>blocks with invalid data </code>擦除，然后在目标区域<code>target zone</code>中开辟新的<code>block</code>并写入<code>blocks with invalid data</code>块中的有效数据即可）。</p>
+<p>仍然，<code>ZNS SSD</code>中的区域和块之间的映射基于芯片间的并行提前被定义好了。</p>
+<h2 id="Approaches"><a href="#Approaches" class="headerlink" title="Approaches"></a>Approaches</h2><p>提出一种新的<code>ZNS SSD</code>垃圾回收方式，<code>IS_AR</code>：</p>
+<ul>
+<li><h3 id="Zone-MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage-data-migration，以避免端到端的传输开销。"><a href="#Zone-MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage-data-migration，以避免端到端的传输开销。" class="headerlink" title="Zone_MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage data migration，以避免端到端的传输开销。"></a><code>Zone_MD</code>：提出的新<code>ZNS</code>命令，用于实现存储内部数据迁移<code>in-storage data migration</code>，以避免端到端的传输开销。</h3><p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.27.34.png" alt="截屏2023-11-13 20.27.34"></p>
+<p>如图所示，函数<code>Zone_MD(Src, Dst, Size)</code>接收三个参数：</p>
+<ul>
+<li><code>Src</code>：表示受害区域<code>victim zone</code>中的有效数据<code>valid data</code>的逻辑起始地址<code>starting logic address</code>。</li>
+<li><code>Dst</code>：表示目标区域<code>target zone</code>的写指针<code>write pointer</code>地址。</li>
+<li><code>Size</code>：表示要迁移的连续有效数据<code>continuous valid data</code>的大小。</li>
+</ul>
+<p>整个存储内数据迁移<code>in-storage data migration</code>在存储的内部通道<code>internal channel</code>的帮助下完成，避免了端到端传输。</p>
+<blockquote>
+<p><code>internal channel</code>是指固态硬盘（SSD）内部用于数据传输的通道。这个通道在硬盘的控制器内部进行操作，而不是通过主机的数据总线。这意味着数据迁移是在SSD设备内部完成的，而不需要数据经过主机（即计算机的CPU和主内存）。</p>
+<p>这种内部数据迁移通道通常由SSD的固件和控制器逻辑来管理。它能够直接访问闪存存储单元，执行读取、传输和写入操作。使用这样的通道，可以有效地将数据从一个区域（源区域，Src）移动到另一个区域（目标区域，Dst），而不必通过外部接口传输数据，这样可以极大地减少数据迁移的延迟和带宽消耗。</p>
+</blockquote>
+</li>
+<li><h3 id="AR：一种重映射策略remapping-strategy，该策略基于并行物理块，以减少block-to-block重写的开销。"><a href="#AR：一种重映射策略remapping-strategy，该策略基于并行物理块，以减少block-to-block重写的开销。" class="headerlink" title="AR：一种重映射策略remapping strategy，该策略基于并行物理块，以减少block-to-block重写的开销。"></a><code>AR</code>：一种重映射策略<code>remapping strategy</code>，该策略基于并行物理块，以减少<code>block-to-block</code>重写的开销。</h3></li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-13%2020.39.07.png" alt="截屏2023-11-13 20.39.07"></p>
+<p>为保证对一个区域<code>zone</code>的并行写操作<code>parallelism of writing</code>，提出了一种基于并行块组<code>parallel block groups (PBGs)</code>动态的区域映射方法。</p>
+<blockquote>
+<p>笔者认为一个白色的小块对应一个<code>block</code>。</p>
+</blockquote>
+<ul>
+<li>首先将<code>SSD</code>中的芯片分组，形成多个并行芯片组<code>mutiple parallel chip groups (PCG)</code>。通过<code>PCG</code>，读写操作可以并行的执行。</li>
+<li>在每个并行芯片组<code>PCG</code>中，拥有相同偏移量<code>offset</code>的块被分到相同的并行块组中<code>PBG</code>，同样并行块组中的读写操作也能被并行的执行。</li>
+<li>我们把并行块组<code>(PBG)</code>作为最小的重映射单位，并保证了区域内的并行性。</li>
+<li>当一个区域被分配时，我们动态的将<code>PBGs</code>映射到区域上。</li>
+</ul>
+<p>现在我们讨论重映射策略。</p>
+<p>在受害区域<code>victim zone</code>中，有两种<code>PBG</code>区域需要被迁移：</p>
+<ul>
+<li><code>V1</code>：整个并行块组<code>PBG</code>都是合法数据。</li>
+<li><code>V2</code>：并行块组<code>PBG</code>的一部分是合法数据。</li>
+</ul>
+<p>在目标区域<code>target zone</code>，并行块组也分为两类：</p>
+<ul>
+<li><code>T1</code>：并行块组的所有部分均会被写入。</li>
+<li><code>T2</code>：并行块组只有一部分会被写入。</li>
+</ul>
+<p>两辆组合，产生四种重映射方法：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2008.44.24.png" alt="截屏2023-11-14 08.44.24"></p>
+<ul>
+<li><p><code>Fig.3.(1),(2)</code>：<code>V1</code>被重映射到包含<code>T1</code>或<code>T2</code>的区域<code>zone</code>。</p>
+<ul>
+<li><p><code>V1-&gt;T1</code>：<code>V1</code>的逻辑地址和物理地址直接重映射（这里的关键是没有提到数据从物理上的一个位置被复制到另一个位置，而是提到了逻辑空间（LS）到物理空间（PS）的映射直接重映射到目标区域，这通常涉及更新映射表（MT）而不是实际的数据移动。）到目标区域。同时，<code>Write Point</code>移动到<code>WP* = (WP + V1_Size)</code>，并在映射表<code>Mapping Table</code>上更新物理地址和逻辑地址。</p>
+</li>
+<li><p><code>V1-&gt;T2</code>：为了提高<code>T2</code>的空间利用率，<code>P1-P2</code>这段未被使用的空间的物理地址将被重映射到逻辑地址中去，其位置会在写指针<code>WP*</code>后面的<code>CW</code>处，长度不变。</p>
+<blockquote>
+<p><code>RT (Remapping Table)</code>：为了保持正确的索引关系，添加了一个新的重新映射表（RT），以记录逻辑地址与范围内的物理地址的偏移量（即具有相同偏移量相同的LS的连续段）粒度。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p><code>Fig.3.(3),(4)</code>：<code>V2</code>被重映射到包含<code>T1</code>或<code>T2</code>的区域<code>zone</code>。</p>
+<ul>
+<li><p><code>V2</code>的整个物理地址直接被重映射到目标区域的物理地址中。然而，只有<code>V2</code>中的有效数据的逻辑地址被重映射到目标区域，因为目标区域只需要有效数据。</p>
+<blockquote>
+<p>V2中的无效数据空间被保留，直到目标区域重置（即部分无效空间被目标区域暂时占据）。</p>
+</blockquote>
+<p>因此，我们使用<code>ZNS SSD</code>的当前空间占用率<code>current space utilization (su)</code>作为基准<code>benchmark</code>。</p>
+<p>如果<code>V2</code>中的有效数据的百分占比大于<code>su</code>，我们执行重映射。</p>
+<p>否则我们直接重写<code>V2</code>中的所有有效数据。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>​	通过上述方法，我们平衡了空间利用率和性能。</p>
+<h2 id="Does-it-work-1"><a href="#Does-it-work-1" class="headerlink" title="Does it work?"></a>Does it work?</h2><p>将<code>IS-AR</code>和传统的数据迁移策略<code>Trad-DM</code>（没有实现数据内迁移和重映射）进行比较。具体的实验参数如下：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2010.00.17.png" alt="截屏2023-11-14 10.00.17"></p>
+<p>表格上看，数据迁移的延迟确实降低了，而且提高了<code>ZNS SSD</code>的寿命。</p>
+<h2 id="What-could-be-improved？"><a href="#What-could-be-improved？" class="headerlink" title="What could be improved？"></a>What could be improved？</h2><p>论文中提到的<code>current space utilization</code>是如何选择的。</p>
+<h1 id="A-New-LSM-style-Garbage-Collection-Scheme-for-ZNS-SSDs"><a href="#A-New-LSM-style-Garbage-Collection-Scheme-for-ZNS-SSDs" class="headerlink" title="A New LSM-style Garbage Collection Scheme for ZNS SSDs"></a>A New LSM-style Garbage Collection Scheme for ZNS SSDs</h1><h2 id="Problem-to-be-solved-1"><a href="#Problem-to-be-solved-1" class="headerlink" title="Problem to be solved"></a>Problem to be solved</h2><p><code>ZNS SSD</code>的两面性：</p>
+<ul>
+<li>Pro：通过将不同的工作负载分类到不同的区域中减少写放大<code>WAF</code></li>
+<li>Cons：主机需要直接管理ZNS SSD，例如区域重置，并且它们具有顺序写入约束。</li>
+</ul>
+<p>简单的垃圾回收策略：</p>
+<ul>
+<li><code>LFS (log-structured File System)</code>：日志结构文件系统使用的段清理。</li>
+<li><code>FTL (Flash Transition Layer)</code>：闪存层使用的垃圾回收策略</li>
+</ul>
+<p>上述策略的区别是将垃圾回收应用在区域<code>zone</code>还是段<code>segment</code>中。然而，这种简单的垃圾回收策略会因为区域的大小而导致更长的延迟，相比段大小而言。</p>
+<h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><ul>
+<li>如下图所示，要解决的问题还是：区域间的垃圾回收策略导致的时间开销过大。并且，最好选择利用利用率低的区域作为垃圾回收的区域。</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.11.12.png" alt="截屏2023-11-14 15.11.12"></p>
+<ul>
+<li><p>另一个观察是，在读取一个区域时，对块进行单独读取的耗时比对块进行组读取的模式的耗时更高。</p>
+<blockquote>
+<p>结果显示，以组的方式访问比单独访问要快得多。这是因为它不仅可以减少请求的数量，而且还可以利用ZNS固态硬盘内部的并行性。一般来说，ZNS固态硬盘中的一个区域会分布在多个通道上，这使得可以并行处理连续块的请求，就像开放通道固态硬盘（OCSSDs）那样。这一观察激励我们设计我们的LSM风格垃圾收集方案。</p>
+</blockquote>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.20.00.png" alt="截屏2023-11-14 15.20.00"></p>
+</li>
+</ul>
+<h2 id="Approaches-1"><a href="#Approaches-1" class="headerlink" title="Approaches"></a>Approaches</h2><p>为了应对上文中提到的问题，提出了一个新的垃圾回收策略<code>LSM_ZGC</code>：</p>
+<ul>
+<li><code>LSM_ZGC</code>将区域分割为多个段，并分别管理这些段的信息。</li>
+<li>以<code>LSM</code>的风格进行垃圾回收，读取候选区域的所有数据，识别冷数据，将它们合并到一个区域，同时将剩余数据合并到另一个区域。</li>
+</ul>
+<p>以下是<code>LSM_ZGC</code>的优点：</p>
+<ul>
+<li>采用基于段<code>segment</code>（而不是基于区域<code>zone</code>）的方式，有利于冷热数据分割，并可以用流水线的方式实现策略。</li>
+<li>读取段中所有有效和无效的数据，可以通过利用区域中的内部并行性来减少垃圾收集开销。</li>
+<li>将冷热数据放入不同的区域，可以增加找到利用率较低的区域的机会。</li>
+</ul>
+<p>在<code>ZNS SSD</code>的垃圾回收策略中，最简单的方式<code>Basic_ZGC</code>是：</p>
+<ul>
+<li>选择一个利用率最低的区域。</li>
+<li>读取该区域中有效数据块并将它们写入新的区域中去。</li>
+<li>最后通过<code>reset command</code>重置选择的块。</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.26.30.png" alt="截屏2023-11-14 15.26.30"></p>
+<p>而<code>LSM_ZGC</code>的策略有三个不同之处：</p>
+<ul>
+<li><p>对于一个区域<code>zone</code>的垃圾回收会在段<code>segment</code>上实现。此外，它允许使用细粒度段单元执行区域垃圾收集，其中可以以管道方式读取、合并和写入段。</p>
+</li>
+<li><p>在垃圾回收阶段，它以<code>128KB</code>大小<code>IO</code>，不仅读取有效块，也读取无效块，而<code>Basic_ZGC</code>只读取有效块。</p>
+<blockquote>
+<p>读取所有快的原因是，我们在Figure 2中观察到，<code>in group manner</code>利用芯片的并行性提高读取速度。</p>
+<p>因此当块数量大于16时，我们采取全部读取的方式。（由于16个128KB大小的请求可以覆盖整个2MB的段数据，它会读取所有块。）</p>
+</blockquote>
+</li>
+<li><p><code>LSM_ZGC</code>通过鉴别冷数据<code>cold data</code>，并将冷数据合并到一个单独的区域中。</p>
+<p>为了到达这个目的，我们定义四种区域的状态：</p>
+<ul>
+<li><p><code>C0_zone</code></p>
+</li>
+<li><p><code>C1C_zone</code>：</p>
+<blockquote>
+<p>我们将利用率高于阈值的段（称为门槛冷）定义为冷。这一决定基于我们的观察，即具有相似寿命的数据显示出强大的空间局部性。<br>可能的原因：段中大部分空间被占用通常意味着其中的数据已经稳定下来，且变动不大。</p>
+</blockquote>
+</li>
+<li><p><code>C1H_zone</code></p>
+</li>
+<li><p><code>C2_zone</code></p>
+</li>
+</ul>
+<p>新到达的数据按顺序写入状态为<code>C0</code>区域的区域，删除的数据将离开图中所示的状态。</p>
+<ul>
+<li><p>将冷数据写入<code>C1C_zone</code>。</p>
+</li>
+<li><p>将其他数据写入<code>C1H_zone</code>中。</p>
+</li>
+</ul>
+<p>而当要回收的区域状态是<code>C1C_zone</code>或者<code>C1H_zone</code>时，<code>LSM_ZGC</code>将读取所有段，并把所有有效块看作冷数据。这是因为这些有效块在连续两次垃圾回收操作后都被保留了。最后这些块中的数据会被写入<code>C2_zone</code>中。</p>
+<p>我们预计这种机制能够将冷数据与其他数据隔离开来，从而增加在垃圾收集期间找到利用率较低的候选区的机会。</p>
+</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.42.42.png" alt="截屏2023-11-14 15.42.42"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/11/11/ZNSLinuxKernelSupport/" rel="prev" title="ZNSLinuxKernelSupport">
+      <i class="fa fa-chevron-left"></i> ZNSLinuxKernelSupport
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Critical-Thinking-Reading"><span class="nav-number">1.</span> <span class="nav-text">Critical Thinking - Reading</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-a-paper-and-consider"><span class="nav-number">1.1.</span> <span class="nav-text">Read a paper and consider:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Do-I-like-it-Hate-it-opinion"><span class="nav-number">1.1.1.</span> <span class="nav-text">Do I like it? Hate it? (opinion)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#What-problem-is-it-trying-to-solve"><span class="nav-number">1.1.2.</span> <span class="nav-text">What problem is it trying to solve</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-does-their-approach-differ-from-previous-ones"><span class="nav-number">1.1.3.</span> <span class="nav-text">How does their approach differ from previous ones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#how-much-previous-work-do-I-know-about-read-it-reference-chaining"><span class="nav-number">1.1.4.</span> <span class="nav-text">(how much previous work do I know about - read it! (reference chaining))</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Does-it-work"><span class="nav-number">1.1.5.</span> <span class="nav-text">Does it work?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#What-could-be-improved"><span class="nav-number">1.1.6.</span> <span class="nav-text">What could be improved</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Optimizing-Data-Migration-for-Garbage-Collection-in-ZNS-SSDs"><span class="nav-number">2.</span> <span class="nav-text">Optimizing Data Migration for Garbage Collection in ZNS SSDs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem-to-be-solved"><span class="nav-number">2.1.</span> <span class="nav-text">Problem to be solved</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approaches"><span class="nav-number">2.2.</span> <span class="nav-text">Approaches</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-MD%EF%BC%9A%E6%8F%90%E5%87%BA%E7%9A%84%E6%96%B0ZNS%E5%91%BD%E4%BB%A4%EF%BC%8C%E7%94%A8%E4%BA%8E%E5%AE%9E%E7%8E%B0%E5%AD%98%E5%82%A8%E5%86%85%E9%83%A8%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BBin-storage-data-migration%EF%BC%8C%E4%BB%A5%E9%81%BF%E5%85%8D%E7%AB%AF%E5%88%B0%E7%AB%AF%E7%9A%84%E4%BC%A0%E8%BE%93%E5%BC%80%E9%94%80%E3%80%82"><span class="nav-number">2.2.1.</span> <span class="nav-text">Zone_MD：提出的新ZNS命令，用于实现存储内部数据迁移in-storage data migration，以避免端到端的传输开销。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AR%EF%BC%9A%E4%B8%80%E7%A7%8D%E9%87%8D%E6%98%A0%E5%B0%84%E7%AD%96%E7%95%A5remapping-strategy%EF%BC%8C%E8%AF%A5%E7%AD%96%E7%95%A5%E5%9F%BA%E4%BA%8E%E5%B9%B6%E8%A1%8C%E7%89%A9%E7%90%86%E5%9D%97%EF%BC%8C%E4%BB%A5%E5%87%8F%E5%B0%91block-to-block%E9%87%8D%E5%86%99%E7%9A%84%E5%BC%80%E9%94%80%E3%80%82"><span class="nav-number">2.2.2.</span> <span class="nav-text">AR：一种重映射策略remapping strategy，该策略基于并行物理块，以减少block-to-block重写的开销。</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Does-it-work-1"><span class="nav-number">2.3.</span> <span class="nav-text">Does it work?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-could-be-improved%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">What could be improved？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-New-LSM-style-Garbage-Collection-Scheme-for-ZNS-SSDs"><span class="nav-number">3.</span> <span class="nav-text">A New LSM-style Garbage Collection Scheme for ZNS SSDs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem-to-be-solved-1"><span class="nav-number">3.1.</span> <span class="nav-text">Problem to be solved</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Motivation"><span class="nav-number">3.2.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approaches-1"><span class="nav-number">3.3.</span> <span class="nav-text">Approaches</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">164k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:29</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
