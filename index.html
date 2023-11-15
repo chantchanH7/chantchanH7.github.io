@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-15 10:10:15" itemprop="dateModified" datetime="2023-11-15T10:10:15+08:00">2023-11-15</time>
+                <time title="修改时间：2023-11-15 19:51:40" itemprop="dateModified" datetime="2023-11-15T19:51:40+08:00">2023-11-15</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.2k</span>
+              <span>7.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>7 分钟</span>
             </span>
 
         </div>
@@ -406,7 +406,168 @@
 <li><p>碎片整理会消耗大量的时间，且会降低前端应用的性能（由于额外的<code>I/O</code>操作）</p>
 </li>
 </ul>
-<h2 id="How-to-find-these-problems"><a href="#How-to-find-these-problems" class="headerlink" title="How to find these problems?"></a>How to find these problems?</h2>
+<h2 id="How-to-find-these-problems"><a href="#How-to-find-these-problems" class="headerlink" title="How to find these problems?"></a>How to find these problems?</h2><ul>
+<li><p><strong>在多线程模式的工作负荷下，数据读取的吞吐量显著降低，如图1所示：</strong></p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2010.19.07.png" alt="截屏2023-11-15 10.19.07"></p>
+<ul>
+<li><p><strong>I&#x2F;O请求碎片化的定义:</strong><br>由于文件系统的碎片化和闪存<code>SSD</code>的内部操作，一部分访存数据的分布变得更加随机，导致内部资源的冲突。</p>
+<p>我们定义<code>I/O</code>请求的逻辑碎片<code>logical fragmentation</code>和物理碎片<code>physical fragmentation</code>，如图2所示：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2010.27.43.png" alt="截屏2023-11-15 10.27.43"></p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>**<code>Request splitting</code>**：由于碎片数据的逻辑地址不连续，向碎片数据发出的大型顺序I&#x2F;O被拆分为多个小型随机I&#x2F;O。</p>
+</li>
+<li><p>**<code>DoLF</code>**：<code>degree of logical fragmentation</code>，一个<code>I/O</code>范围中的逻辑碎片的数量。</p>
+</li>
+<li><p>**<code>DoPF</code>**：<code>degree of physical fragmentation</code>， 我们通过I&#x2F;O范围内的数据在闪存并行单元之间的均匀分布来衡量I&#x2F;O请求的物理碎片程度。</p>
+<blockquote>
+<p>这是因为在<code>SSD</code>中，物理碎片的定义和在磁盘上的不同（物理地址上连续），这是因为<code>SSD</code>上的芯片可以被并行的访问。如图2所示，我们把具有相同偏移量（即只能被同一芯片顺序访问的地址定义为物理碎片）。</p>
+</blockquote>
+<p>$$<br>DoPF &#x3D; \frac{\sum_{i&#x3D;1}^{L} \left(N_i - \frac{M}{L}\right)^2}{L}<br>$$</p>
+<ul>
+<li><code>M</code>：<code>I/O</code>请求访问的数据块的数量</li>
+<li><code>L</code>：闪存的并行芯片数量</li>
+<li><code>N_i</code>：<code>N</code>表示位于<code>i</code>平行单元（平行芯片）的数据块数量</li>
+</ul>
+<p>综上，较大的<code>DoPF</code>表明物理碎片程度较高，<code>I/O</code>并行程度较低。</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong>物理碎片和逻辑碎片对<code>I/O</code>性能的影响</strong></p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2011.03.09.png" alt="截屏2023-11-15 11.03.09"></p>
+</li>
+</ul>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2011.03.57.png" alt="截屏2023-11-15 11.03.57"></p>
+<blockquote>
+<p><strong>当芯片数量少于6个时，I&#x2F;O并行性对I&#x2F;O性能有显著影响，DoPF值显著增加，而I&#x2F;O性能大幅下降。然而，当DoPF值较小时，例如小于40，物理碎片化对I&#x2F;O性能的影响可以忽略不计。这是因为当I&#x2F;O的物理并行度超过一定程度时，软件开销主导了总的I&#x2F;O延迟。</strong></p>
+</blockquote>
+<ul>
+<li><strong>如何寻找合适的碎片进行处理？</strong></li>
+</ul>
+<blockquote>
+<p>碎片化程度低或很少访问的冷数据碎片整理数据几乎没有性能提升。</p>
+</blockquote>
+<p>​	<code>IODP</code>，<code>I/O data defragmentation priority</code>:<br>$$<br>IODP &#x3D; (\alpha \cdot DoLF + \beta \cdot DoPF) \times \text{readcount}<br>$$</p>
+<ul>
+<li><p><strong>传统固态硬盘碎片处理时的开销</strong></p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2011.20.51.png" alt="截屏2023-11-15 11.20.51"></p>
+<ul>
+<li><p>内存页面分配</p>
+</li>
+<li><p>读数据</p>
+<blockquote>
+<p>对内存的大量读取可能会导致主机内存使用量显著增加，并调用页面帧回收</p>
+</blockquote>
+</li>
+<li><p>分配连续空间</p>
+</li>
+<li><p>写数据</p>
+<blockquote>
+<p>其次，在将所有目标数据读入页面缓存之前，defrag.f2fs分配一个连续的可用空间，并按顺序将所有数据写入SSD，从而导致SSD中的芯片空闲间隔很大。</p>
+</blockquote>
+</li>
+<li><p>元数据<code>metadata</code>更新</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Approaches-2"><a href="#Approaches-2" class="headerlink" title="Approaches"></a>Approaches</h2><p><code>InDeF</code>的两个目标：</p>
+<ul>
+<li><p>一个是尽量减少用于碎片整理的迁移数据量，以减少底层设备的写入流量。</p>
+</li>
+<li><p>另一个是利用ZENS SSD的内部并行性来减少碎片整理的时间。</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2011.34.18.png" alt="截屏2023-11-15 11.34.18"></p>
+<ul>
+<li><p><em>Fagmentation Information Management Module</em>：</p>
+<ul>
+<li><p>I&#x2F;O Monitor. 通过<code>I/O</code>访问的文件的<code>inode</code>确定文件块的范围</p>
+</li>
+<li><p>I&#x2F;O Information Management：</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2017.08.59.png" alt="截屏2023-11-15 17.08.59"></p>
+</li>
+<li><p>Fagmentation Information Management.</p>
+</li>
+</ul>
+</li>
+<li><p><em>Fragmentation Calculation Module</em></p>
+<ul>
+<li><p>Zone Mapping in ZNS SSD</p>
+<p><code>F2FS</code>通常使用<code>2MB</code>大小的段管理逻辑地址空间，图八中是区域映射到闪存块的例子：</p>
+<p>图中<code>ZNS SSD</code>有四个并行芯片，一个逻辑块对应一个物理闪存页。</p>
+<p>一个区域对应<code>F2FS</code>的两个连续的段。</p>
+<p>根据区域大小，物理区域由一组分布在并行芯片中的块组成。</p>
+<p>物理区域中的页面以交错的方式放置在不同的芯片中。</p>
+<p>这样的方式能完全利用闪存操作的并行性。</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2017.15.40.png" alt="截屏2023-11-15 17.15.40"></p>
+</li>
+<li><p>Calculating the degree of Fragmentation</p>
+<p>首先将<code>I/O</code>范围内的文件块索引转换为文件的物理块地址。</p>
+<p><code>DoLF</code>由逻辑块碎片计算。</p>
+<p><code>DoPF</code>由物理块碎片计算。</p>
+<p>图9是计算碎片化程度的一个例子</p>
+<p>通过文件到存储的映射表，将文件<code>inode</code>中的索引号转换为文件系统的逻辑块地址。</p>
+<ul>
+<li><code>(32, 48, 3)</code>分别表示起始索引，结束索引，和读计数<code>read count</code></li>
+<li><code>Inode# = 7</code>表示文件7</li>
+</ul>
+<p>索引对应了16个文件系统块。</p>
+<p>我们会发现有在<code>File-system Block</code>，也就是所谓的逻辑块中，有6组碎片。所以<code>DoLF = 6</code></p>
+<p>对于物理碎片，我们首先需要通过段号和段内偏移量获取闪存设备中每个逻辑块的位置。</p>
+<p>例如，对于逻辑块<code>801</code>我们首先计算<code>In-segment offset = 801 - 800 = 1</code></p>
+<p><code>1 mode 4 = 1</code>，现在我们知道逻辑块<code>801</code>会在芯片1上被处理。</p>
+<p>最终，我们通过计算可以得到<code>DoPF</code>的值为2.5。</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2018.52.28.png" alt="截屏2023-11-15 18.52.28"></p>
+</li>
+</ul>
+</li>
+<li><p>Defragmentation Module</p>
+<p>选择需要迁移的数据过滤掉对<code>I/O</code>性能影响不大的碎片。</p>
+<p>其次，毗连空间分配从该区域分配毗连的自由空间。</p>
+<p>第三，主机的数据迁移任务被卸载到SSD。</p>
+<p>最后，文件系统会保留迁移数据的元数据块。</p>
+<p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-15%2019.15.20.png" alt="截屏2023-11-15 19.15.20"></p>
+<ul>
+<li><p>Fragments filter.</p>
+</li>
+<li><p>Migration offloading.</p>
+<ul>
+<li><p>Command generating</p>
+<p>InDeF将源数据分为两组，其中一组需要从主机内存传输到设备，另一组通过迁移卸载进行处理。</p>
+<blockquote>
+<p>这是因为：对于I&#x2F;O范围内的每个块，首先要检查它是否缓存在页面缓存中。如果它已经被缓存并且页面很脏，则需要将该块排除在迁移卸载之外，并从内存写入设备。如果缓存的页面干净或未缓存，则可以通过迁移卸载在内部复制。</p>
+</blockquote>
+</li>
+<li><p>Command sending:</p>
+<p> <code>In_Device_Defragment</code> 命令实现存储内数据迁移</p>
+<blockquote>
+<p>它包含一组源LBA和一组目标LBA。该命令非常高效，因为每个4KB逻辑块被两个4字节块地址替换。</p>
+</blockquote>
+</li>
+<li><p>Command processing:</p>
+<p>SSD内部控制器根据区域的写入策略处理迁移卸载和主机请求。</p>
+<ul>
+<li><p>如果源块和目标块属于同一芯片，则使用<code>copyback</code>命令在芯片内进行传输。</p>
+</li>
+<li><p>否则，先将数据块读入<code>SSD</code>中的<code>DRAM</code>，再写到目标位置。</p>
+<blockquote>
+<p>即使是对迁移卸载数据的读取请求，它们也可以通过SSD上的DRAM或闪存芯片正常处理。由于异地更新策略，对迁移卸载数据的写入请求不受影响。最后，文件系统会保留迁移到设备的数据的元数据块。F2FS实施检查点以提供一致的恢复点。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
       
     </div>
 
@@ -3077,12 +3238,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">164k</span>
+    <span title="站点总字数">167k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:30</span>
+    <span title="站点阅读时长">2:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
