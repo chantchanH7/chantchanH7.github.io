@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-14 16:28:33" itemprop="dateModified" datetime="2023-11-14T16:28:33+08:00">2023-11-14</time>
+                <time title="修改时间：2023-11-15 10:10:15" itemprop="dateModified" datetime="2023-11-15T10:10:15+08:00">2023-11-15</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.6k</span>
+              <span>5.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -381,7 +381,32 @@
 </li>
 </ul>
 <p><img src="/../images/ZNSSSDliterature/%E6%88%AA%E5%B1%8F2023-11-14%2015.42.42.png" alt="截屏2023-11-14 15.42.42"></p>
-<h1 id="InDeF-An-Advanced-Defragmenter-Supporting-Migration-Offloading-on-ZNS-SSD"><a href="#InDeF-An-Advanced-Defragmenter-Supporting-Migration-Offloading-on-ZNS-SSD" class="headerlink" title="InDeF: An Advanced Defragmenter Supporting Migration Offloading on ZNS SSD"></a>InDeF: An Advanced Defragmenter Supporting Migration Offloading on ZNS SSD</h1>
+<h1 id="InDeF-An-Advanced-Defragmenter-Supporting-Migration-Offloading-on-ZNS-SSD"><a href="#InDeF-An-Advanced-Defragmenter-Supporting-Migration-Offloading-on-ZNS-SSD" class="headerlink" title="InDeF: An Advanced Defragmenter Supporting Migration Offloading on ZNS SSD"></a>InDeF: An Advanced Defragmenter Supporting Migration Offloading on ZNS SSD</h1><h2 id="Problem-to-be-solved-2"><a href="#Problem-to-be-solved-2" class="headerlink" title="Problem to be solved"></a>Problem to be solved</h2><p><code>ZNS SSD</code>由于其不恰当的更新和应用程序的多线程写作行为，它脆弱地能够碎片化。</p>
+<blockquote>
+<p>碎片化是指<code>SSD</code>中的数据不是连续存储在<code>SSD</code>上的，而是分散到不同的区域。</p>
+</blockquote>
+<p>由于碎片化，<code>I/O</code>请求会被分割（要读取不同的区域，所以将一个<code>I/O</code>分割成多个的<code>I/O</code>）。</p>
+<blockquote>
+<p>为什么说<code>ZNS SSD</code>更容易碎片化？</p>
+<p>由于<code>ZNS SSD</code>的顺序写特性，访存需要使用一种<code>log-structured file system (LFS)</code>，如<code>F2FS</code>。</p>
+</blockquote>
+<p>传统的<code>Defragmentation tool</code>有如下缺点：</p>
+<ul>
+<li><p>由于大多数<code>Defragmentation tool</code>是为传统<code>SSD</code>设计的，它们无法处理物理碎片（这是因为传统SSD不会将物理地址暴露给主机）。而<code>ZNS SSD</code>将逻辑地址组织成一个个区域，且区域与物理介质的边界对齐。因此，我们可以通过这种特性在主机端判断物理碎片化。</p>
+</li>
+<li><p>传统的碎片整理工具<code>defragmentation tool</code>，如<code>defrag.f2fs</code>，在整理碎片时的开销很大。</p>
+<blockquote>
+<p>这是因为<code>defrag.f2fs</code>会把底层设备的所有内容读入主机内存中去，然后再将数据写入设备中的连续空间。这会导致大量的<code>I/O</code>开销。</p>
+</blockquote>
+</li>
+<li><p>并且对于不熟悉系统编程的用户来说，使用这样的工具<code>defrag.f2fs</code>是困难的。</p>
+</li>
+<li><p>闪存设备的擦除次数有限，过多的数据迁移会降低<code>ZNS SSD</code>的寿命。</p>
+</li>
+<li><p>碎片整理会消耗大量的时间，且会降低前端应用的性能（由于额外的<code>I/O</code>操作）</p>
+</li>
+</ul>
+<h2 id="How-to-find-these-problems"><a href="#How-to-find-these-problems" class="headerlink" title="How to find these problems?"></a>How to find these problems?</h2>
       
     </div>
 
@@ -2051,7 +2076,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-13 15:17:14" itemprop="dateModified" datetime="2023-11-13T15:17:14+08:00">2023-11-13</time>
+                <time title="修改时间：2023-11-15 10:15:46" itemprop="dateModified" datetime="2023-11-15T10:15:46+08:00">2023-11-15</time>
               </span>
 
           <br>
@@ -2060,7 +2085,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>112</span>
+              <span>122</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -2086,6 +2111,8 @@
 <h2 id="Computer-System-Design-Lab-3"><a href="#Computer-System-Design-Lab-3" class="headerlink" title="Computer System Design Lab_3"></a>Computer System Design Lab_3</h2><iframe src="../../../../pdf_file/computerSystemDesignLab/Lab3_report.pdf" style="width:100%; height:800px;" frameborder="0"></iframe>
 
 <h2 id="Computer-System-Design-Lab-4"><a href="#Computer-System-Design-Lab-4" class="headerlink" title="Computer System Design Lab_4"></a>Computer System Design Lab_4</h2><iframe src="../../../../pdf_file/computerSystemDesignLab/lab4_report.pdf" style="width:100%; height:800px;" frameborder="0"></iframe>
+
+<h2 id="coursework"><a href="#coursework" class="headerlink" title="coursework"></a>coursework</h2><iframe src="../../../../pdf_file/computerSystemDesignLab/coursework.pdf" style="width:100%; height:800px;" frameborder="0"></iframe>
       
     </div>
 
@@ -3055,7 +3082,7 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:29</span>
+    <span title="站点阅读时长">2:30</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
