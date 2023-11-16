@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2013.15.44.png">
 <meta property="og:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2014.07.43.png">
 <meta property="article:published_time" content="2023-11-11T04:01:17.000Z">
-<meta property="article:modified_time" content="2023-11-13T00:16:54.276Z">
+<meta property="article:modified_time" content="2023-11-16T05:16:53.386Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/ZNSLinuxKernelSupport/%E6%88%AA%E5%B1%8F2023-11-11%2013.15.44.png">
@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-13 08:16:54" itemprop="dateModified" datetime="2023-11-13T08:16:54+08:00">2023-11-13</time>
+                <time title="修改时间：2023-11-16 13:16:53" itemprop="dateModified" datetime="2023-11-16T13:16:53+08:00">2023-11-16</time>
               </span>
 
           
@@ -216,14 +216,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>19k</span>
+              <span>23k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>17 分钟</span>
+              <span>21 分钟</span>
             </span>
 
         </div>
@@ -490,6 +490,72 @@
 
 <p>我们发现，在调用<code>BLKGETNRZONES</code>等函数时，需要通过<code>ioctl</code>。</p>
 <p><code>BLKGETNRZONES</code>命令特别适用于分配足够大的分区描述符数组，以便对设备上所有分区进行分区报告</p>
+<h1 id="Write-Ordering-Control-1"><a href="#Write-Ordering-Control-1" class="headerlink" title="Write Ordering Control"></a>Write Ordering Control</h1><p>以前，Linux内核块<code>I/O</code>堆栈<code>Linux kernel block I/O stack</code>（例如，块层和<code>SCSI</code>层），并不会保证块<code>I/O</code>请求的执行顺序。不能保证块<code>I/O</code>请求的执行顺序的原因是因为块I&#x2F;O请求内核中执行的异步性质和设备请求队列需要细粒度锁模型的必要性。（当多个上下文同时向块设备发出I&#x2F;O请求时，最大限度地减少锁定竞争开销）。</p>
+<p>这种设计直接导致的结果是，<code>well-behaving ZBD-compliant application</code>在沿着<code>LBA</code>顺序进行的写命令无法保证齐顺序性。</p>
+<p>为了解决这个问题，内核<code>ZBD</code>支持添加区域写锁<code>zone write locking</code>以保证写请求在每一个区域中的执行顺序。</p>
+<h2 id="Zone-Write-Locking"><a href="#Zone-Write-Locking" class="headerlink" title="Zone Write Locking"></a>Zone Write Locking</h2><p>区域写入锁<code>Zone write locking</code>实现了对于每个区域的写锁定，以顺序执行每一个对相同区域的写请求。此功能不保证写入命令始终在区域写入指针的位置发出：这是写<code>I/O</code>发出者的责任。区域写入锁定只保证应用程序，文件系统，设备映射器目标发出的写命令的顺序将被块<code>I/O</code>堆栈所遵守。因此，优秀的区域块设备用户将避免为对齐的写入命令失败。</p>
+<p>区域写入锁定不会影响读命令。因为读命令不是顺序的。</p>
+<h2 id="Initial-Implementation"><a href="#Initial-Implementation" class="headerlink" title="Initial Implementation"></a>Initial Implementation</h2><p>区域写锁定的第一次实现在内核版本为4.10的<code>SCSI</code>硬盘驱动上（在块层之下），对块<code>I/O</code>调度器已传递给设备调度队列的请求进行操作。</p>
+<p>这种早期实现依赖于SCSI层可能会延迟向设备发出任何请求的事实。</p>
+<p>通过维护每个区域一个位的位图，SCSI磁盘驱动程序每当看到写入命令时都会将区域标记为锁定。此算法在此更详细地介绍：</p>
+<ol>
+<li>如果下一个派遣给设备的命令不是写命令，则该命令会被直接派遣。</li>
+<li>如果下一个派遣给设备的命令是写命令，则写命令的目标区域的区域写入锁定位<code>zone write lock bit</code>会被检查。<ol>
+<li>如果写命令的目标区域未被写锁定（即<code>zone write lock bit is not set</code>），则锁定区域并将写命令发送给设备。写锁定操作和命令发送操作都是在设备请求队列旋转锁下原子执行的。</li>
+<li>如果区域已被锁定（即<code>zone write lock bit is set</code>），则<code>SCSI</code>磁盘驱动会延迟发送该命令直到区域写入锁被释放。</li>
+<li>当写命令完成时，区域写入锁被释放，调度过程会恢复。意味着如果派遣队列中的头命令（第一个命令）如果指向同一个区域（上述区域写入锁定被释放的区域），该命令会被发出。</li>
+</ol>
+</li>
+</ol>
+<p>尽管这种实现为遗留的单对列块<code>I/O</code>路径提供了写顺序的保障，并且不依赖于任何特定的HBA，它仍有一些缺点。</p>
+<blockquote>
+<p>“HBA” 指的是 “Host Bus Adapter”。HBA 是一种硬件设备，通常以插卡的形式存在，用于连接计算机主机（如服务器或工作站）与外部存储设备，比如硬盘阵列、磁带库或SAN（存储区域网络）设备。HBA 卡负责处理输入&#x2F;输出 (I&#x2F;O) 请求和数据传输，从而将主机与存储设备之间的通信和数据交换工作负载从 CPU 上卸载出来。</p>
+<p>在许多高性能计算和数据密集型环境中，HBA 卡是至关重要的组件，因为它们可以提高数据传输速率，减少主机 CPU 的负担，并提高整体系统的 I&#x2F;O 性能。在上下文中提到的“write-ordering guarantees for the legacy single-queue block I&#x2F;O path”与 HBA 的独立性表明，该实现不依赖于特定的 HBA 硬件，从而具有更广泛的兼容性。</p>
+</blockquote>
+<ul>
+<li><p>潜在的性能退化：任何写入任何区域的命令都会导致命令调度处理停止。这阻止了所有其他命令被发送，包括读取命令。这可能会限制在高队列深度操作设备时可以通过设备级命令重新排序获得的性能优势。极端情况是应用程序向具有异步I&#x2F;O系统调用的区域发出写流（例如io_submit()）。在这种情况下，顺序写入命令将在设备调度队列中按顺序排队，导致驱动器在一次一个写入命令的队列深度运行。</p>
+</li>
+<li><p>不支持块多队列<code>I/O</code>路径：不像遗留的单对列块<code>I/O</code>接口，多队列块<code>I/O</code>的实现并不过多的依赖于设备队列自旋锁来处理磁盘用户（应用程序或者内核组件）发出的多队列块<code>I/O</code>请求。这导致在请求传递到设备调度队列之前发生潜在的块I&#x2F;O请求重新排序，并且区域写入锁定无效。</p>
+<blockquote>
+<ol>
+<li><strong>I&#x2F;O 请求重排序</strong>：由于不是所有的 I&#x2F;O 请求都通过单一的、受自旋锁保护的队列来处理，因此不同队列中的请求可能会出现重排序现象。这意味着即使应用程序或内核组件按照特定的顺序发出 I&#x2F;O 请求，这些请求到达设备调度队列时的顺序可能已经改变。</li>
+<li><strong>区域写锁定的无效性</strong>：在支持区域块设备（ZBD）的环境中，维持写操作的顺序是非常重要的，特别是对于顺序写入区域。由于多队列实现可能导致 I&#x2F;O 请求的重排序，区域写锁定机制（旨在保证写操作顺序）可能无法有效地工作。在多队列环境中，即使应用程序尝试按照正确的顺序发出写命令，由于请求在到达设备之前可能被重排序，因此无法保证这些写操作遵循 ZBD 的顺序写入约束。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<p>这些限制导致使用块层I&#x2F;O调度器在I&#x2F;O堆栈中更高级别开发区域写入锁定的新实现。</p>
+<h2 id="Improved-Implementation-Block-I-x2F-O-Scheduler"><a href="#Improved-Implementation-Block-I-x2F-O-Scheduler" class="headerlink" title="Improved Implementation: Block I&#x2F;O Scheduler"></a>Improved Implementation: Block I&#x2F;O Scheduler</h2><p>于是我们将区域写入锁定的实现移动到<code>I/O</code>堆栈的更高层级，块多队列（以及 SCSI 多队列）基础设施也得到了支持。这一改进在内核版本 4.16 中被添加，同时移除了 SCSI 层的区域写锁定实现。</p>
+<p>这一新的区域写入锁定的实现依赖于块层的<code>deadline</code>和<code>mq-deadline</code> <code>I/O</code>调度器，并解决了之前的实现的缺点。</p>
+<p>这种新的算法细节如下：</p>
+<ol>
+<li>如果调度器正在处理读命令：<ul>
+<li>读取命令列表中排队的第一个命令允许继续并提交给设备调度队列。</li>
+<li>如果没有可用的读命令，则激活写命令。</li>
+<li>如果读命令的处理时间达到限制，切换处理写命令，以避免写命令饥饿。</li>
+<li>如果读命令可用，则继续步骤1</li>
+</ul>
+</li>
+<li>在处理写命令时，按从LBA有序列表头部的命令或到达时间有序列表中的第一个命令开始扫描调度器中排队的写命令列表（当存在饥饿命令的风险时）。<ul>
+<li>如果第一个写命令的目标区域没有被写锁定，该区域被锁定，然后把写命令发送到设备中。这两个操作都是在调度器维护的自旋锁下原子执行的。</li>
+<li>如果目标区域已被锁定（位设置），则跳过该命令，并在LBA有序的写入命令列表中搜索针对不同区域的第一个写入命令。如果找到这样的命令，则再次执行步骤2。</li>
+<li>如果所有排队的写入命令都针对锁定区域，则调度器操作模式（批处理模式）将切换到<em>读取</em>并调用步骤1。</li>
+</ul>
+</li>
+<li>当写命令完成后，命令目标区域的区域写锁将被释放，调度程序将被激活。根据当前的批处理模式，在第1或2步恢复操作。</li>
+</ol>
+<p>从这个算法中，很明显，该设备现在可以在更高的队列深度下操作，只有顺序写入目标同一区域才会受到限制。所有读取命令都可以继续，并编写针对不同区域不会相互影响的命令。</p>
+<blockquote>
+<p>该实现并不保障所有的命令都是有序的。它只保障对于同一区域的写命令是顺序执行的。调度器可能会更改针对不同区域的写入命令的调度顺序。对于任何单个顺序区域，在任何时候，总是最多执行一个写入命令。当有读取访问和同时写入多个区域时，可以在高队列深度进行整体磁盘操作。</p>
+</blockquote>
+<h2 id="Block-I-x2F-O-Scheduler-Configuration"><a href="#Block-I-x2F-O-Scheduler-Configuration" class="headerlink" title="Block I&#x2F;O Scheduler Configuration"></a>Block I&#x2F;O Scheduler Configuration</h2><h3 id="null-blk-Logical-Device"><a href="#null-blk-Logical-Device" class="headerlink" title="null_blk Logical Device"></a><code>null_blk</code> Logical Device</h3><p><code>CONFIG_BLK_DEV_ZONED</code>配置选项会自动支持使用<code>null_blk</code>设备驱动程序的区域块设备仿真。</p>
+<h3 id="ZBC-and-ZAC-Hard-Disks-Support"><a href="#ZBC-and-ZAC-Hard-Disks-Support" class="headerlink" title="ZBC and ZAC Hard-Disks Support"></a>ZBC and ZAC Hard-Disks Support</h3><p>使用CONFIG_BLK_DEV_ZONED配置选项自动启用对ZBC和ZAC SMR磁盘的SCSI子系统支持。</p>
+<h3 id="NVMe-Zoned-Namespace-Solid-State-Disks-Support"><a href="#NVMe-Zoned-Namespace-Solid-State-Disks-Support" class="headerlink" title="NVMe Zoned Namespace Solid State Disks Support"></a>NVMe Zoned Namespace Solid State Disks Support</h3><p>NVM Express分区命名空间命令集依赖于CONFIG_BLK_DEV_ZONED和CONFIG_NVME_CORE。如果启用这两个配置选项，它会自动构建。</p>
+<p>此驱动程序要求设备支持Zone Append命令才能成功绑定到分区命名空间。它不支持区域游览。有关这些功能的更多详细信息，请参阅Zoned Namespace（ZNS）SSD。</p>
+<h2 id="Device-Mapper-1"><a href="#Device-Mapper-1" class="headerlink" title="Device Mapper"></a>Device Mapper</h2><p>当<code>CONFIG_BLK_DEV_ZONED </code>选项被设置，设备映射器子系统也会自动的启用。这支持dm线性和dmflakey目标。请注意，必须启用dm分区的设备映射器目标才能使用。</p>
+<p>通过从菜单设备驱动程序中选择CONFIG_DM_ZONED选项来启用dm分区目标–&gt;多个设备驱动程序支持（RAID和LVM）–&gt;设备映射器支持–&gt;驱动器管理的分区块设备目标支持。</p>
+<h2 id="File-Systems-1"><a href="#File-Systems-1" class="headerlink" title="File Systems"></a>File Systems</h2><h3 id="f2fs"><a href="#f2fs" class="headerlink" title="f2fs"></a>f2fs</h3><p>使用CONFIG_BLK_DEV_ZONED配置选项自动启用对f2fs文件系统中分区块设备的支持。</p>
+<h3 id="zonefs-1"><a href="#zonefs-1" class="headerlink" title="zonefs"></a>zonefs</h3><p>通过从菜单文件系统-&gt;zonefs文件系统支持中选择CONFIG_ZONEFS_FS选项来启用zonefs文件系统的编译。仅当CONFIG_BLK_DEV_ZONED选项设置为启用分区块设备支持时，此选项才可用。</p>
 
     </div>
 
@@ -570,7 +636,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux-Zoned-Storage-Support-Overview"><span class="nav-number">1.</span> <span class="nav-text">Linux Zoned Storage Support Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kernel-Versions"><span class="nav-number">1.2.</span> <span class="nav-text">Kernel Versions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-Configuration"><span class="nav-number">2.</span> <span class="nav-text">Kernel Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Block-Layer"><span class="nav-number">2.1.</span> <span class="nav-text">Block Layer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zoned-Block-Devices-Core-Support"><span class="nav-number">2.1.1.</span> <span class="nav-text">Zoned Block Devices Core Support</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ordering-Control"><span class="nav-number">2.1.2.</span> <span class="nav-text">Write Ordering Control</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Drivers-Configuration"><span class="nav-number">2.2.</span> <span class="nav-text">Device Drivers Configuration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Mapper"><span class="nav-number">2.3.</span> <span class="nav-text">Device Mapper</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#File-Systems"><span class="nav-number">2.4.</span> <span class="nav-text">File Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#F2fs"><span class="nav-number">2.4.1.</span> <span class="nav-text">F2fs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zonefs"><span class="nav-number">2.4.2.</span> <span class="nav-text">zonefs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kernel-Installation"><span class="nav-number">2.4.3.</span> <span class="nav-text">Kernel Installation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zoned-Block-Device-user-Interface"><span class="nav-number">3.</span> <span class="nav-text">Zoned Block Device user Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sysfs-Interface"><span class="nav-number">3.1.</span> <span class="nav-text">Sysfs Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Device-Zoned-Model"><span class="nav-number">3.1.1.</span> <span class="nav-text">Device Zoned Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size"><span class="nav-number">3.1.2.</span> <span class="nav-text">Zone Size</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Number-of-Zones"><span class="nav-number">3.1.3.</span> <span class="nav-text">Number of Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Resources"><span class="nav-number">3.1.4.</span> <span class="nav-text">Zone Resources</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ioctl-Application-Programming-Interface"><span class="nav-number">3.2.</span> <span class="nav-text">ioctl() Application Programming Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Information-Data-Structures"><span class="nav-number">3.2.1.</span> <span class="nav-text">Zone Information Data Structures</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Type"><span class="nav-number">3.2.2.</span> <span class="nav-text">Zone Type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Condition"><span class="nav-number">3.2.3.</span> <span class="nav-text">Zone Condition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ioctl-Commands"><span class="nav-number">3.2.4.</span> <span class="nav-text">ioctl() Commands</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Obtaining-Zone-Information"><span class="nav-number">3.2.5.</span> <span class="nav-text">Obtaining Zone Information</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Resetting-a-Zone-Write-Pointer"><span class="nav-number">3.2.6.</span> <span class="nav-text">Resetting a Zone Write Pointer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Opening-Closing-and-Finishing-Zones"><span class="nav-number">3.2.7.</span> <span class="nav-text">Opening. Closing and Finishing Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size-and-Number-of-Zones"><span class="nav-number">3.2.8.</span> <span class="nav-text">Zone Size and Number of Zones</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux-Zoned-Storage-Support-Overview"><span class="nav-number">1.</span> <span class="nav-text">Linux Zoned Storage Support Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kernel-Versions"><span class="nav-number">1.2.</span> <span class="nav-text">Kernel Versions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-Configuration"><span class="nav-number">2.</span> <span class="nav-text">Kernel Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Block-Layer"><span class="nav-number">2.1.</span> <span class="nav-text">Block Layer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zoned-Block-Devices-Core-Support"><span class="nav-number">2.1.1.</span> <span class="nav-text">Zoned Block Devices Core Support</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ordering-Control"><span class="nav-number">2.1.2.</span> <span class="nav-text">Write Ordering Control</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Drivers-Configuration"><span class="nav-number">2.2.</span> <span class="nav-text">Device Drivers Configuration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Mapper"><span class="nav-number">2.3.</span> <span class="nav-text">Device Mapper</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#File-Systems"><span class="nav-number">2.4.</span> <span class="nav-text">File Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#F2fs"><span class="nav-number">2.4.1.</span> <span class="nav-text">F2fs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zonefs"><span class="nav-number">2.4.2.</span> <span class="nav-text">zonefs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kernel-Installation"><span class="nav-number">2.4.3.</span> <span class="nav-text">Kernel Installation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zoned-Block-Device-user-Interface"><span class="nav-number">3.</span> <span class="nav-text">Zoned Block Device user Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sysfs-Interface"><span class="nav-number">3.1.</span> <span class="nav-text">Sysfs Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Device-Zoned-Model"><span class="nav-number">3.1.1.</span> <span class="nav-text">Device Zoned Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size"><span class="nav-number">3.1.2.</span> <span class="nav-text">Zone Size</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Number-of-Zones"><span class="nav-number">3.1.3.</span> <span class="nav-text">Number of Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Resources"><span class="nav-number">3.1.4.</span> <span class="nav-text">Zone Resources</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ioctl-Application-Programming-Interface"><span class="nav-number">3.2.</span> <span class="nav-text">ioctl() Application Programming Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Information-Data-Structures"><span class="nav-number">3.2.1.</span> <span class="nav-text">Zone Information Data Structures</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Type"><span class="nav-number">3.2.2.</span> <span class="nav-text">Zone Type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Condition"><span class="nav-number">3.2.3.</span> <span class="nav-text">Zone Condition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ioctl-Commands"><span class="nav-number">3.2.4.</span> <span class="nav-text">ioctl() Commands</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Obtaining-Zone-Information"><span class="nav-number">3.2.5.</span> <span class="nav-text">Obtaining Zone Information</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Resetting-a-Zone-Write-Pointer"><span class="nav-number">3.2.6.</span> <span class="nav-text">Resetting a Zone Write Pointer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Opening-Closing-and-Finishing-Zones"><span class="nav-number">3.2.7.</span> <span class="nav-text">Opening. Closing and Finishing Zones</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zone-Size-and-Number-of-Zones"><span class="nav-number">3.2.8.</span> <span class="nav-text">Zone Size and Number of Zones</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Write-Ordering-Control-1"><span class="nav-number">4.</span> <span class="nav-text">Write Ordering Control</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zone-Write-Locking"><span class="nav-number">4.1.</span> <span class="nav-text">Zone Write Locking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Initial-Implementation"><span class="nav-number">4.2.</span> <span class="nav-text">Initial Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Improved-Implementation-Block-I-x2F-O-Scheduler"><span class="nav-number">4.3.</span> <span class="nav-text">Improved Implementation: Block I&#x2F;O Scheduler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block-I-x2F-O-Scheduler-Configuration"><span class="nav-number">4.4.</span> <span class="nav-text">Block I&#x2F;O Scheduler Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#null-blk-Logical-Device"><span class="nav-number">4.4.1.</span> <span class="nav-text">null_blk Logical Device</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZBC-and-ZAC-Hard-Disks-Support"><span class="nav-number">4.4.2.</span> <span class="nav-text">ZBC and ZAC Hard-Disks Support</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NVMe-Zoned-Namespace-Solid-State-Disks-Support"><span class="nav-number">4.4.3.</span> <span class="nav-text">NVMe Zoned Namespace Solid State Disks Support</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Device-Mapper-1"><span class="nav-number">4.5.</span> <span class="nav-text">Device Mapper</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#File-Systems-1"><span class="nav-number">4.6.</span> <span class="nav-text">File Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#f2fs"><span class="nav-number">4.6.1.</span> <span class="nav-text">f2fs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zonefs-1"><span class="nav-number">4.6.2.</span> <span class="nav-text">zonefs</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -631,12 +697,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">171k</span>
+    <span title="站点总字数">175k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:36</span>
+    <span title="站点阅读时长">2:39</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
