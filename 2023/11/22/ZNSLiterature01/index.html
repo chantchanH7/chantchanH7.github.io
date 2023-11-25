@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这是第二周2023.11.20-2023.11.26的论文阅读笔记 ZNS: Avoiding the Block Interface Tax for Flash-based SSDshttps:&#x2F;&#x2F;www.usenix.org&#x2F;conference&#x2F;atc21&#x2F;presentation&#x2F;bjorling Problem:传统的SSD的问题：  额外配置(over-provision)：这是为了在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ZNSLiterature01">
+<meta property="og:url" content="http://example.com/2023/11/22/ZNSLiterature01/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="这是第二周2023.11.20-2023.11.26的论文阅读笔记 ZNS: Avoiding the Block Interface Tax for Flash-based SSDshttps:&#x2F;&#x2F;www.usenix.org&#x2F;conference&#x2F;atc21&#x2F;presentation&#x2F;bjorling Problem:传统的SSD的问题：  额外配置(over-provision)：这是为了在">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png">
+<meta property="og:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.35.12.png">
+<meta property="article:published_time" content="2023-11-22T07:56:24.000Z">
+<meta property="article:modified_time" content="2023-11-25T11:47:48.979Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png">
+
+<link rel="canonical" href="http://example.com/2023/11/22/ZNSLiterature01/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ZNSLiterature01 | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/22/ZNSLiterature01/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ZNSLiterature01
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-22 15:56:24" itemprop="dateCreated datePublished" datetime="2023-11-22T15:56:24+08:00">2023-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-25 19:47:48" itemprop="dateModified" datetime="2023-11-25T19:47:48+08:00">2023-11-25</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这是第二周2023.11.20-2023.11.26的论文阅读笔记</p>
+<h1 id="ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs"><a href="#ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs" class="headerlink" title="ZNS: Avoiding the Block Interface Tax for Flash-based SSDs"></a>ZNS: Avoiding the Block Interface Tax for Flash-based SSDs</h1><p><a target="_blank" rel="noopener" href="https://www.usenix.org/conference/atc21/presentation/bjorling">https://www.usenix.org/conference/atc21/presentation/bjorling</a></p>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem:"></a>Problem:</h2><p>传统的<code>SSD</code>的问题：</p>
+<ul>
+<li><p>额外配置<code>(over-provision)</code>：这是为了在物理地址之间移动数据。</p>
+</li>
+<li><p>额外的<code>DRAM</code>：为了维护逻辑地址和物理地址之间的不稳定映射，这两个问题被称为<code>Block Interface Tax</code>。</p>
+<blockquote>
+<p>指使用块接口存储设备时所面临的性能和操作成本的问题。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="Previous-approach"><a href="#Previous-approach" class="headerlink" title="Previous approach:"></a>Previous approach:</h2><ul>
+<li><p><code>Stream SSD</code>：主机会在写命令上添加标记<code>hint</code>。<code>Stream SSD</code>会通过这些标记将不同的数据放入不同的擦除块中。</p>
+<blockquote>
+<p>存在的问题：</p>
+<ul>
+<li>如果主机不添加标记，则和传统的<code>SSD</code> <code>(black box ssd)</code>没有区别。</li>
+<li><code>SSD</code>仍然需要维护资源来管理这些标记的数据，所以不会降低额外配置<code>over provision</code>和额外<code>DRAM</code></li>
+</ul>
+</blockquote>
+</li>
+<li><p><code>open channel SSD</code>：主机和<code>SSD</code>共同管理一组连续的逻辑块簇<code>a set of contiguous LBA chunks</code>。这些连续的块簇<code>chunks</code>和物理擦除块<code>physical erased blocks</code>对齐。这样的对齐消除了设备垃圾回收开销<code>GC</code>，额外配置和<code>DRAM</code>。</p>
+<blockquote>
+<p>存在的问题：</p>
+<ul>
+<li>增加了主机的工作负担。</li>
+<li>需要主机来管理不同<code>SSD</code>实现间的差异性。</li>
+<li>需要持续的软件维护来保证其功能。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h2 id="Approach"><a href="#Approach" class="headerlink" title="Approach:"></a>Approach:</h2><p>提出了<code>ZNS</code>接口 <code>(Zone Namespace interface)</code>：</p>
+<ul>
+<li>兼容性：<code>ZNS</code>利用并兼容<code>ZAC/ZBC (Zoned ATA Command / Zoned Block Command)</code>规范中定义的分区存储模型。</li>
+<li>增加了可以充分利用闪存特性的功能。</li>
+<li>消除了<code>SSD</code>介质和设备接口之间的不匹配。</li>
+<li>提供了一个不直接管理特定介质特性的下一代存储接口，这避免了像<code>OCSSD</code>那样直接处理介质特有特性的需要。</li>
+</ul>
+<p>一种<code>Tax-free Storage with zones</code>：</p>
+<ul>
+<li><code>zone state</code></li>
+<li><code>zone write pointer</code></li>
+</ul>
+<p>提出上述的两个<code>ZNS</code>的特性，消除了主机软件需要跟踪每个区域最后写入的<code>LBA</code>的需求，简化了在例如不当关机后的恢复过程。</p>
+<p><code>ZNS</code>接口在遵循区域存储规范的同时，也给出了两个对应闪存特性的新概念：</p>
+<ul>
+<li><p><code>writeable zone capability</code>：允许将区域内的<code>LBA</code>分为可写和不可写两部分，允许区域有比区域大小<code>zone size</code>更小的<code>writeable capability</code>。</p>
+<blockquote>
+<p>目的：使得<code>ZNS SSD</code>的区域大小可以与<code>SMR HDD</code>引入的2的幂次方大小行业标准对齐。</p>
+</blockquote>
+</li>
+<li><p><code>active zone limit</code>：对处于打开或者关闭的区域的数量进行限制了限制。</p>
+<blockquote>
+<p>原因：基于闪存的介质<code>flash-based media</code>对这一数量有限制。</p>
+<p>程序干扰（Program Disturb）是闪存（特别是NAND型闪存）中的一个现象，它对ZNS（区域命名空间）固态硬盘（SSD）的活动区域数量产生限制的方式是比较复杂的。我将为您详细解释这个过程。</p>
+<h3 id="程序干扰（Program-Disturb）"><a href="#程序干扰（Program-Disturb）" class="headerlink" title="程序干扰（Program Disturb）"></a>程序干扰（Program Disturb）</h3><ol>
+<li><strong>定义与影响</strong>：<ul>
+<li>程序干扰是指在对NAND闪存的某个区域进行写操作（编程）时，可能无意中影响到相邻单元的现象。</li>
+<li>这种干扰可能导致数据损坏或存储单元性能下降。</li>
+</ul>
+</li>
+<li><strong>发生原因</strong>：<ul>
+<li>NAND闪存中的存储单元（单元格）非常紧密排列。</li>
+<li>当对一个单元进行写操作（注入电荷）时，相邻单元可能会因电场干扰而受到影响，尤其是在重复写入的情况下。</li>
+</ul>
+</li>
+</ol>
+<h3 id="对ZNS-SSD的影响"><a href="#对ZNS-SSD的影响" class="headerlink" title="对ZNS SSD的影响"></a>对ZNS SSD的影响</h3><ol>
+<li><strong>ZNS SSD结构</strong>：<ul>
+<li>ZNS SSD通过将存储空间划分为多个区域（zones）来优化数据管理和写入效率。</li>
+<li>这些区域可独立管理，减少了写入放大（Write Amplification）和垃圾收集（Garbage Collection）的需要。</li>
+</ul>
+</li>
+<li><strong>活动区域限制的必要性</strong>：<ul>
+<li>由于程序干扰的存在，如果太多区域同时保持在可写状态（尤其是在高密度存储条件下），可能会增加数据损坏的风险。</li>
+<li>限制同时处于打开或关闭状态的活动区域数量，可以减少相邻区域间的干扰，从而降低数据损坏的风险。</li>
+</ul>
+</li>
+<li><strong>管理策略</strong>：<ul>
+<li>ZNS SSDs通过限制同时可写的区域数量，从而降低程序干扰的风险。</li>
+<li>这种限制有助于提高数据的可靠性和存储介质的寿命。</li>
+</ul>
+</li>
+</ol>
+<p>总的来说，程序干扰是一个物理现象，它限制了ZNS SSD中可以同时处于活动（即可写）状态的区域数量，这是为了减少数据损坏的风险并提高整体存储系统的稳定性和可靠性。</p>
+<p><em>*<em>更深入的解释参考：Yu Cai, Onur Mutlu, Erich F Haratsch, and Ken Mai. Program Interference in MLC NAND Flash Memory: Characterization, Modeling, and Mitigation. In <em>2013 IEEE 31st International Conference on Computer De- sign (ICCD)</em>, pages 123–130. IEEE, 2013.</em>*</em></p>
+</blockquote>
+</li>
+</ul>
+<p>尽管ZNS接口增加了主机软件的责任，我们仍然使用一些方法减轻主机的这种负担。</p>
+<h3 id="Evoloving-towards-ZNS"><a href="#Evoloving-towards-ZNS" class="headerlink" title="Evoloving towards ZNS:"></a>Evoloving towards ZNS:</h3><h4 id="对硬件的影响："><a href="#对硬件的影响：" class="headerlink" title="对硬件的影响："></a>对硬件的影响：</h4><p><code>ZNS</code>接口可以将区域的顺序写入转换到不同的擦除块中，从而消灭了接口和媒介之间的不匹配。</p>
+<ul>
+<li>数据放置在区域的粒度上被管理，这意味着负责在擦除块之间移动有效数据（以释放可写容量）的SSD垃圾收集例程将成为主机的责任。</li>
+<li>这意味着设备上的写放大现象被消除，从而消除了对容量过剩配置的需求，同时也提升了介质的整体性能和使用寿命。</li>
+</ul>
+<blockquote>
+<h3 id="ZNS-SSD的核心设计"><a href="#ZNS-SSD的核心设计" class="headerlink" title="ZNS SSD的核心设计"></a>ZNS SSD的核心设计</h3><ol>
+<li><strong>顺序区域写入</strong>:<ul>
+<li>ZNS SSD将存储空间分割成多个区域（zones），每个区域在一次写入操作中只允许顺序写入。</li>
+<li>这种方式与传统的随机写入相比，更加适合NAND闪存的物理特性。</li>
+</ul>
+</li>
+<li><strong>区域与擦除块的对应关系</strong>:<ul>
+<li>在ZNS SSD中，顺序写入的区域直接对应于闪存的擦除块。</li>
+<li>这样，每个区域的写入操作都直接映射到一个特定的擦除块上，减少了因随机写入造成的额外擦写循环。</li>
+</ul>
+</li>
+</ol>
+<h3 id="消除接口-介质不匹配"><a href="#消除接口-介质不匹配" class="headerlink" title="消除接口-介质不匹配"></a>消除接口-介质不匹配</h3><ol>
+<li><strong>简化的闪存翻译层（FTL）</strong>:<ul>
+<li>传统SSD中的FTL负责管理随机写入和数据在擦除块间的移动。</li>
+<li>在ZNS SSD中，由于不支持随机写入，FTL的复杂性大大降低，这意味着更少的数据移动和管理开销。</li>
+</ul>
+</li>
+<li><strong>由主机管理数据放置</strong>:<ul>
+<li>在ZNS SSD中，数据的放置和擦除块的重置由主机（而非设备）显式管理。</li>
+<li>这种设计使得数据存储更加高效，减少了写放大（Write Amplification）现象。</li>
+</ul>
+</li>
+</ol>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><ul>
+<li>减少写放大：由于写操作更加高效，ZNS SSD减少了写放大现象，这直接影响到设备的性能和寿命。</li>
+<li>无需容量过剩配备：减少写放大也意味着不再需要为了补偿性能损耗而过度配备存储容量。</li>
+<li>提升性能和寿命：整体上，ZNS SSD通过这种设计，提高了性能，并延长了存储介质的使用寿命。</li>
+</ul>
+<p>总之，ZNS SSD通过其对区域的顺序写入方式和简化的数据管理，有效地消除了传统接口与NAND闪存介质之间的不匹配问题，从而提高了存储效率和设备的整体性能。</p>
+</blockquote>
+<p><strong>Zone Sizing</strong>：区域写容量<code>zone write capability</code>和<code>SSD</code>的擦除块大小有直接的联系。</p>
+<ul>
+<li><p>在以块为接口的<code>SSD</code>中，擦除块中的数据是跨越了多个闪存晶圆<code>(flash dies)</code>的。 </p>
+<blockquote>
+<p>既为了获得更高的读写性能，也为了通过每条带（stripe）的奇偶校验来防止芯片级别和其他介质故障。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>Mapping Table</strong>：传统的<code>SSD</code>中，<code>FTL</code>维护了一个逻辑块到物理块的映射表，这样的映射表在提高垃圾回收效率的同时也占用了很大的空间。</p>
+<p>而<code>ZNS SSD</code>的顺序写限制，可以使这种全相连的映射在擦除块级别或者以某种混合方式维护的粗粒度映射。这样做可以显著减少甚至完全消除<code>DRAM</code>（映射表需要提前存放在<code>SSD</code>的<code>DRAM</code>中）。</p>
+<p><strong>Device Resources</strong>：部分写入的擦除块会关联一组资源。</p>
+<blockquote>
+<p>这一套装备包括硬件资源，如异或（XOR）引擎，内存资源，如静态随机存取内存（SRAM）或动态随机存取内存（DRAM），以及用于在断电后保持奇偶校验数据的电源电容器。</p>
+</blockquote>
+<p>数据和奇偶校验的大小可以从数百千字节到数兆字节不等，例如，这可能是由于两步编程所致。</p>
+<blockquote>
+<p>在NAND闪存技术中，”Two-Step Programming”（两步编程）是一种数据写入方法。这种方法在写入数据到NAND闪存单元时分为两个阶段进行，以提高数据的可靠性和减少错误。以下是两步编程的主要步骤和特点：</p>
+<h3 id="第一步：初步写入"><a href="#第一步：初步写入" class="headerlink" title="第一步：初步写入"></a>第一步：初步写入</h3><ul>
+<li>在这一步中，数据首先被写入到闪存单元，但并不是以最终的形态。这个阶段的目的是将数据大致定位到所需的状态。</li>
+</ul>
+<h3 id="第二步：精细调整"><a href="#第二步：精细调整" class="headerlink" title="第二步：精细调整"></a>第二步：精细调整</h3><ul>
+<li>第二步涉及对之前写入的数据进行精细调整。这个阶段确保数据准确地达到其目标状态，从而减少写入错误。</li>
+<li>这种方法特别适用于多级单元（MLC）和三级单元（TLC）NAND闪存，其中每个单元存储多个位的数据。</li>
+</ul>
+<h3 id="为什么使用两步编程"><a href="#为什么使用两步编程" class="headerlink" title="为什么使用两步编程"></a>为什么使用两步编程</h3><ol>
+<li><p><strong>提高精确度</strong>：</p>
+<ul>
+<li>由于NAND闪存单元在存储多个数据位时容易受到干扰，两步编程通过分阶段精细调整来提高写入数据的准确度。</li>
+</ul>
+</li>
+<li><p><strong>减少错误</strong>：</p>
+<ul>
+<li>分步骤写入减少了数据写入错误的可能性，特别是在高密度存储技术（如MLC和TLC）中。</li>
+</ul>
+</li>
+<li><p><strong>提升可靠性</strong>：</p>
+<ul>
+<li>通过减少写入错误，两步编程提高了存储的可靠性，这对于保持数据完整性和延长设备寿命非常重要。</li>
+</ul>
+</li>
+</ol>
+<p>总体来说，两步编程是NAND闪存中一种重要的数据写入方法，特别是在那些要求高数据密度和可靠性的应用中。通过这种方法，可以有效地减少写入错误，提高整体存储介质的性能和可靠性。</p>
+</blockquote>
+<p>由于这些要求和相关成本，预计ZNS固态硬盘将拥有8到32个活动区域。尽管通过增加额外的电源电容器、使用动态随机存取内存（DRAM）进行数据移动、减少奇偶校验要求，或部署一种写回缓存的形式，可以进一步增加活动区域的数量。 </p>
+<h4 id="Host-Software-Adoption-主机软件的采用情况"><a href="#Host-Software-Adoption-主机软件的采用情况" class="headerlink" title="Host Software Adoption 主机软件的采用情况"></a>Host Software Adoption 主机软件的采用情况</h4><p>三种让主机软件适配<code>ZNS</code>接口的方式。</p>
+<p>采用顺序写特性的软件能更好的适配<code>ZNS</code>接口，比如<code>Log Structure Merge (LSM) tree-based database</code>。主要执行原地更新<code>in-place update</code>的应用程序在不对核心数据结构进行根本性修改的情况下，更难以支持。</p>
+<ul>
+<li><code>Host-side FTL (HFTL)</code>：一种在<code>ZNS SSD</code>写语法和使用随机写和就地更新的程序之间的媒介，类似于<code>SSD</code>的<code>FTL</code>层。</li>
+</ul>
+<p>  但只负责<code>translation mapping</code>和<code>Garbage collection</code></p>
+<blockquote>
+<p><strong>缺点：</strong><code>HFTL</code>需要占用<code>CPU</code>和<code>DRAM</code>。</p>
+<p><strong>优点：</strong>使集成主机端的信息更加简单，增加了对数据放置和垃圾回收的控制，同时将<code>ZNS SSD</code>当作<code>conventional SSD</code>暴露给应用程序。</p>
+</blockquote>
+<ul>
+<li><p><code>FTL System</code>：更高层次的存储接口允许多个应用程序通过常见的文件语法访问存储系统。</p>
+<p>即：将区域与存储堆栈的更高层次集成，以确保顺序写入。</p>
+</li>
+<li><p><code>End-to-end Data placement</code>端到端数据放置：理想情况下，区域写语法讲与应用程序的现有数据结构保持一致。这将通过允许应用程序管理数据放置来提供最高程度的自由度，同时消除了来自文件系统和翻译层的间接开销。</p>
+<blockquote>
+<p>虽然端到端的数据放置使应用程序与ZNS固态硬盘之间的协作成为可能，并有潜力实现最佳的写放大、吞吐量和延迟改进，但它就像与原始块设备交互一样令人生畏。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="Implementation-我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。"><a href="#Implementation-我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。" class="headerlink" title="Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。"></a>Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。</h3><ul>
+<li>更改<code>Linux</code>内核以支持<code>ZNS SSD</code></li>
+<li>更改<code>f2fs file system</code></li>
+<li>更改<code>fio benchmark</code>：这是为了测试和评估支持<code>ZNS</code>的存储设备性能</li>
+<li>提出<code>ZenFS</code>：一个针对<code>RockDB</code>的新型存储后端，它通过分区来控制设备用以评估端到端集成对分区存储的好处</li>
+</ul>
+<h4 id="General-Linux-support"><a href="#General-Linux-support" class="headerlink" title="General Linux support"></a>General Linux support</h4><p><strong>Zone Capability:</strong></p>
+<p><code>fio</code>和<code>f2fs</code>支持<code>Zone capability</code>，<code>fio</code>只保证不超过<code>zone capability</code>，<code>f2fs</code>管理段，段大小为<code>2MB</code>，多个段位一个区<code>section</code>，一个区<code>section</code>的大小和一个域<code>zone</code>的大小相同。</p>
+<p><strong>limiting active zones 打开区域数量限制:</strong></p>
+<p><code>fio</code>要求用户遵守打开区域数量这一限制。</p>
+<p>对于<code>f2fs</code>来说，这种限制体现在打开的段的数量上。</p>
+<h4 id="RocksDB-Zone-Support"><a href="#RocksDB-Zone-Support" class="headerlink" title="RocksDB Zone Support:"></a>RocksDB Zone Support:</h4><p>调整键值数据库<code>RocksBD</code>，使其能够通过使用<code>ZenFS</code>存储后端，将数据端到端地放置到分区存储设备上。<code>ZenFS</code>利用了<code>RocksDB</code>的日志结构合并<code>(LSM)</code>数数据结构，这是<code>RocksDB</code>用来存储和维护其数据的，并且还利用了其相关的不可变的仅限顺序的压缩过程。</p>
+<p><code>LSM tree</code>：</p>
+<p>最上层的数据是热数据，冷数据会被一直下放到最底层。</p>
+<p><img src="/../images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png" alt="截屏2023-11-25 18.16.52"></p>
+<p><strong>ZenFS Architecture</strong>：</p>
+<p><code>ZenFS</code>存储后端实现了一种最小的磁盘上文件系统，并使用<code>RocksDB</code>的文件包装<code>API</code>对其进行集成。</p>
+<p><img src="/../images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.35.12.png" alt="截屏2023-11-25 18.35.12"></p>
+<p><strong>Journaling and data</strong>：</p>
+<ul>
+<li>journal：日志区域用于恢复文件系统的状态，维护超级块数据结构，并将写前日志（WAL）和数据文件映射到区域。</li>
+<li>data：数据区域存储文件内容。</li>
+</ul>
+<p><strong>Extents</strong>：</p>
+<ul>
+<li><code>RocksDB</code>的数据文件被映射并存储到一系列内容<code>a set of content</code>中。</li>
+<li><code>content</code>是大小可变，块对齐的。</li>
+<li><code>Extents</code>按顺序写入一个数据区域。</li>
+<li>包含与特定标识符相关联的数据。</li>
+</ul>
+<p>每个区域包含很多<code>extents</code>，但是<code>extents</code>不能扩大<code>zone</code>的大小。</p>
+<blockquote>
+<p>区段的分配和释放事件被记录在内存数据结构中，并在关闭文件或通过<code>fsync</code>调用要求<code>RocksDB</code>持久化数据时写入日志。内存数据结构跟踪区段到区域的映射，一旦一个区域中分配了区段的所有文件都被删除，该区域就可以被重置并重用。</p>
+</blockquote>
+<p><strong>superblock 超级块</strong>：</p>
+<p><strong>Journal 日志</strong>：</p>
+<p><strong>Writeable Capacity in Data Zones 数据区域的可写容量</strong>：</p>
+<p><strong>Data Zone Selection</strong>：ZenFS采用了一种尽最大努力的算法来选择最佳区域存储RocksDB数据文件。</p>
+<blockquote>
+<p> A match is only valid if the lifetime of the file is less than the oldest data stored in the zone to avoid prolonging the life of the data in the zone.</p>
+<p>目的是为了确保不因为新添加的文件而不必要地延长存储区域中旧数据的存储时间，从而有效管理数据的生命周期和存储区域的使用效率。</p>
+</blockquote>
+<p><strong>Active Zone limit</strong></p>
+<blockquote>
+<p>活动区域限制。ZenFS必须遵守分区块设备指定的活动区域限制。要运行ZenFS，至少需要三个活动区域，它们分别被分配给日志、写前日志（WAL）和压缩过程。为了提高性能，用户可以控制并发压缩的数量。我们的实验表明，通过限制并发压缩的数量，RocksDB可以在写性能受限的情况下，只使用最少6个活动区域工作，而超过12个活动区域并不会带来任何显著的性能好处。</p>
+</blockquote>
+<p><strong>Direct I&#x2F;O and Buffered Writes</strong></p>
+<blockquote>
+<p>直接I&#x2F;O和缓冲写入。ZenFS利用了写入SST文件是顺序的和不可变的这一事实，并对SST文件执行直接I&#x2F;O写入，绕过了内核页面缓存。对于其他文件，如写前日志（WAL），ZenFS在内存中缓冲写入，并在缓冲区满、文件关闭或RocksDB请求刷新时刷新缓冲区。如果请求了刷新，缓冲区将被填充到下一个块边界，并且一个带有有效字节数的区段将被存储在日志中。这种填充导致了少量的写入放大，但这并非ZenFS独有，传统文件系统中也有类似的做法。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/11/13/ZNSSSDliterature/" rel="prev" title="ZNSSSDliterature">
+      <i class="fa fa-chevron-left"></i> ZNSSSDliterature
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs"><span class="nav-number">1.</span> <span class="nav-text">ZNS: Avoiding the Block Interface Tax for Flash-based SSDs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem"><span class="nav-number">1.1.</span> <span class="nav-text">Problem:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Previous-approach"><span class="nav-number">1.2.</span> <span class="nav-text">Previous approach:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approach"><span class="nav-number">1.3.</span> <span class="nav-text">Approach:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%B9%B2%E6%89%B0%EF%BC%88Program-Disturb%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">程序干扰（Program Disturb）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9ZNS-SSD%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.2.</span> <span class="nav-text">对ZNS SSD的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Evoloving-towards-ZNS"><span class="nav-number">1.3.3.</span> <span class="nav-text">Evoloving towards ZNS:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E7%A1%AC%E4%BB%B6%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9A"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">对硬件的影响：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZNS-SSD%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.3.4.</span> <span class="nav-text">ZNS SSD的核心设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E9%99%A4%E6%8E%A5%E5%8F%A3-%E4%BB%8B%E8%B4%A8%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-number">1.3.5.</span> <span class="nav-text">消除接口-介质不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">1.3.6.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%88%9D%E6%AD%A5%E5%86%99%E5%85%A5"><span class="nav-number">1.3.7.</span> <span class="nav-text">第一步：初步写入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E7%B2%BE%E7%BB%86%E8%B0%83%E6%95%B4"><span class="nav-number">1.3.8.</span> <span class="nav-text">第二步：精细调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E4%B8%A4%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="nav-number">1.3.9.</span> <span class="nav-text">为什么使用两步编程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Host-Software-Adoption-%E4%B8%BB%E6%9C%BA%E8%BD%AF%E4%BB%B6%E7%9A%84%E9%87%87%E7%94%A8%E6%83%85%E5%86%B5"><span class="nav-number">1.3.9.1.</span> <span class="nav-text">Host Software Adoption 主机软件的采用情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation-%E6%88%91%E4%BB%AC%E5%B7%B2%E7%BB%8F%E5%90%91%E5%9B%9B%E4%B8%AA%E4%B8%BB%E8%A6%81%E8%BD%AF%E4%BB%B6%E9%A1%B9%E7%9B%AE%E5%A2%9E%E5%8A%A0%E4%BA%86%E6%94%AF%E6%8C%81%EF%BC%8C%E4%BB%A5%E8%AF%84%E4%BC%B0ZNS%E7%9A%84%E5%A5%BD%E5%A4%84%E3%80%82"><span class="nav-number">1.3.10.</span> <span class="nav-text">Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#General-Linux-support"><span class="nav-number">1.3.10.1.</span> <span class="nav-text">General Linux support</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocksDB-Zone-Support"><span class="nav-number">1.3.10.2.</span> <span class="nav-text">RocksDB Zone Support:</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">182k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:45</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

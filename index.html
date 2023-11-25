@@ -164,6 +164,327 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/22/ZNSLiterature01/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/11/22/ZNSLiterature01/" class="post-title-link" itemprop="url">ZNSLiterature01</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-11-22 15:56:24" itemprop="dateCreated datePublished" datetime="2023-11-22T15:56:24+08:00">2023-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-25 19:47:48" itemprop="dateModified" datetime="2023-11-25T19:47:48+08:00">2023-11-25</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>这是第二周2023.11.20-2023.11.26的论文阅读笔记</p>
+<h1 id="ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs"><a href="#ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs" class="headerlink" title="ZNS: Avoiding the Block Interface Tax for Flash-based SSDs"></a>ZNS: Avoiding the Block Interface Tax for Flash-based SSDs</h1><p><a target="_blank" rel="noopener" href="https://www.usenix.org/conference/atc21/presentation/bjorling">https://www.usenix.org/conference/atc21/presentation/bjorling</a></p>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem:"></a>Problem:</h2><p>传统的<code>SSD</code>的问题：</p>
+<ul>
+<li><p>额外配置<code>(over-provision)</code>：这是为了在物理地址之间移动数据。</p>
+</li>
+<li><p>额外的<code>DRAM</code>：为了维护逻辑地址和物理地址之间的不稳定映射，这两个问题被称为<code>Block Interface Tax</code>。</p>
+<blockquote>
+<p>指使用块接口存储设备时所面临的性能和操作成本的问题。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="Previous-approach"><a href="#Previous-approach" class="headerlink" title="Previous approach:"></a>Previous approach:</h2><ul>
+<li><p><code>Stream SSD</code>：主机会在写命令上添加标记<code>hint</code>。<code>Stream SSD</code>会通过这些标记将不同的数据放入不同的擦除块中。</p>
+<blockquote>
+<p>存在的问题：</p>
+<ul>
+<li>如果主机不添加标记，则和传统的<code>SSD</code> <code>(black box ssd)</code>没有区别。</li>
+<li><code>SSD</code>仍然需要维护资源来管理这些标记的数据，所以不会降低额外配置<code>over provision</code>和额外<code>DRAM</code></li>
+</ul>
+</blockquote>
+</li>
+<li><p><code>open channel SSD</code>：主机和<code>SSD</code>共同管理一组连续的逻辑块簇<code>a set of contiguous LBA chunks</code>。这些连续的块簇<code>chunks</code>和物理擦除块<code>physical erased blocks</code>对齐。这样的对齐消除了设备垃圾回收开销<code>GC</code>，额外配置和<code>DRAM</code>。</p>
+<blockquote>
+<p>存在的问题：</p>
+<ul>
+<li>增加了主机的工作负担。</li>
+<li>需要主机来管理不同<code>SSD</code>实现间的差异性。</li>
+<li>需要持续的软件维护来保证其功能。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h2 id="Approach"><a href="#Approach" class="headerlink" title="Approach:"></a>Approach:</h2><p>提出了<code>ZNS</code>接口 <code>(Zone Namespace interface)</code>：</p>
+<ul>
+<li>兼容性：<code>ZNS</code>利用并兼容<code>ZAC/ZBC (Zoned ATA Command / Zoned Block Command)</code>规范中定义的分区存储模型。</li>
+<li>增加了可以充分利用闪存特性的功能。</li>
+<li>消除了<code>SSD</code>介质和设备接口之间的不匹配。</li>
+<li>提供了一个不直接管理特定介质特性的下一代存储接口，这避免了像<code>OCSSD</code>那样直接处理介质特有特性的需要。</li>
+</ul>
+<p>一种<code>Tax-free Storage with zones</code>：</p>
+<ul>
+<li><code>zone state</code></li>
+<li><code>zone write pointer</code></li>
+</ul>
+<p>提出上述的两个<code>ZNS</code>的特性，消除了主机软件需要跟踪每个区域最后写入的<code>LBA</code>的需求，简化了在例如不当关机后的恢复过程。</p>
+<p><code>ZNS</code>接口在遵循区域存储规范的同时，也给出了两个对应闪存特性的新概念：</p>
+<ul>
+<li><p><code>writeable zone capability</code>：允许将区域内的<code>LBA</code>分为可写和不可写两部分，允许区域有比区域大小<code>zone size</code>更小的<code>writeable capability</code>。</p>
+<blockquote>
+<p>目的：使得<code>ZNS SSD</code>的区域大小可以与<code>SMR HDD</code>引入的2的幂次方大小行业标准对齐。</p>
+</blockquote>
+</li>
+<li><p><code>active zone limit</code>：对处于打开或者关闭的区域的数量进行限制了限制。</p>
+<blockquote>
+<p>原因：基于闪存的介质<code>flash-based media</code>对这一数量有限制。</p>
+<p>程序干扰（Program Disturb）是闪存（特别是NAND型闪存）中的一个现象，它对ZNS（区域命名空间）固态硬盘（SSD）的活动区域数量产生限制的方式是比较复杂的。我将为您详细解释这个过程。</p>
+<h3 id="程序干扰（Program-Disturb）"><a href="#程序干扰（Program-Disturb）" class="headerlink" title="程序干扰（Program Disturb）"></a>程序干扰（Program Disturb）</h3><ol>
+<li><strong>定义与影响</strong>：<ul>
+<li>程序干扰是指在对NAND闪存的某个区域进行写操作（编程）时，可能无意中影响到相邻单元的现象。</li>
+<li>这种干扰可能导致数据损坏或存储单元性能下降。</li>
+</ul>
+</li>
+<li><strong>发生原因</strong>：<ul>
+<li>NAND闪存中的存储单元（单元格）非常紧密排列。</li>
+<li>当对一个单元进行写操作（注入电荷）时，相邻单元可能会因电场干扰而受到影响，尤其是在重复写入的情况下。</li>
+</ul>
+</li>
+</ol>
+<h3 id="对ZNS-SSD的影响"><a href="#对ZNS-SSD的影响" class="headerlink" title="对ZNS SSD的影响"></a>对ZNS SSD的影响</h3><ol>
+<li><strong>ZNS SSD结构</strong>：<ul>
+<li>ZNS SSD通过将存储空间划分为多个区域（zones）来优化数据管理和写入效率。</li>
+<li>这些区域可独立管理，减少了写入放大（Write Amplification）和垃圾收集（Garbage Collection）的需要。</li>
+</ul>
+</li>
+<li><strong>活动区域限制的必要性</strong>：<ul>
+<li>由于程序干扰的存在，如果太多区域同时保持在可写状态（尤其是在高密度存储条件下），可能会增加数据损坏的风险。</li>
+<li>限制同时处于打开或关闭状态的活动区域数量，可以减少相邻区域间的干扰，从而降低数据损坏的风险。</li>
+</ul>
+</li>
+<li><strong>管理策略</strong>：<ul>
+<li>ZNS SSDs通过限制同时可写的区域数量，从而降低程序干扰的风险。</li>
+<li>这种限制有助于提高数据的可靠性和存储介质的寿命。</li>
+</ul>
+</li>
+</ol>
+<p>总的来说，程序干扰是一个物理现象，它限制了ZNS SSD中可以同时处于活动（即可写）状态的区域数量，这是为了减少数据损坏的风险并提高整体存储系统的稳定性和可靠性。</p>
+<p><em>*<em>更深入的解释参考：Yu Cai, Onur Mutlu, Erich F Haratsch, and Ken Mai. Program Interference in MLC NAND Flash Memory: Characterization, Modeling, and Mitigation. In <em>2013 IEEE 31st International Conference on Computer De- sign (ICCD)</em>, pages 123–130. IEEE, 2013.</em>*</em></p>
+</blockquote>
+</li>
+</ul>
+<p>尽管ZNS接口增加了主机软件的责任，我们仍然使用一些方法减轻主机的这种负担。</p>
+<h3 id="Evoloving-towards-ZNS"><a href="#Evoloving-towards-ZNS" class="headerlink" title="Evoloving towards ZNS:"></a>Evoloving towards ZNS:</h3><h4 id="对硬件的影响："><a href="#对硬件的影响：" class="headerlink" title="对硬件的影响："></a>对硬件的影响：</h4><p><code>ZNS</code>接口可以将区域的顺序写入转换到不同的擦除块中，从而消灭了接口和媒介之间的不匹配。</p>
+<ul>
+<li>数据放置在区域的粒度上被管理，这意味着负责在擦除块之间移动有效数据（以释放可写容量）的SSD垃圾收集例程将成为主机的责任。</li>
+<li>这意味着设备上的写放大现象被消除，从而消除了对容量过剩配置的需求，同时也提升了介质的整体性能和使用寿命。</li>
+</ul>
+<blockquote>
+<h3 id="ZNS-SSD的核心设计"><a href="#ZNS-SSD的核心设计" class="headerlink" title="ZNS SSD的核心设计"></a>ZNS SSD的核心设计</h3><ol>
+<li><strong>顺序区域写入</strong>:<ul>
+<li>ZNS SSD将存储空间分割成多个区域（zones），每个区域在一次写入操作中只允许顺序写入。</li>
+<li>这种方式与传统的随机写入相比，更加适合NAND闪存的物理特性。</li>
+</ul>
+</li>
+<li><strong>区域与擦除块的对应关系</strong>:<ul>
+<li>在ZNS SSD中，顺序写入的区域直接对应于闪存的擦除块。</li>
+<li>这样，每个区域的写入操作都直接映射到一个特定的擦除块上，减少了因随机写入造成的额外擦写循环。</li>
+</ul>
+</li>
+</ol>
+<h3 id="消除接口-介质不匹配"><a href="#消除接口-介质不匹配" class="headerlink" title="消除接口-介质不匹配"></a>消除接口-介质不匹配</h3><ol>
+<li><strong>简化的闪存翻译层（FTL）</strong>:<ul>
+<li>传统SSD中的FTL负责管理随机写入和数据在擦除块间的移动。</li>
+<li>在ZNS SSD中，由于不支持随机写入，FTL的复杂性大大降低，这意味着更少的数据移动和管理开销。</li>
+</ul>
+</li>
+<li><strong>由主机管理数据放置</strong>:<ul>
+<li>在ZNS SSD中，数据的放置和擦除块的重置由主机（而非设备）显式管理。</li>
+<li>这种设计使得数据存储更加高效，减少了写放大（Write Amplification）现象。</li>
+</ul>
+</li>
+</ol>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><ul>
+<li>减少写放大：由于写操作更加高效，ZNS SSD减少了写放大现象，这直接影响到设备的性能和寿命。</li>
+<li>无需容量过剩配备：减少写放大也意味着不再需要为了补偿性能损耗而过度配备存储容量。</li>
+<li>提升性能和寿命：整体上，ZNS SSD通过这种设计，提高了性能，并延长了存储介质的使用寿命。</li>
+</ul>
+<p>总之，ZNS SSD通过其对区域的顺序写入方式和简化的数据管理，有效地消除了传统接口与NAND闪存介质之间的不匹配问题，从而提高了存储效率和设备的整体性能。</p>
+</blockquote>
+<p><strong>Zone Sizing</strong>：区域写容量<code>zone write capability</code>和<code>SSD</code>的擦除块大小有直接的联系。</p>
+<ul>
+<li><p>在以块为接口的<code>SSD</code>中，擦除块中的数据是跨越了多个闪存晶圆<code>(flash dies)</code>的。 </p>
+<blockquote>
+<p>既为了获得更高的读写性能，也为了通过每条带（stripe）的奇偶校验来防止芯片级别和其他介质故障。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>Mapping Table</strong>：传统的<code>SSD</code>中，<code>FTL</code>维护了一个逻辑块到物理块的映射表，这样的映射表在提高垃圾回收效率的同时也占用了很大的空间。</p>
+<p>而<code>ZNS SSD</code>的顺序写限制，可以使这种全相连的映射在擦除块级别或者以某种混合方式维护的粗粒度映射。这样做可以显著减少甚至完全消除<code>DRAM</code>（映射表需要提前存放在<code>SSD</code>的<code>DRAM</code>中）。</p>
+<p><strong>Device Resources</strong>：部分写入的擦除块会关联一组资源。</p>
+<blockquote>
+<p>这一套装备包括硬件资源，如异或（XOR）引擎，内存资源，如静态随机存取内存（SRAM）或动态随机存取内存（DRAM），以及用于在断电后保持奇偶校验数据的电源电容器。</p>
+</blockquote>
+<p>数据和奇偶校验的大小可以从数百千字节到数兆字节不等，例如，这可能是由于两步编程所致。</p>
+<blockquote>
+<p>在NAND闪存技术中，”Two-Step Programming”（两步编程）是一种数据写入方法。这种方法在写入数据到NAND闪存单元时分为两个阶段进行，以提高数据的可靠性和减少错误。以下是两步编程的主要步骤和特点：</p>
+<h3 id="第一步：初步写入"><a href="#第一步：初步写入" class="headerlink" title="第一步：初步写入"></a>第一步：初步写入</h3><ul>
+<li>在这一步中，数据首先被写入到闪存单元，但并不是以最终的形态。这个阶段的目的是将数据大致定位到所需的状态。</li>
+</ul>
+<h3 id="第二步：精细调整"><a href="#第二步：精细调整" class="headerlink" title="第二步：精细调整"></a>第二步：精细调整</h3><ul>
+<li>第二步涉及对之前写入的数据进行精细调整。这个阶段确保数据准确地达到其目标状态，从而减少写入错误。</li>
+<li>这种方法特别适用于多级单元（MLC）和三级单元（TLC）NAND闪存，其中每个单元存储多个位的数据。</li>
+</ul>
+<h3 id="为什么使用两步编程"><a href="#为什么使用两步编程" class="headerlink" title="为什么使用两步编程"></a>为什么使用两步编程</h3><ol>
+<li><p><strong>提高精确度</strong>：</p>
+<ul>
+<li>由于NAND闪存单元在存储多个数据位时容易受到干扰，两步编程通过分阶段精细调整来提高写入数据的准确度。</li>
+</ul>
+</li>
+<li><p><strong>减少错误</strong>：</p>
+<ul>
+<li>分步骤写入减少了数据写入错误的可能性，特别是在高密度存储技术（如MLC和TLC）中。</li>
+</ul>
+</li>
+<li><p><strong>提升可靠性</strong>：</p>
+<ul>
+<li>通过减少写入错误，两步编程提高了存储的可靠性，这对于保持数据完整性和延长设备寿命非常重要。</li>
+</ul>
+</li>
+</ol>
+<p>总体来说，两步编程是NAND闪存中一种重要的数据写入方法，特别是在那些要求高数据密度和可靠性的应用中。通过这种方法，可以有效地减少写入错误，提高整体存储介质的性能和可靠性。</p>
+</blockquote>
+<p>由于这些要求和相关成本，预计ZNS固态硬盘将拥有8到32个活动区域。尽管通过增加额外的电源电容器、使用动态随机存取内存（DRAM）进行数据移动、减少奇偶校验要求，或部署一种写回缓存的形式，可以进一步增加活动区域的数量。 </p>
+<h4 id="Host-Software-Adoption-主机软件的采用情况"><a href="#Host-Software-Adoption-主机软件的采用情况" class="headerlink" title="Host Software Adoption 主机软件的采用情况"></a>Host Software Adoption 主机软件的采用情况</h4><p>三种让主机软件适配<code>ZNS</code>接口的方式。</p>
+<p>采用顺序写特性的软件能更好的适配<code>ZNS</code>接口，比如<code>Log Structure Merge (LSM) tree-based database</code>。主要执行原地更新<code>in-place update</code>的应用程序在不对核心数据结构进行根本性修改的情况下，更难以支持。</p>
+<ul>
+<li><code>Host-side FTL (HFTL)</code>：一种在<code>ZNS SSD</code>写语法和使用随机写和就地更新的程序之间的媒介，类似于<code>SSD</code>的<code>FTL</code>层。</li>
+</ul>
+<p>  但只负责<code>translation mapping</code>和<code>Garbage collection</code></p>
+<blockquote>
+<p><strong>缺点：</strong><code>HFTL</code>需要占用<code>CPU</code>和<code>DRAM</code>。</p>
+<p><strong>优点：</strong>使集成主机端的信息更加简单，增加了对数据放置和垃圾回收的控制，同时将<code>ZNS SSD</code>当作<code>conventional SSD</code>暴露给应用程序。</p>
+</blockquote>
+<ul>
+<li><p><code>FTL System</code>：更高层次的存储接口允许多个应用程序通过常见的文件语法访问存储系统。</p>
+<p>即：将区域与存储堆栈的更高层次集成，以确保顺序写入。</p>
+</li>
+<li><p><code>End-to-end Data placement</code>端到端数据放置：理想情况下，区域写语法讲与应用程序的现有数据结构保持一致。这将通过允许应用程序管理数据放置来提供最高程度的自由度，同时消除了来自文件系统和翻译层的间接开销。</p>
+<blockquote>
+<p>虽然端到端的数据放置使应用程序与ZNS固态硬盘之间的协作成为可能，并有潜力实现最佳的写放大、吞吐量和延迟改进，但它就像与原始块设备交互一样令人生畏。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="Implementation-我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。"><a href="#Implementation-我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。" class="headerlink" title="Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。"></a>Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。</h3><ul>
+<li>更改<code>Linux</code>内核以支持<code>ZNS SSD</code></li>
+<li>更改<code>f2fs file system</code></li>
+<li>更改<code>fio benchmark</code>：这是为了测试和评估支持<code>ZNS</code>的存储设备性能</li>
+<li>提出<code>ZenFS</code>：一个针对<code>RockDB</code>的新型存储后端，它通过分区来控制设备用以评估端到端集成对分区存储的好处</li>
+</ul>
+<h4 id="General-Linux-support"><a href="#General-Linux-support" class="headerlink" title="General Linux support"></a>General Linux support</h4><p><strong>Zone Capability:</strong></p>
+<p><code>fio</code>和<code>f2fs</code>支持<code>Zone capability</code>，<code>fio</code>只保证不超过<code>zone capability</code>，<code>f2fs</code>管理段，段大小为<code>2MB</code>，多个段位一个区<code>section</code>，一个区<code>section</code>的大小和一个域<code>zone</code>的大小相同。</p>
+<p><strong>limiting active zones 打开区域数量限制:</strong></p>
+<p><code>fio</code>要求用户遵守打开区域数量这一限制。</p>
+<p>对于<code>f2fs</code>来说，这种限制体现在打开的段的数量上。</p>
+<h4 id="RocksDB-Zone-Support"><a href="#RocksDB-Zone-Support" class="headerlink" title="RocksDB Zone Support:"></a>RocksDB Zone Support:</h4><p>调整键值数据库<code>RocksBD</code>，使其能够通过使用<code>ZenFS</code>存储后端，将数据端到端地放置到分区存储设备上。<code>ZenFS</code>利用了<code>RocksDB</code>的日志结构合并<code>(LSM)</code>数数据结构，这是<code>RocksDB</code>用来存储和维护其数据的，并且还利用了其相关的不可变的仅限顺序的压缩过程。</p>
+<p><code>LSM tree</code>：</p>
+<p>最上层的数据是热数据，冷数据会被一直下放到最底层。</p>
+<p><img src="/../images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png" alt="截屏2023-11-25 18.16.52"></p>
+<p><strong>ZenFS Architecture</strong>：</p>
+<p><code>ZenFS</code>存储后端实现了一种最小的磁盘上文件系统，并使用<code>RocksDB</code>的文件包装<code>API</code>对其进行集成。</p>
+<p><img src="/../images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.35.12.png" alt="截屏2023-11-25 18.35.12"></p>
+<p><strong>Journaling and data</strong>：</p>
+<ul>
+<li>journal：日志区域用于恢复文件系统的状态，维护超级块数据结构，并将写前日志（WAL）和数据文件映射到区域。</li>
+<li>data：数据区域存储文件内容。</li>
+</ul>
+<p><strong>Extents</strong>：</p>
+<ul>
+<li><code>RocksDB</code>的数据文件被映射并存储到一系列内容<code>a set of content</code>中。</li>
+<li><code>content</code>是大小可变，块对齐的。</li>
+<li><code>Extents</code>按顺序写入一个数据区域。</li>
+<li>包含与特定标识符相关联的数据。</li>
+</ul>
+<p>每个区域包含很多<code>extents</code>，但是<code>extents</code>不能扩大<code>zone</code>的大小。</p>
+<blockquote>
+<p>区段的分配和释放事件被记录在内存数据结构中，并在关闭文件或通过<code>fsync</code>调用要求<code>RocksDB</code>持久化数据时写入日志。内存数据结构跟踪区段到区域的映射，一旦一个区域中分配了区段的所有文件都被删除，该区域就可以被重置并重用。</p>
+</blockquote>
+<p><strong>superblock 超级块</strong>：</p>
+<p><strong>Journal 日志</strong>：</p>
+<p><strong>Writeable Capacity in Data Zones 数据区域的可写容量</strong>：</p>
+<p><strong>Data Zone Selection</strong>：ZenFS采用了一种尽最大努力的算法来选择最佳区域存储RocksDB数据文件。</p>
+<blockquote>
+<p> A match is only valid if the lifetime of the file is less than the oldest data stored in the zone to avoid prolonging the life of the data in the zone.</p>
+<p>目的是为了确保不因为新添加的文件而不必要地延长存储区域中旧数据的存储时间，从而有效管理数据的生命周期和存储区域的使用效率。</p>
+</blockquote>
+<p><strong>Active Zone limit</strong></p>
+<blockquote>
+<p>活动区域限制。ZenFS必须遵守分区块设备指定的活动区域限制。要运行ZenFS，至少需要三个活动区域，它们分别被分配给日志、写前日志（WAL）和压缩过程。为了提高性能，用户可以控制并发压缩的数量。我们的实验表明，通过限制并发压缩的数量，RocksDB可以在写性能受限的情况下，只使用最少6个活动区域工作，而超过12个活动区域并不会带来任何显著的性能好处。</p>
+</blockquote>
+<p><strong>Direct I&#x2F;O and Buffered Writes</strong></p>
+<blockquote>
+<p>直接I&#x2F;O和缓冲写入。ZenFS利用了写入SST文件是顺序的和不可变的这一事实，并对SST文件执行直接I&#x2F;O写入，绕过了内核页面缓存。对于其他文件，如写前日志（WAL），ZenFS在内存中缓冲写入，并在缓冲区满、文件关闭或RocksDB请求刷新时刷新缓冲区。如果请求了刷新，缓冲区将被填充到下一个块边界，并且一个带有有效字节数的区段将被存储在日志中。这种填充导致了少量的写入放大，但这并非ZenFS独有，传统文件系统中也有类似的做法。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/13/ZNSSSDliterature/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3040,191 +3361,6 @@ endmodule
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/21/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/touxiang.JPG">
-      <meta itemprop="name" content="theLonging">
-      <meta itemprop="description" content="不捨晝夜。">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="talk is cheap, show me the code.">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/08/21/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">搭建verilator仿真环境</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2023-08-21 13:21:14 / 修改时间：17:04:57" itemprop="dateCreated datePublished" datetime="2023-08-21T13:21:14+08:00">2023-08-21</time>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>8.3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>8 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="搭建verilator仿真环境"><a href="#搭建verilator仿真环境" class="headerlink" title="搭建verilator仿真环境"></a>搭建verilator仿真环境</h1><blockquote>
-<p>verilator是一款开源的verilog仿真工具, 在”一生一芯”项目中, 你将会使用它来进行RTL功能仿真, 从而验证你编写的RTL代码.</p>
-<p>框架代码默认提供了一个<code>npc</code>目录, 这里的<code>npc</code>是<code>New Processor Core</code>的含义, 将来大家就会在这个目录下设计自己的处理器. 不过为了设置一个环境变量<code>NPC_HOME</code>, 你需要运行如下命令:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ysyx-workbench</span><br><span class="line">bash init.sh npc</span><br></pre></td></tr></table></figure>
-
-<p>这个环境变量会在将来使用. <code>npc</code>目录下有一些简单的文件:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ysyx-workbench/npc</span><br><span class="line">├── csrc</span><br><span class="line">│   └── main.cpp</span><br><span class="line">├── Makefile</span><br><span class="line">└── vsrc</span><br><span class="line">    └── example.v</span><br></pre></td></tr></table></figure>
-
-<p>目前这三个文件几乎都是空文件, 在这一小节中, 我们将会引导大家搭建verilator仿真环境, 并编写两个简单的数字电路模块来进行仿真.</p>
-</blockquote>
-<h2 id="任务：认识verilator"><a href="#任务：认识verilator" class="headerlink" title="任务：认识verilator"></a>任务：认识verilator</h2><blockquote>
-<p>你很可能是第一次听说过verilator这个工具, 这是很正常的. 然后你就会想进一步了解verilator的各种信息, 这也是很正常的. 但如果你的第一反应是去问人, 这就不恰当了. 事实上, verilator这个工具在仿真领域已经非常有名, 以至于你可以很容易在互联网上搜索到它的相关信息. 你需要通过STFW找到它的官方网站, 然后阅读一下相关的介绍.</p>
-</blockquote>
-<p>​	verilator是一个用作仿真电路的软件，将Verilog或者SystemVerilog文件转换为c或者c++文件，然后可以通过自己编辑的testbench测试用例观察电路是否正确。</p>
-<h2 id="任务：安装verilator"><a href="#任务：安装verilator" class="headerlink" title="任务：安装verilator"></a>任务：安装verilator</h2><blockquote>
-<p>在官网中找到安装verilator的步骤, 然后按照从git安装的相应步骤进行操作. 我们之所以不采用<code>apt-get</code>安装, 是因为其版本较老. 此外, 为了统一版本, 你需要通过git安装<code>5.008</code>的版本. 为此, 你还需要进行一些简单的git操作, 如果你对此感到生疏, 你可能需要寻找一些git教程来学习. 另外, 你最好在<code>ysyx-workbench/</code>之外的目录进行这一操作, 否则git将会追踪到verilator的源代码, 从而占用不必要的磁盘空间.</p>
-<p>安装成功后, 运行以下命令来检查安装是否成功，以及版本是否正确</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">verilator --version</span><br></pre></td></tr></table></figure>
-</blockquote>
-<p>​	找到verilator官网的<a target="_blank" rel="noopener" href="https://verilator.org/guide/latest/install.html">install部分</a>，跟着官网步骤一步一步来就可以了，注意切换版本时使用git checkout的地方。</p>
-<h2 id="任务：运行示例"><a href="#任务：运行示例" class="headerlink" title="任务：运行示例"></a>任务：运行示例</h2><blockquote>
-<p>verilator手册中包含一个C++的示例, 你需要在手册中找到这个示例, 然后按照示例的步骤进行操作.</p>
-</blockquote>
-<p>​	也是照着<a target="_blank" rel="noopener" href="https://verilator.org/guide/latest/example_cc.html#example-c-execution">官网的步骤</a>，注意：verilog代码文件名必须与模块名一致，如our.v的模块名必须命名<code>module our</code>。</p>
-<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2013.47.39-2596869.png" alt="截屏2023-08-21 13.47.39"></p>
-<h2 id="示例：双控开关"><a href="#示例：双控开关" class="headerlink" title="示例：双控开关"></a>示例：双控开关</h2><blockquote>
-<p>手册中的示例非常简单, 甚至算不上是一个真正的电路模块. 接下来我们编写一个真正的电路模块, 双控开关, 来进行测试. 编写如下的verilog代码:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">module top(</span><br><span class="line">  input a,</span><br><span class="line">  input b,</span><br><span class="line">  output f</span><br><span class="line">);</span><br><span class="line">  assign f = a ^ b;</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
-
-<p>双控开关的一个应用是通过两个开关(<code>a</code>和<code>b</code>)联合控制同一盏灯的亮灭(<code>f</code>). 和手册中的示例不同, 这个模块有输入输出端口. 为了驱动输入端口, 并从输出端口获得结果, 我们需要对C++文件中的<code>while</code>循环进行修改:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 以下为伪代码</span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line"></span><br><span class="line">while (???) &#123;</span><br><span class="line">  int a = rand() &amp; 1;</span><br><span class="line">  int b = rand() &amp; 1;</span><br><span class="line">  top-&gt;a = a;</span><br><span class="line">  top-&gt;b = b;</span><br><span class="line">  top-&gt;eval();</span><br><span class="line">  printf(&quot;a = %d, b = %d, f = %d\n&quot;, a, b, top-&gt;f);</span><br><span class="line">  assert(top-&gt;f == (a ^ b));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在一次循环中, 代码将会随机生成两个1比特信号, 用来驱动两个输入端口, 然后通过<code>eval()</code>函数更新电路的状态, 这样我们就可以读取输出端口的值并打印. 为了自动检查结果是否正确, 我们通过<code>assert()</code>语句对输出结果进行检查.</p>
-</blockquote>
-<h2 id="任务：对双控开关模块进行仿真"><a href="#任务：对双控开关模块进行仿真" class="headerlink" title="任务：对双控开关模块进行仿真"></a>任务：对双控开关模块进行仿真</h2><blockquote>
-<p>尝试在verilator中对双控开关模块进行仿真. 由于顶层模块名与手册中的示例有所不同, 你还需要对C++文件进行一些相应的修改. 此外, 这个项目没有指示仿真结束的语句, 为了退出仿真, 你需要键入<code>Ctrl+C</code>.</p>
-</blockquote>
-<p>​	verilog代码不做更改，但需要将它存放在<code>top.v</code>中，接着编辑C++文件，观察<strong>任务：运行示例</strong>中的C++代码。</p>
-<blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">mkdir test_our</span><br><span class="line">cd test_our</span><br><span class="line"></span><br><span class="line">cat &gt;our.v &lt;&lt;&#x27;EOF&#x27;</span><br><span class="line">  module our;</span><br><span class="line">     initial begin $display(&quot;Hello World&quot;); $finish; end</span><br><span class="line">  endmodule</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &gt;sim_main.cpp &lt;&lt;&#x27;EOF&#x27;</span><br><span class="line">  #include &quot;Vour.h&quot;</span><br><span class="line">  #include &quot;verilated.h&quot;</span><br><span class="line">  int main(int argc, char** argv) &#123;</span><br><span class="line">      VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">      contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">      Vour* top = new Vour&#123;contextp&#125;;</span><br><span class="line">      while (!contextp-&gt;gotFinish()) &#123; top-&gt;eval(); &#125;</span><br><span class="line">      delete top;</span><br><span class="line">      delete contextp;</span><br><span class="line">      return 0;</span><br><span class="line">  &#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-</blockquote>
-<p>​	<code>#include &quot;Vour.h&quot;</code>和<code>#include &quot;verilated.h&quot;</code> 第一个头文件是verilator将our.v转换为的c++头文件，这样我们可以在C++文件中构建一个our模块的实例<code>Vour* top = new Vour&#123;contextp&#125;;</code> <code>top-&gt;eval();</code>用来更新模拟状态。</p>
-<p>​	<strong>以下是个人的理解！！不一定对！！</strong></p>
-<ul>
-<li><code>contextp</code>是一个指向<code>VerilatedContext</code>(Verilated 上下文)的指针 。<code>contextp-&gt;commandArgs(argc, argv);</code>将verilator上下文与命令行参数联系在一起。<code>Vour* top = new Vour&#123;contextp&#125;;</code> 将实例与上下文联系在一起。<code>contextp-&gt;gotFinish()</code>是用来判断verilator是否接收到终止指令。</li>
-</ul>
-<p>​	现在我们编写双控开关的C++文件，</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">#include &quot;verilated.h&quot;</span><br><span class="line">int main(int argc, char ** argv) &#123;</span><br><span class="line">	VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">	contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">	Vtop* top = new Vtop&#123;contextp&#125;;</span><br><span class="line">	while (!contextp-&gt;gotFinish()) &#123;</span><br><span class="line">		int a = rand() &amp; 1;</span><br><span class="line">		int b = rand() &amp; 1;</span><br><span class="line">		top-&gt;a = a;</span><br><span class="line">		top-&gt;b = b;</span><br><span class="line">		top-&gt;eval();</span><br><span class="line">		printf(&quot;a = %d, b = %d, f = %d\n&quot;, a, b, top-&gt;f);</span><br><span class="line">		assert(top-&gt;f == (a ^ b));</span><br><span class="line">	&#125;</span><br><span class="line">	delete top;</span><br><span class="line">	delete contextp;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="任务：理解RTL仿真的行为"><a href="#任务：理解RTL仿真的行为" class="headerlink" title="任务：理解RTL仿真的行为"></a>任务：理解RTL仿真的行为</h2><blockquote>
-<p>阅读verilator编译出的C++代码, 然后结合verilog代码, 尝试理解仿真器进行仿真的时候都发生了什么。</p>
-</blockquote>
-<p>​	将verilog的模块作为一个类实现。并且结合C++testbench文件实现了仿真功能。</p>
-<h2 id="打印并查看波形"><a href="#打印并查看波形" class="headerlink" title="打印并查看波形"></a>打印并查看波形</h2><blockquote>
-<p>查看波形文件是RTL调试的常用手段之一. verilator支持波形的生成, 你可以通过开源的波形查看工具GTKWave来查看波形.</p>
-</blockquote>
-<h2 id="任务：生成波形并查看"><a href="#任务：生成波形并查看" class="headerlink" title="任务：生成波形并查看"></a>任务：生成波形并查看</h2><blockquote>
-<p>verilator手册中已经介绍了波形生成的方法, 你需要阅读手册找到相关内容, 然后按照手册中的步骤生成波形文件, 并通过</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install gtkwave</span><br></pre></td></tr></table></figure>
-
-<p>安装GTKWave来查看波形.</p>
-</blockquote>
-<p>​	下载手册后用<code>ctrl+f</code>搜索<code>gtkwave</code>找到<code>Install GTKWave</code>，跟着步骤一步一步来就装好了。装好之后怎么用呢？提示说verilator中有答案，但是我们在手册里面没有搜到有关教程。回到代码里看一看，我们知道一般代码包里都会有example，打开example发现有如下文件。</p>
-<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2014.44.20-2600269.png" alt="截屏2023-08-21 14.44.20"></p>
-<p>​	<del>之前有说-c是C++文件-SC是systemC文件，我们用的是Makefile，tracing后缀用来追踪波形，那就打开<code>make_tracing_sc</code>文件看看Makefile写了些什么。(笔者好像是在网上搜索了一下博客发现的，有点忘记了)。</del></p>
-<p>​	这部分是在南京大学数字逻辑与计算机组成课程实验里找到答案的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Make waveforms</span><br><span class="line">VERILATOR_FLAGS += --trace</span><br></pre></td></tr></table></figure>
-
-<p>​	现在我们知道要得到波形文件需要添加<code>--trace</code>，由于波形文件一般会占用较多的磁盘空间, 长时间生成波形可能会导致磁盘空间耗尽, 从而导致系统崩溃。所以适当修改testbench。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">#include &quot;verilated.h&quot;</span><br><span class="line">+++</span><br><span class="line">#include &quot;verilated_vcd_c.h&quot;</span><br><span class="line">+++</span><br><span class="line">int main(int argc, char** argv, char** env) &#123;</span><br><span class="line">	VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">	contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">	Vtop* top = new Vtop&#123;contextp&#125;;</span><br><span class="line"></span><br><span class="line">+++</span><br><span class="line">	VerilatedVcdC* tfp = new VerilatedVcdC; // initialize VDC pointer</span><br><span class="line">	contextp-&gt;traceEverOn(true); // turn on the tracing mode</span><br><span class="line">	top-&gt;trace(tfp, 0);</span><br><span class="line">	tfp-&gt;open(&quot;wave.vcd&quot;); // set the output file wave.vcd</span><br><span class="line">+++</span><br><span class="line"></span><br><span class="line">	// while(!contextp-&gt;gotFinish()) &#123;</span><br><span class="line">	for(int i = 0; i &lt; 10; ++i) &#123;</span><br><span class="line">		int a = rand() &amp; 1;</span><br><span class="line">		int b = rand() &amp; 1;</span><br><span class="line">		top-&gt;a = a;</span><br><span class="line">		top-&gt;b = b;</span><br><span class="line">		top-&gt;eval();</span><br><span class="line">		printf(&quot;a = %d, b = %d, f= %d\n&quot;, a, b , top-&gt;f);</span><br><span class="line">+++</span><br><span class="line">		tfp-&gt;dump(contextp-&gt;time()); // dump wave</span><br><span class="line">		contextp-&gt;timeInc(1); // push simulate time                      +++                   </span><br><span class="line">		assert(top-&gt;f == (a ^ b));</span><br><span class="line">	&#125;</span><br><span class="line">	delete top;</span><br><span class="line">	tfp-&gt;close();</span><br><span class="line">	delete contextp;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	大概是这样的写法，波形文件如下图所示：符合 <code>f = a ^ b </code></p>
-<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.11.15-2601879-2601886-2601889-2601914.png" alt="截屏2023-08-21 15.11.15"></p>
-<h2 id="任务：一键仿真"><a href="#任务：一键仿真" class="headerlink" title="任务：一键仿真"></a>任务：一键仿真</h2><blockquote>
-<p>反复键入编译运行的命令是很不方便的, 尝试为<code>npc/Makefile</code>编写规则<code>sim</code>, 实现一键仿真, 如键入<code>make sim</code>即可进行上述仿真.</p>
-</blockquote>
-<p>​	这部分是关于Makefile的学习，推荐看<a target="_blank" rel="noopener" href="https://www.itsembedded.com/dhd/vivado_sim_3/">itsembedded的教程</a>进行学习。笔者将自己的简易实现放在这里。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">all:</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">sim:</span><br><span class="line">	$(call git_commit, &quot;sim RTL&quot;) # DO NOT REMOVE THIS LINE!!!</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">	verilator -Wall csrc/main.cpp vsrc/example.v --cc --trace --exe --build</span><br><span class="line">include ../Makefile</span><br></pre></td></tr></table></figure>
-
-<h2 id="接入NVBOARD"><a href="#接入NVBOARD" class="headerlink" title="接入NVBOARD"></a>接入NVBOARD</h2><blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/NJU-ProjectN/nvboard.git">NVBoard</a>(NJU Virtual Board)是南京大学开发的, 用于教学的虚拟FPGA板卡项目, 可以在RTL仿真环境中提供一个虚拟板卡的界面, 支持拨码开关, LED灯, VGA显示等功能, 在速度要求不高的场景下可完全替代真实的FPGA板卡(毕竟不是每人身边都有一块FPGA). 通过以下命令获取NVBoard的代码:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ysyx-workbench</span><br><span class="line">bash init.sh nvboard</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="任务：运行NVBoard示例"><a href="#任务：运行NVBoard示例" class="headerlink" title="任务：运行NVBoard示例"></a>任务：运行NVBoard示例</h2><blockquote>
-<p>阅读NVBoard项目的介绍, 尝试运行NVBoard项目中提供的示例.</p>
-</blockquote>
-<p>​	浏览器可以直接搜到nvboard的github，阅读readme，并运行example里的实例</p>
-<h2 id="任务：在NVBoard上实现双控开关"><a href="#任务：在NVBoard上实现双控开关" class="headerlink" title="任务：在NVBoard上实现双控开关"></a>任务：在NVBoard上实现双控开关</h2><blockquote>
-<p>阅读NVBoard项目的说明, 然后仿照该示例下的C++文件和Makefile, 修改你的C++文件, 为双控开关的输入输出分配引脚, 并修改<code>npc/Makefile</code>使其接入NVBoard.</p>
-</blockquote>
-<p>​	双控开关的verilog 文件不需要更改，仿照<code>NVboard/example</code>的testbench文件修改C++文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;nvboard.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">static TOP_NAME dut;</span><br><span class="line">void nvboard_bind_all_pins(Vtop* top);</span><br><span class="line">int main() &#123;</span><br><span class="line">	nvboard_bind_all_pins(&amp;dut);</span><br><span class="line">	nvboard_init();</span><br><span class="line">	while(1) &#123;</span><br><span class="line">		dut.eval();</span><br><span class="line">		nvboard_update();</span><br><span class="line">	&#125;</span><br><span class="line">	nvboard_quit();</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	TOP_NAME 实例化一个top模块dut，<code>nvboard_bind_all_pins(Vtop* top);</code>将模块上的引脚按照<code>constr/top.nxdc</code>中描述的方式连接。<code>nvboard_init();</code>初始化nvboard，通过<code>while(1)</code>循环等待鼠标事件发生。<code>dut.eval() nvboard_update();</code>用于更新模块和nvboard。<code>nvboard_quit();</code>退出nvboard。</p>
-<p>​	NVBoard的引脚名字在<code>nvboard/board/N4</code>中。top.nxdc文件中给出连接方式。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line"></span><br><span class="line">a SW0</span><br><span class="line">b SW1</span><br><span class="line">f LD0</span><br></pre></td></tr></table></figure>
-
-<p>​	top &#x3D; top_modulename, 顶层模块名，<code>a SW0</code>表示a 连接到SW0上。makefile文件仿照nvboard示例即可。 效果如下：</p>
-<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2016.47.47-2607672.png" alt="截屏2023-08-21 16.47.47"></p>
-<h2 id="示例：流水灯"><a href="#示例：流水灯" class="headerlink" title="示例：流水灯"></a>示例：流水灯</h2><h2 id="任务：将流水灯接入NVBoard"><a href="#任务：将流水灯接入NVBoard" class="headerlink" title="任务：将流水灯接入NVBoard"></a>任务：将流水灯接入NVBoard</h2><blockquote>
-<p>编写流水灯模块, 然后接入NVBoard并分配引脚. 如果你的实现正确, 你将看到灯从右端往左端依次亮起并熄灭.</p>
-</blockquote>
-<p>​	理解了如何接入NVBoard后，这个任务非常的简单。Makefile保持不变，要注意的地方就是C++文件和nxdc文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;nvboard.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line"></span><br><span class="line">static TOP_NAME dut;</span><br><span class="line"></span><br><span class="line">void nvboard_bind_all_pins(Vtop* top);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void single_cycle() &#123;</span><br><span class="line">	dut.clk = 0; dut.eval();</span><br><span class="line">	dut.clk = 1; dut.eval();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void reset(int n) &#123;</span><br><span class="line">	dut.rst = 1;</span><br><span class="line">	while(n-- &gt; 0) single_cycle();</span><br><span class="line">	dut.rst = 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main() &#123;</span><br><span class="line">	nvboard_bind_all_pins(&amp;dut);</span><br><span class="line">	nvboard_init();</span><br><span class="line">	reset(10);</span><br><span class="line"></span><br><span class="line">	while(1) &#123;</span><br><span class="line">		nvboard_update();</span><br><span class="line">		single_cycle();</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line"></span><br><span class="line">led (LD15, LD14, LD13, LD12, LD11, LD10, LD9, LD8, LD7, LD6, LD5, LD4, LD3, LD2, LD1, LD0)</span><br><span class="line"></span><br><span class="line">clk PS2_CLK</span><br><span class="line">rst BTNC </span><br></pre></td></tr></table></figure>
-
-<p>​	效果如下，等会一个一个的点亮，但是在连接reset的时候没有找到RST，改到PB_C成功实现reset功能。<img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2016.37.47-2607075.png" alt="截屏2023-08-21 16.37.47"></p>
-<h2 id="任务：理解RTL仿真的行为-2"><a href="#任务：理解RTL仿真的行为-2" class="headerlink" title="任务：理解RTL仿真的行为(2)"></a>任务：理解RTL仿真的行为(2)</h2><blockquote>
-<p>阅读verilator编译出的C++代码, 然后结合verilog代码, 尝试理解仿真器是如何对时序逻辑电路进行仿真的.</p>
-</blockquote>
-<p>​	对时序逻辑电路的仿真主要是要维护一个时钟，在时钟上沿改变电路的状态。</p>
-<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>​	搭建verilator仿真环境这一章耗费了笔者大约一周的时间，掌握一个新的工具困难在于对未知的恐惧，特别是在学习verilator和nvboard的过程中，由于网络上只有很少的中文博客，导致STFW无法很好的解决问题，只能通过RTFM和RTFSC来学习verilator如何使用。幸运的是几乎所有的README都写的详细并且附带示例，读者只需要在阅读完之后加以模仿，就可以完成讲义里的任务，RTFM的好处在于可以更全面的了解整个程序是如何工作的，一定要动手写代码并运行，观察报错信息并改正它。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -3296,7 +3432,7 @@ endmodule
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-count">19</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -3341,12 +3477,12 @@ endmodule
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">175k</span>
+    <span title="站点总字数">182k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:39</span>
+    <span title="站点阅读时长">2:45</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
