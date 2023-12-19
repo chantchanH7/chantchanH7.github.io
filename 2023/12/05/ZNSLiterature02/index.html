@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这是第三周2023.12.4-2023.12.10的论文阅读笔记 Performance Characterization of NVMe Flash Devices with Zoned Namespaces (ZNS)这篇文章大概讲了具有分区命名空间的闪存的性能分析。 本文的贡献:  系统地描述了一款商业可用的 NVMe ZNS 设备的性能特性（即延迟、带宽和并行管理），包括其追加、读取、写入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ZNSLiterature02">
+<meta property="og:url" content="http://example.com/2023/12/05/ZNSLiterature02/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="这是第三周2023.12.4-2023.12.10的论文阅读笔记 Performance Characterization of NVMe Flash Devices with Zoned Namespaces (ZNS)这篇文章大概讲了具有分区命名空间的闪存的性能分析。 本文的贡献:  系统地描述了一款商业可用的 NVMe ZNS 设备的性能特性（即延迟、带宽和并行管理），包括其追加、读取、写入">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-05T00:50:51.000Z">
+<meta property="article:modified_time" content="2023-12-12T07:52:33.316Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2023/12/05/ZNSLiterature02/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ZNSLiterature02 | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/12/05/ZNSLiterature02/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ZNSLiterature02
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-12-05 08:50:51" itemprop="dateCreated datePublished" datetime="2023-12-05T08:50:51+08:00">2023-12-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-12-12 15:52:33" itemprop="dateModified" datetime="2023-12-12T15:52:33+08:00">2023-12-12</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这是第三周2023.12.4-2023.12.10的论文阅读笔记</p>
+<h1 id="Performance-Characterization-of-NVMe-Flash-Devices-with-Zoned-Namespaces-ZNS"><a href="#Performance-Characterization-of-NVMe-Flash-Devices-with-Zoned-Namespaces-ZNS" class="headerlink" title="Performance Characterization of NVMe Flash Devices with Zoned Namespaces (ZNS)"></a>Performance Characterization of NVMe Flash Devices with Zoned Namespaces (ZNS)</h1><p>这篇文章大概讲了具有分区命名空间的闪存的性能分析。</p>
+<p>本文的贡献:</p>
+<ul>
+<li><p>系统地描述了一款商业可用的 NVMe ZNS 设备的性能特性（即延迟、带宽和并行管理），包括其追加、读取、写入和区域管理操作（即完成和重置）。</p>
+</li>
+<li><p>我们分析了 ZNS 独特的重置和追加操作对读取、写入和追加 I&#x2F;O 性能的干扰影响。</p>
+</li>
+<li><p>我们揭示了最新 ZNS 模拟器性能模型的局限性，并讨论了解决这些问题的建议。</p>
+</li>
+<li><p>我们根据我们的特性分析，为 ZNS 应用开发者分享了关键建议。</p>
+</li>
+<li><p>我们在 <a target="_blank" rel="noopener" href="https://github.com/stonet-research/NVMeBenchmarks">https://github.com/stonet-research/NVMeBenchmarks</a> 上发布了我们的基准测试软件和数据集，以鼓励可复现的研究。</p>
+</li>
+</ul>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem:"></a>Problem:</h2><p>​	缺乏对 ZNS SSD（带有分区命名空间的固态硬盘）的广泛特性分析严重限制了在大数据工作负载中使用和应用 ZNS 设备的能力。这篇文章通过展示一款商业可用的 NVMe ZNS 设备的性能特性来弥补这一差距。</p>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background:"></a>Background:</h2><p>本文中提到的关于闪存的一些背景又和之前了解的概念有些偏差，在此记录下来：</p>
+<ul>
+<li><p>页<code>(page)</code>需要被顺序写入块中<code>(block)</code>，因此不允许数据随机写入。</p>
+</li>
+<li><p><code>It is also prone to read-write disturbs that occur when many reads are issued to the same blocks—they cause data loss. </code> </p>
+<blockquote>
+<p>读写干扰<code>(read-write distrubs)</code>是由于NAND闪存在频繁读取过程中对特定块施加重复电压引起的，这可能导致存储在邻近页中的数据不稳定，进而引发数据丢失或损坏。</p>
+</blockquote>
+<p>这也是为什么<code>ZNS SSD</code>中同时活跃的区域的数量有限制的原因<code>active zone limits</code>。</p>
+<p>同样导致活跃区域的数量限制的原因还有：</p>
+<blockquote>
+<p>Since each zone operation (e.g., read, write, and append) consumes SSD resources (e.g., internal buffers), there are limits on the number of zones that can be concurrently opened and used.</p>
+<p>由于每个区域操作（例如读取、写入和附加）都会消耗SSD资源（例如内部缓冲区），因此可以同时打开和使用的区域数量受到限制。</p>
+</blockquote>
+</li>
+<li><p>追加操作<code>append</code>，类似于<code>nameless write</code>。</p>
+<blockquote>
+<p>这里追加操作没有固定写入的地址，而是在设备完成写入后返回给主机写入的地址。</p>
+<p>即，不像写指令<code>write</code>，接收一个目标块地址。</p>
+<p>追加指令<code>append</code>接收一个区域起始逻辑块地址<code>zone starting LBA (ZSLBA)</code>，当<code>append</code>完成后，逻辑块地址<code>LBA</code>返回给应用程序。这使得程序可以对同一个区域发送多个<code>append</code>命令。</p>
+</blockquote>
+</li>
+<li><p>重置操作，显示通知设备某个区域中的数据可以被回收，但不一定是实时的。重置操作可以限制为 FTL（闪存翻译层）元数据映射操作，这会向设备指示该块稍后可以被擦除。</p>
+</li>
+</ul>
+<h2 id="EXPERIMENTS"><a href="#EXPERIMENTS" class="headerlink" title="EXPERIMENTS:"></a>EXPERIMENTS:</h2><h3 id="Benchmarking-setup"><a href="#Benchmarking-setup" class="headerlink" title="Benchmarking setup:"></a><em>Benchmarking setup:</em></h3><ul>
+<li><p><code>fio</code>，用来生成工作负载和基准测试。</p>
+<blockquote>
+<p><code>fio</code> 是一个流行的、灵活的开源工具，全称为 Flexible I&#x2F;O Tester。它被广泛用于执行和分析存储系统的性能和基准测试。<code>fio</code> 可以产生一定的I&#x2F;O负载，并以一种可控制和可预测的方式执行这些负载，使其成为评估和测试存储设备（如硬盘驱动器、固态硬盘、存储区域网络）性能的理想工具。</p>
+</blockquote>
+</li>
+<li><p><code>SPDK</code>，（Storage Performance Development Kit）是一个高性能、用户态的存储开发工具包。它是由英特尔开发的开源项目，旨在提高存储设备，尤其是固态硬盘在数据中心中的性能和效率。SPDK 实现了一系列优化，使得存储操作可以绕过传统的内核栈，直接在用户空间运行，从而显著降低延迟并提高吞吐量。</p>
+<blockquote>
+<p>The <em>SPDK</em> stack, in contrast, is a bare-bones storage stack without any I&#x2F;O scheduler.</p>
+</blockquote>
+</li>
+<li><p><code>mq-deadline</code> 是一种 I&#x2F;O 调度器，用于管理 Linux 操作系统中的块设备（如硬盘驱动器和固态硬盘）的请求队列。<code>mq-deadline</code> 是对原有 <code>deadline</code> 调度器的改进，专门为支持多队列 (Multi-Queue) 存储接口设计。这种调度器旨在平衡 I&#x2F;O 请求的延迟和吞吐量，特别是在高负载情况下。</p>
+<blockquote>
+<p>The Linux block layer ships with the <em>mq-deadline</em> scheduler, which buffers multiple write operations to a single zone, merges writes to contiguous LBAs into one or multiple (larger) writes, and sequentially issues the merged requests. Applications can, hence, issue multiple write operations to a single zone.</p>
+</blockquote>
+</li>
+<li><p><code>io_uring</code> 是 Linux 内核中的一个比较新的异步I&#x2F;O接口。它为用户空间程序提供了一种高效的方式来提交和完成I&#x2F;O操作，尤其是在处理大量I&#x2F;O请求时。</p>
+</li>
+</ul>
+<h3 id="Performance-metrics"><a href="#Performance-metrics" class="headerlink" title="Performance metrics:"></a><em>Performance metrics:</em></h3><ul>
+<li><code>throughput</code>吞吐量</li>
+<li><code>latency</code>延时</li>
+</ul>
+<h2 id="Observation"><a href="#Observation" class="headerlink" title="Observation:"></a>Observation:</h2><ol>
+<li><p><em>The LBA format can have significant impact on both</em> write <em>and</em> append <em>latencies.</em></p>
+<blockquote>
+<p>导致这一现象的原因主要是硬件可能没有对于小的<code>IO</code>请求进行优化。</p>
+</blockquote>
+</li>
+<li><p><em>Using the SPDK storage stack results in the lowest latencies.</em></p>
+<blockquote>
+<p>这是因为<code>SPDK</code>绕过内核直接与<code>SSD</code>设备交互。</p>
+</blockquote>
+</li>
+<li><p>Write <em>and</em> append <em>throughput depends on the request size.</em></p>
+<blockquote>
+<ol>
+<li><strong>请求大小与吞吐量的关系</strong>：<ul>
+<li>实验显示，写入操作在 4 KiB 和 8 KiB 的请求大小时，IOPS（每秒输入&#x2F;输出操作数）吞吐量最高，达到约 85K IOPS。</li>
+<li>而追加操作的性能随着请求大小的增加略有提升，从 66K IOPS 增至 69K IOPS。</li>
+</ul>
+</li>
+<li><strong>字节吞吐量</strong>：<ul>
+<li>以字节&#x2F;秒计算的吞吐量在大型请求（例如大于或等于 32 KiB）时最高，这是通过请求大小乘以 IOPS 计算得出的。（虽然每秒的<code>I\O</code>操作的次数减少了，但是每次<code>I\O</code>处理的字节数量提高了）。</li>
+</ul>
+</li>
+<li><strong>请求方式的影响</strong>：<ul>
+<li>由于请求是同步发出的，因此吞吐量是请求延迟的倒数。这意味着请求大小对性能的影响因写入和追加操作而异。</li>
+</ul>
+</li>
+<li><strong>追加与写入性能差异</strong>：<ul>
+<li>追加操作的吞吐量低于写入操作，并非 ZNS 设计固有的，而是取决于固件。预计新型 ZNS 设备的追加吞吐量会有所提高。</li>
+</ul>
+</li>
+<li><strong>区域并行性的影响</strong>：<ul>
+<li>请求大小的影响可能是由于区域并行性（即区域映射到多个闪存通道）造成的，类似于在文献 [44] 中观察到的情况。</li>
+</ul>
+</li>
+<li><strong>最大吞吐量的建议</strong>：<ul>
+<li>为了获得最大吞吐量，建议发出大型请求；在评估中使用的 ZNS 设备上，写入和追加操作分别在 4 KiB 和 8 KiB 请求大小时观察到最大的 IOPS 吞吐量，而对于大于 32 KiB 的请求观察到最大的字节吞吐量。</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+</li>
+<li><p>write <em>operations have lower I&#x2F;O latencies than</em> append <em>operations.</em></p>
+</li>
+<li><p>对比了区域内并行<code>(intra-zone)</code>和区域间<code>(inter-zone)</code>并行</p>
+<ol>
+<li><p>在测试<code>write</code>和<code>read</code>操作时我们发现，区域内并行对比区域间并行，能达到更高的<code>IOPS</code>。</p>
+<blockquote>
+<p>如果程序需要比同时可打开区域数量更高的可扩展性，更推荐使用区域内并行。</p>
+</blockquote>
+</li>
+<li><p>然而对于<code>append</code>操作来说，区域内和区域间请求并不敏感。</p>
+<blockquote>
+<p>推测这是由于<code>ZNS</code>设备的限制，而非<code>ZNS</code>设备设计的原因。</p>
+</blockquote>
+</li>
+<li><p>对于大型（即 &gt;&#x3D;8KiB）I&#x2F;O请求，区域内追加和区域间写入操作的性能达到设备极限，并且在不同并发级别下以类似的方式扩展。</p>
+</li>
+</ol>
+</li>
+<li><p>区域状态机的转移开销</p>
+<ol>
+<li>区域的利用率对<code>reset</code>和<code>finish</code>操作有重要的影响。</li>
+</ol>
+</li>
+<li><p><code>I/O</code>干扰：<code>write</code>，<code>append</code>和<code>read</code>的干扰</p>
+<ol>
+<li>ZNS设备在并发写入触发垃圾收集的情况下提供比普通<code>NVMe device</code>更稳定的读写性能。</li>
+<li></li>
+</ol>
+</li>
+</ol>
+<h2 id="Recommendation"><a href="#Recommendation" class="headerlink" title="Recommendation:"></a>Recommendation:</h2><ol>
+<li>对于低<code>I/O</code>延迟，使用<code>write</code>而不是<code>append</code>操作，并且使用<code>SPDK</code>存储堆栈，因为<code>SPDK</code>提供最低的<code>I/O</code>延迟。</li>
+<li>相比于区域间并行性，更推荐使用区域内并行性；前者适用于追加和读取操作，而后者更适合写入操作。使用大型请求尺寸（即 &gt;&#x3D;8KiB，接近内部块大小）发起I&#x2F;O，因为更大的请求在更高并发级别下扩展性更好。</li>
+<li>避免使用<code>finish</code>，特别是对于部分写入的区域。最小化需要<code>finish</code>的区域数量，</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/11/22/ZNSLiterature01/" rel="prev" title="ZNSLiterature01">
+      <i class="fa fa-chevron-left"></i> ZNSLiterature01
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/16/Lab-system-calls-1/" rel="next" title="Lab: system calls">
+      Lab: system calls <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Performance-Characterization-of-NVMe-Flash-Devices-with-Zoned-Namespaces-ZNS"><span class="nav-number">1.</span> <span class="nav-text">Performance Characterization of NVMe Flash Devices with Zoned Namespaces (ZNS)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem"><span class="nav-number">1.1.</span> <span class="nav-text">Problem:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Background"><span class="nav-number">1.2.</span> <span class="nav-text">Background:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EXPERIMENTS"><span class="nav-number">1.3.</span> <span class="nav-text">EXPERIMENTS:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Benchmarking-setup"><span class="nav-number">1.3.1.</span> <span class="nav-text">Benchmarking setup:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Performance-metrics"><span class="nav-number">1.3.2.</span> <span class="nav-text">Performance metrics:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Observation"><span class="nav-number">1.4.</span> <span class="nav-text">Observation:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recommendation"><span class="nav-number">1.5.</span> <span class="nav-text">Recommendation:</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">201k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:02</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

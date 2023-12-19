@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png">
 <meta property="og:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.35.12.png">
 <meta property="article:published_time" content="2023-11-22T07:56:24.000Z">
-<meta property="article:modified_time" content="2023-11-25T11:47:48.979Z">
+<meta property="article:modified_time" content="2023-11-26T03:22:52.289Z">
 <meta property="article:author" content="theLonging">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/ZNSLiterature01/%E6%88%AA%E5%B1%8F2023-11-25%2018.16.52.png">
@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-11-25 19:47:48" itemprop="dateModified" datetime="2023-11-25T19:47:48+08:00">2023-11-25</time>
+                <time title="修改时间：2023-11-26 11:22:52" itemprop="dateModified" datetime="2023-11-26T11:22:52+08:00">2023-11-26</time>
               </span>
 
           
@@ -216,14 +216,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.5k</span>
+              <span>8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>7 分钟</span>
             </span>
 
         </div>
@@ -478,6 +478,47 @@
 <blockquote>
 <p>直接I&#x2F;O和缓冲写入。ZenFS利用了写入SST文件是顺序的和不可变的这一事实，并对SST文件执行直接I&#x2F;O写入，绕过了内核页面缓存。对于其他文件，如写前日志（WAL），ZenFS在内存中缓冲写入，并在缓冲区满、文件关闭或RocksDB请求刷新时刷新缓冲区。如果请求了刷新，缓冲区将被填充到下一个块边界，并且一个带有有效字节数的区段将被存储在日志中。这种填充导致了少量的写入放大，但这并非ZenFS独有，传统文件系统中也有类似的做法。</p>
 </blockquote>
+<h2 id="Regular-data-write-vs-zone-append-data-write"><a href="#Regular-data-write-vs-zone-append-data-write" class="headerlink" title="Regular data write .vs zone append data write"></a>Regular data write .vs zone append data write</h2><h3 id="zone-append-data-write-的优点"><a href="#zone-append-data-write-的优点" class="headerlink" title="zone append data write 的优点"></a>zone append data write 的优点</h3><ol>
+<li><strong>锁定和资源分配</strong>：<ul>
+<li>在Zone Append Write中，不需要在提交写操作之前分配存储空间（即延迟分配），也不需要锁定块组。这简化了I&#x2F;O提交过程，减少了延迟和开销，因为不需要等待资源的分配和锁定。</li>
+<li>相反，Regular Write需要在写操作之前分配和锁定相应的块组，这会增加写操作的复杂性和时间成本。</li>
+</ul>
+</li>
+<li><strong>写入操作的顺序</strong>：<ul>
+<li>Zone Append Write不关心BIO（Block I&#x2F;O）的顺序，因为所有写入都是追加到区域末尾的。这允许利用异步校验和，而且无需等待特定的写入顺序，提高了效率。</li>
+<li>Regular Write则需要保持写入顺序，因为块的位置是预先确定的。这可能需要对写入操作进行排序和同步，从而增加了复杂性和可能的延迟。</li>
+</ul>
+</li>
+<li><strong>并行性和性能</strong>：<ul>
+<li>Zone Append Write由于其简单性，允许更高的并行操作，可以在不同的队列中异步处理校验和计算。</li>
+<li>而Regular Write的并行性受到锁定机制和同步需求的限制，对于每个文件范围，必须保持写操作的原子性，这可能限制了性能。</li>
+</ul>
+</li>
+<li><strong>系统复杂性和可靠性</strong>：<ul>
+<li>Zone Append Write简化了I&#x2F;O路径，减少了需要管理的元数据数量。在写入完成后，使用的块可以直接从end_bio()回调中检索，简化了块分配元数据的更新。</li>
+<li>Regular Write通常涉及更多的系统调用和层次，每个步骤都增加了出错的可能性，也增加了系统资源的使用。</li>
+</ul>
+</li>
+</ol>
+<p>总结来说，Zone Append Write的设计减少了I&#x2F;O操作的复杂性，通过简化写入过程、减少锁定和资源分配的需求，以及提高写入操作的并行性来提高效率。这使得Zone Append Write特别适合于现代存储系统，这些系统通常优化了顺序写入操作并能够从这种简化的I&#x2F;O提交过程中受益。</p>
+<h3 id="zone-append-data-write-的缺点"><a href="#zone-append-data-write-的缺点" class="headerlink" title="zone append data write 的缺点"></a>zone append data write 的缺点</h3><ol>
+<li><p><strong>不支持RAID级别</strong>：</p>
+<ul>
+<li>Zone Append Writes 是为单个区域化设备设计的，这意味着它们在设计上用于向单个存储区域追加数据。当涉及到RAID（独立磁盘冗余阵列）时，数据通常跨越多个磁盘分布以提供冗余和性能提升。Zone Append Write无法处理发送到不同区域&#x2F;设备的两个写入操作，因为在RAID配置中，这可能导致不一致的逻辑块地址（LBA）位置返回，从而破坏数据的连续性和完整性。</li>
+</ul>
+</li>
+<li><p><strong>仍然使用专用写入路径</strong>：</p>
+<ul>
+<li>该系统仍然需要专用的写入路径来处理全部延迟分配范围的写入。这是因为正常写入路径可能会跳过某些数据的写入，例如在<code>fdatasync()</code>调用范围之外的数据，导致数据丢失或不完整。在使用正常写入路径时，需要在提交写操作（bio）之前拆分现有的文件范围，这增加了处理复杂性。</li>
+</ul>
+</li>
+<li><p><strong>文件范围的碎片化</strong>：</p>
+<ul>
+<li>每个I&#x2F;O操作限制在<code>zone_append_max_bytes</code>（例如512KB）这样的最大字节大小，意味着如果文件范围超过这个限制，它需要被拆分成多个I&#x2F;O操作。这导致同一文件的多个范围被创建，增加了文件系统的碎片化。因此，与常规的文件系统（如btrfs）相比，文件范围数量增多，可能导致性能下降和管理上的复杂性。</li>
+</ul>
+</li>
+</ol>
+<p>总的来说，虽然Zone Append Write在顺序数据写入方面具有效率优势，但它在一些特定的系统配置和操作上存在限制。这些限制主要是由于Zone Append Write设计的固有特性，它们在多设备（如RAID配置）、需要维护数据完整性和减少碎片化的环境中可能不是最佳选择。</p>
 
     </div>
 
@@ -496,7 +537,10 @@
     <a href="/2023/11/13/ZNSSSDliterature/" rel="prev" title="ZNSSSDliterature">
       <i class="fa fa-chevron-left"></i> ZNSSSDliterature
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/05/ZNSLiterature02/" rel="next" title="ZNSLiterature02">
+      ZNSLiterature02 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -555,7 +599,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs"><span class="nav-number">1.</span> <span class="nav-text">ZNS: Avoiding the Block Interface Tax for Flash-based SSDs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem"><span class="nav-number">1.1.</span> <span class="nav-text">Problem:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Previous-approach"><span class="nav-number">1.2.</span> <span class="nav-text">Previous approach:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approach"><span class="nav-number">1.3.</span> <span class="nav-text">Approach:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%B9%B2%E6%89%B0%EF%BC%88Program-Disturb%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">程序干扰（Program Disturb）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9ZNS-SSD%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.2.</span> <span class="nav-text">对ZNS SSD的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Evoloving-towards-ZNS"><span class="nav-number">1.3.3.</span> <span class="nav-text">Evoloving towards ZNS:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E7%A1%AC%E4%BB%B6%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9A"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">对硬件的影响：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZNS-SSD%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.3.4.</span> <span class="nav-text">ZNS SSD的核心设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E9%99%A4%E6%8E%A5%E5%8F%A3-%E4%BB%8B%E8%B4%A8%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-number">1.3.5.</span> <span class="nav-text">消除接口-介质不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">1.3.6.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%88%9D%E6%AD%A5%E5%86%99%E5%85%A5"><span class="nav-number">1.3.7.</span> <span class="nav-text">第一步：初步写入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E7%B2%BE%E7%BB%86%E8%B0%83%E6%95%B4"><span class="nav-number">1.3.8.</span> <span class="nav-text">第二步：精细调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E4%B8%A4%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="nav-number">1.3.9.</span> <span class="nav-text">为什么使用两步编程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Host-Software-Adoption-%E4%B8%BB%E6%9C%BA%E8%BD%AF%E4%BB%B6%E7%9A%84%E9%87%87%E7%94%A8%E6%83%85%E5%86%B5"><span class="nav-number">1.3.9.1.</span> <span class="nav-text">Host Software Adoption 主机软件的采用情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation-%E6%88%91%E4%BB%AC%E5%B7%B2%E7%BB%8F%E5%90%91%E5%9B%9B%E4%B8%AA%E4%B8%BB%E8%A6%81%E8%BD%AF%E4%BB%B6%E9%A1%B9%E7%9B%AE%E5%A2%9E%E5%8A%A0%E4%BA%86%E6%94%AF%E6%8C%81%EF%BC%8C%E4%BB%A5%E8%AF%84%E4%BC%B0ZNS%E7%9A%84%E5%A5%BD%E5%A4%84%E3%80%82"><span class="nav-number">1.3.10.</span> <span class="nav-text">Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#General-Linux-support"><span class="nav-number">1.3.10.1.</span> <span class="nav-text">General Linux support</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocksDB-Zone-Support"><span class="nav-number">1.3.10.2.</span> <span class="nav-text">RocksDB Zone Support:</span></a></li></ol></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ZNS-Avoiding-the-Block-Interface-Tax-for-Flash-based-SSDs"><span class="nav-number">1.</span> <span class="nav-text">ZNS: Avoiding the Block Interface Tax for Flash-based SSDs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Problem"><span class="nav-number">1.1.</span> <span class="nav-text">Problem:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Previous-approach"><span class="nav-number">1.2.</span> <span class="nav-text">Previous approach:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approach"><span class="nav-number">1.3.</span> <span class="nav-text">Approach:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%B9%B2%E6%89%B0%EF%BC%88Program-Disturb%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">程序干扰（Program Disturb）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9ZNS-SSD%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.2.</span> <span class="nav-text">对ZNS SSD的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Evoloving-towards-ZNS"><span class="nav-number">1.3.3.</span> <span class="nav-text">Evoloving towards ZNS:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E7%A1%AC%E4%BB%B6%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9A"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">对硬件的影响：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZNS-SSD%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.3.4.</span> <span class="nav-text">ZNS SSD的核心设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E9%99%A4%E6%8E%A5%E5%8F%A3-%E4%BB%8B%E8%B4%A8%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-number">1.3.5.</span> <span class="nav-text">消除接口-介质不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">1.3.6.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%88%9D%E6%AD%A5%E5%86%99%E5%85%A5"><span class="nav-number">1.3.7.</span> <span class="nav-text">第一步：初步写入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E7%B2%BE%E7%BB%86%E8%B0%83%E6%95%B4"><span class="nav-number">1.3.8.</span> <span class="nav-text">第二步：精细调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E4%B8%A4%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="nav-number">1.3.9.</span> <span class="nav-text">为什么使用两步编程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Host-Software-Adoption-%E4%B8%BB%E6%9C%BA%E8%BD%AF%E4%BB%B6%E7%9A%84%E9%87%87%E7%94%A8%E6%83%85%E5%86%B5"><span class="nav-number">1.3.9.1.</span> <span class="nav-text">Host Software Adoption 主机软件的采用情况</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation-%E6%88%91%E4%BB%AC%E5%B7%B2%E7%BB%8F%E5%90%91%E5%9B%9B%E4%B8%AA%E4%B8%BB%E8%A6%81%E8%BD%AF%E4%BB%B6%E9%A1%B9%E7%9B%AE%E5%A2%9E%E5%8A%A0%E4%BA%86%E6%94%AF%E6%8C%81%EF%BC%8C%E4%BB%A5%E8%AF%84%E4%BC%B0ZNS%E7%9A%84%E5%A5%BD%E5%A4%84%E3%80%82"><span class="nav-number">1.3.10.</span> <span class="nav-text">Implementation: 我们已经向四个主要软件项目增加了支持，以评估ZNS的好处。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#General-Linux-support"><span class="nav-number">1.3.10.1.</span> <span class="nav-text">General Linux support</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocksDB-Zone-Support"><span class="nav-number">1.3.10.2.</span> <span class="nav-text">RocksDB Zone Support:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Regular-data-write-vs-zone-append-data-write"><span class="nav-number">1.4.</span> <span class="nav-text">Regular data write .vs zone append data write</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zone-append-data-write-%E7%9A%84%E4%BC%98%E7%82%B9"><span class="nav-number">1.4.1.</span> <span class="nav-text">zone append data write 的优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zone-append-data-write-%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">1.4.2.</span> <span class="nav-text">zone append data write 的缺点</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -571,7 +615,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -616,12 +660,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">182k</span>
+    <span title="站点总字数">201k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:45</span>
+    <span title="站点阅读时长">3:02</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
