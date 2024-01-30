@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="SSD-based Workload Characteristics and Their Performance ImplicationsIntroduction:SSD的优化目标与硬盘不同： SSD上组织数据，目标是最大化并行性和最小化垃圾收集开销。 SSD优化以数据移动为目标，而不是数据放置。 允许进行复杂的优化并快速调整工作负载的变化。  与SSD设计和性能相关的特征： 温度范围。 逻辑局部">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSD-based Workload Characteristics and Their Performance Implications">
+<meta property="og:url" content="http://example.com/2024/01/17/SSD-based-Workload-Characteristics-and-Their-Performance-Implications/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="SSD-based Workload Characteristics and Their Performance ImplicationsIntroduction:SSD的优化目标与硬盘不同： SSD上组织数据，目标是最大化并行性和最小化垃圾收集开销。 SSD优化以数据移动为目标，而不是数据放置。 允许进行复杂的优化并快速调整工作负载的变化。  与SSD设计和性能相关的特征： 温度范围。 逻辑局部">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-17T03:11:02.000Z">
+<meta property="article:modified_time" content="2024-01-27T11:49:15.961Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/01/17/SSD-based-Workload-Characteristics-and-Their-Performance-Implications/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SSD-based Workload Characteristics and Their Performance Implications | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/01/17/SSD-based-Workload-Characteristics-and-Their-Performance-Implications/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SSD-based Workload Characteristics and Their Performance Implications
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-01-17 11:11:02" itemprop="dateCreated datePublished" datetime="2024-01-17T11:11:02+08:00">2024-01-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-27 19:49:15" itemprop="dateModified" datetime="2024-01-27T19:49:15+08:00">2024-01-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="SSD-based-Workload-Characteristics-and-Their-Performance-Implications"><a href="#SSD-based-Workload-Characteristics-and-Their-Performance-Implications" class="headerlink" title="SSD-based Workload Characteristics and Their Performance Implications"></a>SSD-based Workload Characteristics and Their Performance Implications</h1><h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction:"></a>Introduction:</h2><h3 id="SSD的优化目标与硬盘不同："><a href="#SSD的优化目标与硬盘不同：" class="headerlink" title="SSD的优化目标与硬盘不同："></a>SSD的优化目标与硬盘不同：</h3><ul>
+<li>SSD上组织数据，目标是最大化并行性和最小化垃圾收集开销。</li>
+<li>SSD优化以数据移动为目标，而不是数据放置。</li>
+<li>允许进行复杂的优化并快速调整工作负载的变化。</li>
+</ul>
+<h3 id="与SSD设计和性能相关的特征："><a href="#与SSD设计和性能相关的特征：" class="headerlink" title="与SSD设计和性能相关的特征："></a>与SSD设计和性能相关的特征：</h3><ul>
+<li>温度范围。</li>
+<li>逻辑局部性（概括了简单的空间局部性和顺序性）。</li>
+<li>增加SSD页面大小的敏感性。</li>
+</ul>
+<h3 id="将上述特征与SSD性能相关联："><a href="#将上述特征与SSD性能相关联：" class="headerlink" title="将上述特征与SSD性能相关联："></a>将上述特征与SSD性能相关联：</h3><ul>
+<li>写放大：设备上写入的数据量与应用程序写入的数据量之间的比率与高尾延迟和降低的耐用性相关。</li>
+<li>读放大：从SSD读取的数据量与应用程序请求的数据量之间的比率。</li>
+<li>闪存读取成本：包括从闪存介质读取数据并将其传输到控制器的低级延迟。</li>
+</ul>
+<h3 id="发现证实了建议的特征与SSD设计和优化的相关性："><a href="#发现证实了建议的特征与SSD设计和优化的相关性：" class="headerlink" title="发现证实了建议的特征与SSD设计和优化的相关性："></a>发现证实了建议的特征与SSD设计和优化的相关性：</h3><ul>
+<li>增加 SSD 内逻辑分区的数量可减少写入放大。 然而，这需要大量的开销并且带来收益递减。 最佳分区数量小于以前研究中建议的数量。</li>
+<li>读取放大随着页面大小的增加而增加，并且主要取决于请求大小的分布。 然而，对地址范围的重复访问会显着降低读取放大。 这种减少的程度可以通过逻辑空间局部性来估计。</li>
+<li>通过有选择地从大页中读取部分字节范围，可以有效降低闪存读取成本。 我们简单的贪婪算法足以达到此目的，展示了向主机导出“部分读取”接口的潜在好处。</li>
+</ul>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background:"></a>Background:</h2><h3 id="工作负载"><a href="#工作负载" class="headerlink" title="工作负载"></a>工作负载</h3><ul>
+<li>the University of Massachusetts (SPC traces) </li>
+<li>Microsoft Research at Cambridge</li>
+<li>Microsoft production servers</li>
+<li>Florida International University</li>
+</ul>
+<p>我们关注这些工作负载上的普遍属性</p>
+<ul>
+<li>Request arrival time (relative to the beginning of the trace) 请求到达时间，与trace的开始相关。</li>
+<li>Volume number 存储体编号</li>
+<li>Request size (in byte) 请求大小</li>
+<li>I&#x2F;O operation I&#x2F;O操作（读或写）</li>
+</ul>
+<h3 id="温度范围"><a href="#温度范围" class="headerlink" title="温度范围"></a>温度范围</h3><p>工作负载偏斜传统上被用来通过使用缓存来优化性能。如果缓存足够大能存储应用程序的工作集，则大部分请求不需要访问底层设备。在这种情况下，常用的经验法则，比如80-20法则——它指出80%的请求访问了20%的数据——经常被用来估计工作负载所需的缓存大小。因此，传统的分析通过评估工作集大小或热数据（频繁访问的数据）的数量来描述工作负载的偏斜程度。虽然这些对于优化硬盘和缓存性能是足够的，但对于固态硬盘（SSD）的优化，更详细的分析可能会带来更多的好处。</p>
+<p>在闪存层的设计中，通过分离冷热数据到不同的逻辑分区中可以减小写放大，垃圾回收开销，和单元磨损。这样的分类同样也可以优化磨损均衡和页面重用。因此，许多闪存将数据分类到两个区域。</p>
+<p>Stoica和Ailamaki的研究表明，只要每个分区内的访问偏斜足够小，就可以将几种不同的温度级别的数据分组到同一个分区中，而不会增加写放大的现象。我们基于这一分析，根据工作负载所需的最小分区数量来进行特征描述。然后我们量化了在最佳数量过高时分配较少分区的成本。我们特别感兴趣的是常见的两个分区情况，用于热数据和冷数据。</p>
+<h4 id="表征温度范围"><a href="#表征温度范围" class="headerlink" title="表征温度范围"></a>表征温度范围</h4><p>​	当一个逻辑页被写入SSD时，FTL将原来的物理地址标记为无效的然后选择芯片和平面，根据条带和负载均匀策略将一页写入。然后将页写入平面中的一个活跃块（一个已经被擦除但还没有完全写满的块）。将数据分别放入N个逻辑分区需要每个平面有N个活跃块。</p>
+<p>​	根据<code>Stoica 和 Ailamaki</code>的定义，<code>fi</code>表示页面<code>i</code>的更新频率。理想的情况下，每个分区将包含具有相同更新频率的页面。这显然是不切实际的，因为现代芯片每个平面只有512个块。相反，具有多个访问频率的逻辑页面被分组到每个分区（读者认为这里的一个分区<code>partition</code>就是一个块<code>block</code>）中。<code>fr(p)</code>表示分区<code>p</code>中的更新频率比，这是存储在<code>p</code>中的页面的最大和最小更新频率之间的比率。<code>fr</code>表示所有分区的最大比率。参考[57]中的理论分析表明，确保<code>fr ≤ 2</code>足以最小化垃圾回收开销。然而，这个结果没有考虑到维护所需分区数量的开销。</p>
+<p>​	为了确定在现代芯片组织下这种优化是否现实，我们计算了确保<code>fr ≤ 2</code>所需的最小分区数量。我们根据更新的频率对每个工作负载中的逻辑扇区进行排名，并贪婪的将他们分配给不同的分区：：我们从第一个分区开始，分配给它更新频率最高的页面<code>i</code>以及所有满足<code>fj ≥ fi /2</code>的页面<code>&#123;j&#125;</code>。然后我们将下一个页面分配给第二个分区，以此类推。我们在分析基于硬件驱动器<code>(HDD)</code>的迹象和基于固态硬盘<code>SSD</code>的<code>RocksDB</code>迹象时，分别使用了512字节和4KB的扇区大小，以反映这些迹象中观察到的访问粒度。我们将在第4节中更详细地讨论访问粒度。</p>
+<p>​	我们的结果显示，所需的最少分区数量在2到16之间变化，并且在不同类别之间有所不同。图<code>1(a)</code>展示了每个类别的第25、50和第75百分位数，垂直线显示了每个类别所需的最小和最大分区数量（键值类别包括单个RocksDB迹象，因此用一个小圆圈表示）。例如，对于75%的数据库管理系统（DBMS）工作负载和键值工作负载，9个分区就足够了，而75%的邮件服务器工作负载至少需要14个分区。我们在不同限制下的<code>fr</code>上重复了这个实验。不出所料，位了维持更低的比例，需要更多的分区。所需最少分区数量从3到26不等，用于<code>fr ≤ 1.5</code>，当<code>fr ≤ 3</code>时，需要2到11个分区。</p>
+<p>​	<strong>发现一：</strong>实现写入放大的理论下限需要大量的分区。</p>
+<p>​	为了理解这些结果的影响，考虑最先进的企业<code>SSD</code>，每个平面有521个块和<code>28%</code>的过度配置空间。每个平面将有400个可用的逻辑块。因此为了维持<code>16</code>个分区，<code>4%</code>的块需要作为活跃块，平均<code>2%</code>的逻辑容量将无法利用。除了这种开销外，还必须考虑在<code>SSD</code>的<code>RAM</code>中将页面维护和分类为几个分区的成本。</p>
+<p>​	SSD设计可能会限制分区数量，以利用专用硬件，或最大限度地减少分区开销。为了评估次优分区的影响，我们重复上述过程以穷尽地找到<code>fmin(N)</code>–贪婪分区方案导致N个预定数量的分区时的最低比率。图<code>1(c)</code>展示了</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/01/11/Lab-page-tables/" rel="prev" title="Lab: page tables">
+      <i class="fa fa-chevron-left"></i> Lab: page tables
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/01/18/Improving-Flash-Write-Performance-by-Using-Update-Frequency/" rel="next" title="Improving Flash Write Performance by Using Update Frequency">
+      Improving Flash Write Performance by Using Update Frequency <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SSD-based-Workload-Characteristics-and-Their-Performance-Implications"><span class="nav-number">1.</span> <span class="nav-text">SSD-based Workload Characteristics and Their Performance Implications</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SSD%E7%9A%84%E4%BC%98%E5%8C%96%E7%9B%AE%E6%A0%87%E4%B8%8E%E7%A1%AC%E7%9B%98%E4%B8%8D%E5%90%8C%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">SSD的优化目标与硬盘不同：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8ESSD%E8%AE%BE%E8%AE%A1%E5%92%8C%E6%80%A7%E8%83%BD%E7%9B%B8%E5%85%B3%E7%9A%84%E7%89%B9%E5%BE%81%EF%BC%9A"><span class="nav-number">1.1.2.</span> <span class="nav-text">与SSD设计和性能相关的特征：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86%E4%B8%8A%E8%BF%B0%E7%89%B9%E5%BE%81%E4%B8%8ESSD%E6%80%A7%E8%83%BD%E7%9B%B8%E5%85%B3%E8%81%94%EF%BC%9A"><span class="nav-number">1.1.3.</span> <span class="nav-text">将上述特征与SSD性能相关联：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E7%8E%B0%E8%AF%81%E5%AE%9E%E4%BA%86%E5%BB%BA%E8%AE%AE%E7%9A%84%E7%89%B9%E5%BE%81%E4%B8%8ESSD%E8%AE%BE%E8%AE%A1%E5%92%8C%E4%BC%98%E5%8C%96%E7%9A%84%E7%9B%B8%E5%85%B3%E6%80%A7%EF%BC%9A"><span class="nav-number">1.1.4.</span> <span class="nav-text">发现证实了建议的特征与SSD设计和优化的相关性：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Background"><span class="nav-number">1.2.</span> <span class="nav-text">Background:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD"><span class="nav-number">1.2.1.</span> <span class="nav-text">工作负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%A9%E5%BA%A6%E8%8C%83%E5%9B%B4"><span class="nav-number">1.2.2.</span> <span class="nav-text">温度范围</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%A8%E5%BE%81%E6%B8%A9%E5%BA%A6%E8%8C%83%E5%9B%B4"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">表征温度范围</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">250k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:48</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

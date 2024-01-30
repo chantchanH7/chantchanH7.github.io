@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Improving Flash Write Performance by Using Update Frequency问题：由于擦除块的规尺寸很大，有效数据和无效数据通常会被拼接在一起，导致回收空间需要高昂的数据移动。经验表明FTL通常很难”正确”，这是因为闪存清洁开销复杂的依赖性：  I&#x2F;O负载性。 多种FTL设计选择，例如空间过度配置，数据放置算法，数据清理策略。  尽管有大量的研究工作，但最">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Improving Flash Write Performance by Using Update Frequency">
+<meta property="og:url" content="http://example.com/2024/01/18/Improving-Flash-Write-Performance-by-Using-Update-Frequency/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Improving Flash Write Performance by Using Update Frequency问题：由于擦除块的规尺寸很大，有效数据和无效数据通常会被拼接在一起，导致回收空间需要高昂的数据移动。经验表明FTL通常很难”正确”，这是因为闪存清洁开销复杂的依赖性：  I&#x2F;O负载性。 多种FTL设计选择，例如空间过度配置，数据放置算法，数据清理策略。  尽管有大量的研究工作，但最">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-18T06:18:15.000Z">
+<meta property="article:modified_time" content="2024-01-22T03:51:27.398Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/01/18/Improving-Flash-Write-Performance-by-Using-Update-Frequency/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Improving Flash Write Performance by Using Update Frequency | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/01/18/Improving-Flash-Write-Performance-by-Using-Update-Frequency/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Improving Flash Write Performance by Using Update Frequency
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-01-18 14:18:15" itemprop="dateCreated datePublished" datetime="2024-01-18T14:18:15+08:00">2024-01-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-22 11:51:27" itemprop="dateModified" datetime="2024-01-22T11:51:27+08:00">2024-01-22</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Improving-Flash-Write-Performance-by-Using-Update-Frequency"><a href="#Improving-Flash-Write-Performance-by-Using-Update-Frequency" class="headerlink" title="Improving Flash Write Performance by Using Update Frequency"></a>Improving Flash Write Performance by Using Update Frequency</h1><h2 id="问题："><a href="#问题：" class="headerlink" title="问题："></a>问题：</h2><p>由于擦除块的规尺寸很大，有效数据和无效数据通常会被拼接在一起，导致回收空间需要高昂的数据移动。经验表明<code>FTL</code>通常很难”正确”，这是因为闪存清洁开销复杂的依赖性：</p>
+<ul>
+<li><code>I/O</code>负载性。</li>
+<li>多种<code>FTL</code>设计选择，例如空间过度配置，数据放置算法，数据清理策略。</li>
+</ul>
+<p>尽管有大量的研究工作，但最终结果是低且不可预测的<code>SSD</code>写性能。特别对于产生小而分散的数据库<code>I/O</code>写入密集型工作负载。</p>
+<h3 id="这片文章回答的问题：通过利用写斜来指导数据放置，我们可以在多大程度上减少FTL的写入开销？"><a href="#这片文章回答的问题：通过利用写斜来指导数据放置，我们可以在多大程度上减少FTL的写入开销？" class="headerlink" title="这片文章回答的问题：通过利用写斜来指导数据放置，我们可以在多大程度上减少FTL的写入开销？"></a>这片文章回答的问题：通过利用写斜来指导数据放置，我们可以在多大程度上减少FTL的写入开销？</h3><p>我们用一组基本的<code>I/O</code>写入模式（k模态更新分布）、数据放置策略和清理策略的清理开销进行分析建模。基于分析结果，我们提出了一种新的数据放置算法，利用更新频率来减少<code>FTL</code>清理开销，从而提高写入性能和设备寿命。</p>
+<h2 id="贡献："><a href="#贡献：" class="headerlink" title="贡献："></a>贡献：</h2><ul>
+<li>模拟了空间过度配置、写入频率、数据放置策略和垃圾收集策略对FTL清理开销的影响。该模型对于验证和指导<code>FTL</code>的数据放置算法的设计很有用。通过详细的模拟来验证分析结果。</li>
+<li>我们在误差范围内估算出任何给定 I&#x2F;O 工作负载可实现的最小清理开销，这使我们能够量化减少任何 FTL 清理开销的空间。</li>
+<li>基于建模结果，提出了一种数据放置算法，该算法以原则性的方式利用更新频率，并且能够动态适应 I&#x2F;O 写入模式，而不依赖于特定于工作负载的参数。 新的数据放置算法可以集成到现有的混合或页面级映射 FTL 中（正如我们在 2.4 节中讨论的）。 实验结果表明，与从标准 DBMS 基准（例如 TPC-C）收集的各种微基准和 I&#x2F;O 跟踪的最先进技术相比，我们的算法将清理开销减少了 20%-75% [24] 或 TATP [19]。</li>
+</ul>
+<h2 id="相关工作："><a href="#相关工作：" class="headerlink" title="相关工作："></a>相关工作：</h2><h3 id="一些数据放置算法："><a href="#一些数据放置算法：" class="headerlink" title="一些数据放置算法："></a>一些数据放置算法：</h3><p>我们强调了异地更新的数据放置算法的演变，并深入了解为什么一种新方法可以降低FTL清洁开销。事实上，所有<code>FTL</code>数据放置建议都尝试根据数据的更新频率对数据进行分组。</p>
+<h3 id="数据放置挑战："><a href="#数据放置挑战：" class="headerlink" title="数据放置挑战："></a>数据放置挑战：</h3><p>在两个区域间移动数据的两个挑战。</p>
+<ul>
+<li>第一、一个区域<code>(region)</code>的占用率与其清洁成本<code>(cleaning cost)</code>之间存在高度非线性的关系。</li>
+<li>第二、各区域<code>(region)</code>清理成本的增加或减少不能立即评估，而在很长一段时间后才能感受到（评估到）。</li>
+</ul>
+<p>例如，考虑两个分区，第一个分区与第二个分区相比，其占用率和清理成本异常高。显然我们需要将一些数据从第一个分区移动到第二个分区：然而，移动多少数据以及哪些数据并不明确。一个静态的数据提升策略（例如，尝试平衡两个分区之间的清理成本，或者简单的始终提升&#x2F;降级策略）会导致由区域占用率的变化而非工作负载偏差的变化触发的数据移动波动。页面最初从第一个分区向德格清理成本较低的分区移动。在某个点上，清理频率和&#x2F;或清理成本变得相似，页面迁移就停止了。不幸的是，到了这个时候，已经有太多页面被移动，第二个分区的清理成本继续增加。最终，迁移过程反向进行。</p>
+<p>在这篇论文中，我们通过对清理成本与数据放置决策之间关系的原理性理解，解决了以往数据放置方法的局限性。我们为足够通用的更新分布建立了清理成本的分析模型，这使我们能够推理出任何给定<code>I/O</code>工作负载的基本清理开销。基于分析模型的发现，我们提出了一个原理性的数据放置算法，该算法在一定误差范围内解决最优解&#x2F;我们的数据放置算法与以往的提议有以下不同之处：</p>
+<ul>
+<li>没有可调参数。以前的提案依赖于工作负载特点的可变参数。例如区域的数量，从一个区域迁移到下一个区域的时间阈值，经验概率模型。</li>
+<li>区域大小与页面更新频率之间没有不匹配。之前的方法建议固定大小的区域，可能导致将更新频率非常不同的页面放在一起；我们的数据提案在运行时确定最优的区域数量（即日志结构）及其最优大小。</li>
+<li>准确的页面提升&#x2F;降级。<code>strawman strategy</code>总是将更新的页面提升到热区域， 将擦除的页面降级为冷区域。这样的策略会导致次优性能。清理时，我们可以区分页面是否因区域占用而被清理，还是因为它确实具有较低的更新频率。更新时，当页面足够热以证明将其推广到更热的区域时，我们可以识别精确的阈值。</li>
+</ul>
+<h2 id="符号和假设"><a href="#符号和假设" class="headerlink" title="符号和假设"></a>符号和假设</h2><ul>
+<li><code>α</code>: 过度配置：用户空间和额外空间的比例。</li>
+<li><code>μ</code>: 设备利用率：用户空间和总空间。</li>
+</ul>
+<p>清理块（又称垃圾收集）的开销由有效且需要在擦除块之前重新定位的页面分数给出。表示为<code>Pgc</code>：可解释为百分比或概率，块中的有效页数 &#x2F; 块的总页数。</p>
+<p>清理开销 &#x3D; 需要重新定位的有效页面数量 &#x2F; 块中的总页面数量<br>$$<br>P_{gc}&#x3D;\frac{P_{valid}}{P_{total}}<br>$$<br>擦除操作带来的好处，即回收的可用空间量，是块的容量减去页面迁移所消耗的空间。因此，我们定义写放大的概念，即每次用户写入时<code>FTL</code>写入的额外物理空间。<br>$$<br>WA&#x3D;1+\frac{P_{gc}}{1-P_{gc}}&#x3D;1+\frac{P_{valid}}{P_{total}-P_{valid}}<br>$$<br>其中，<code>1</code>代表了存储新写入的用户数据所需的物理写入，只能通过压缩或去重才能避免。第二项代表了由于非原地写入而产生的实际清理开销。我们同样把第二项称为<code>GC (Garbage Collection)</code>。</p>
+<p> <strong><code>I/O</code>工作负载：</strong>这篇文章对<code>k-model I/O</code>工作负载的变体进行建模。<code>k-model I/O</code>工作负载代表一种更新分布，其中任何页面的更新频率只能有<code>k</code>个可能的离散值<code>(fi,...,fk)</code>。我们将具有给定更新频率的所有页面称为一个更新集。每个更新集都有一个相关的大小，定义为总用户数据的一部分<code>si</code>，并接收到总更新的一部分<code>fsi</code>。</p>
+<p><code>k-model</code>工作负载有两个优势：</p>
+<ul>
+<li>建模简单。</li>
+<li>足够通用，可以近似模拟真实的<code>I/O</code>工作负载。通过将具有相似更新频率的页面”分箱”组合在一起，可以通过<code>k</code>模态工作负载来抽象一般的<code>I/O</code>工作负载。正如我们将看到，页面可以安全地分组到具有指数级增常更新频率的箱中。</li>
+</ul>
+<h3 id="模型假设"><a href="#模型假设" class="headerlink" title="模型假设"></a>模型假设</h3><p>建模清理开销时，做出如下假设：</p>
+<ul>
+<li>我们排除了顺序写入。利用顺序写入模式是一个正交的主题，相对容易实现，例如通过检测顺序写入模式并将更新存储在同一个擦除块中。如果同样的页面再次顺序写入，该块被置为无效，并且可以在不进行任何数据移动的情况下被擦除。然而，我们的模型支持任何偏斜的<code>I/O</code>工作负载。</li>
+<li>我们只建模长期<code>FTL</code>擦除开销。新格式化的<code>SSD</code>没有立即的清理开销，因为所有闪存块都被擦除并可用于写入，这导致好的但是短暂的写入性能。</li>
+</ul>
+<h2 id="FTL清理策略"><a href="#FTL清理策略" class="headerlink" title="FTL清理策略"></a><code>FTL</code>清理策略</h2><h3 id="随机更新-1-Modal-Distribution"><a href="#随机更新-1-Modal-Distribution" class="headerlink" title="随机更新(1-Modal Distribution)"></a>随机更新<code>(1-Modal Distribution)</code></h3><p>假设一个由单页更新组成的随机更新工作负载。所有页面拥有相同的更新概率，因此，数据放置并不重要，例如，将任何页面存储在一起没有任何好处，清除成本只依赖于块选择策略。</p>
+<p>贪婪策略：选择具有最少有效页的块进行更新。由于所有页面的更新频率相同，并且更新不相关，因此贪婪政策是最佳的。</p>
+<p>我们首先对<code>LRU</code>和<code>Greedy policy</code>进行建模，表明<code>LRU</code>清洁政策接近最佳是实际重要性的。</p>
+<p>闪存设备可以考虑为圆形日志结构，其中更新附加到尾部，每当需要空间时，清理总是从日志头开始，写入最古老的块。</p>
+<p>在完整的日志循环中，写入操作要么是由页面迁移引起的，要么是由实际用户更新引起的。</p>
+<p>在每次用户更新时，一个给定页面不会被置为无效的概率是，其中<code>N</code>是页面的总数：<br>$$<br>1-\frac{1}{N}<br>$$<br>而清理过程不会产生无效化（一旦有效页面被重新定位，一个块就会立即被擦除）。因此，一个给定页面在整个日志循环期间保持有效的概率是它在一次更新中避免无效化的概率的总用户更新次数的幂。</p>
+<p>假设总共有<code>(1 + α) * N</code>个物理页，<code>Pgc</code>的一部分会因为擦除过程中的重新分配被”浪费”，而<code>(1 - Pgc)</code>的物理页面事实上存储新的用户数据。因此，我们可以通过方程的极限推导出<code>Pgc</code>。<br>$$<br>P_{gc}&#x3D;(1-\frac{1}{N})^{N(1+α)(1-p_{gc})}<br>$$<br>当<code>N</code>足够大的时候，我们应用欧拉极限<code>Euler&#39;s limit</code> :<br>$$<br>P_{gc}&#x3D;e^{-(1+α)(1-p_{gc})}<br>$$<br>它接受解析解：<br>$$<br>P_{gc}&#x3D;-\frac{W(-(1+α)e^{-(1+α)})}{1+α}<br>$$<br>上面公式中的<code>W</code>是<code>Lambert-W</code>函数，即:<br>$$<br>z&#x3D;W(z)e^{W(z)}<br>$$<br>的解。<code>W</code>不能表示为代数函数的组合。然而，<code>W</code>可以进行数值计算（例如通过泰勒展开），尽管从实际角度来看，这相当繁琐。</p>
+<p>因此我们提出一种简单的近似方法。注意到：<br>$$<br>-(1+α)e^{-α}⊂(-e^{-1},0)\quadα ∈ R^+<br>$$<br>因此我们需要在一个相当小的范围内近似<code>W</code>。最终得到代数近似：<br>$$<br>P_{gc}\approx\frac{e^{-0.9\alpha}}{1+\alpha}<br>$$<br>方程<code>(9)</code>提供了在分配额外容量和清理性能之间的定量权衡，它表明，随着超额配置的增加，<code>Pgc</code>的减少速度略快于指数级。</p>
+<h4 id="贪婪清除策略Greedy-cleaning-policy"><a href="#贪婪清除策略Greedy-cleaning-policy" class="headerlink" title="贪婪清除策略Greedy cleaning policy"></a>贪婪清除策略<code>Greedy cleaning policy</code></h4><p>为了量化贪婪清洁政策的好处，我们需要考虑超过方程4给出的平均pgc值：我们还需要对有效页面在擦除块上的分布进行建模。</p>
+<p>对于<code>LRU</code>和<code>Greedy</code>策略：无论何时我们需要回收空间时，我们选择具有最少有效页数量的最老写入的<code>B</code>个块。当<code>B = 1</code>时，清除策略变为<code>LRU</code>；当<code>B = (1 + α) N / C</code>时变为贪婪策略。建模时考虑如下：</p>
+<ul>
+<li><p>概率分布函数<code>Pgc</code>，简称为<code>(PDF)</code>，是关于<code>α</code>过量配置的函数。</p>
+<p>块中的有效页数量遵循二项分布，块中任何两个页拥有相等且无关的<code>Pgc</code>概率是有效的。因此，一个块有<code>k</code>个有效页面的概率是：<br>$$<br>p(k)&#x3D;\begin{pmatrix}<br>C\<br>k\<br>\end{pmatrix}\cdot {P_{pc}}^k \cdot (1-p_{gc})^{C-k}<br>$$<br>请注意，<code>Pgc(α)</code>由方程4给出，概率分布函数<code>PDF(Pgc)</code>是一个向量：<br>$$<br>PDF(p_{gc})&#x3D;\begin{bmatrix}p(C) &amp; p(C - 1) &amp; … &amp; p(0)\end{bmatrix}<br>$$<br>标准差为：<br>$$<br>stddev&#x3D;\sqrt{C\cdot p_{gc}\cdot (1-p_{gc})}<br>$$</p>
+</li>
+<li></li>
+<li><p>PDF更改为块在清洁窗口中位置的函数。</p>
+<p>使页面失效的过程可以用以下马尔可夫链过渡矩阵表示：<br>$$<br>M&#x3D;\begin{bmatrix}<br>\frac{N-C}{N} &amp; \frac{C}{N} &amp; … &amp; 0 \<br>. &amp; . &amp; . &amp; \<br>&amp; &amp; \frac{1}{N} &amp; \frac{C-1}{N}\<br>0 &amp; 0 &amp; 0 &amp; 1\<br>\end{bmatrix}<br>$$<br><code>M(i, i)</code> 代表一个块在更新时所有页面避免无效化的概率，并且该块保持有<code> C - i</code> 个有效页面的同一状态。<code>M(i, i + 1)</code> 代表迁移到下一个状态的概率，这个状态定义为有 <code>C - i - 1</code> 个有效页面。在 <code>n</code> 次更新后的 <code>PDF</code> 变化简单地表示为<br>$$<br>PDF_{new} &#x3D; PDF_{old} · M^n<br>$$<br>而更新的次数 n 反过来由块在清理窗口中的位置决定。</p>
+</li>
+<li><p>如何计算通过增加<code>B</code>窗口获得的收益。</p>
+<p>我们无法推断出分析公式来给出<code>Pgc</code>和窗口大小<code>B</code>之间的简明关系，但是，<code>Pgc</code>减少可以计算为：<br>$$<br>Benefit&#x3D;\sum_{i&#x3D;2}^{B}(PDF_{old}-PDF_i)\cdot \begin{bmatrix}<br>C &amp; C-1 &amp;…&amp; 1 &amp; 0\end{bmatrix}’<br>$$<br>“Benefit” 指的是通过设置大小为 B 的清理窗口，从而节省的平均有效页面数量，这些页面不需要重新定位。请注意，所有的术语都是向量，而且最后一个元素代表马尔可夫链模型状态的有效页面数量。</p>
+<p>最终结果表明窗口贪婪策略只有很少的好处。</p>
+<p>于是我们总结<code>Greedy</code>和<code>Window-Greedy</code>策略对于随机更新来说不是必须的。</p>
+</li>
+</ul>
+<h3 id="2-modal-Distribution"><a href="#2-modal-Distribution" class="headerlink" title="2-modal Distribution"></a>2-modal Distribution</h3><p>我们模拟两种不同情况下双模态工作负载（页面要么是热的，要么是冷的）的清理开销：a) 当页面是随机共置的，b) 当页面根据它们的更新频率分开存储时。</p>
+<h4 id="随机数据放置"><a href="#随机数据放置" class="headerlink" title="随机数据放置"></a>随机数据放置</h4><p>页面更新的频率只有<code>f1</code>和<code>f2</code>两种情况，两种集合的大小为<code>s1</code>和<code>s2</code>，并让<code>fr = f1 / f2</code>为两个更新集之间的相对页面更新频率。我们假设页面是随机配置的，并且使用LRU策略（即日志结构化数据放置）清理块。</p>
+<p>设<code>Pgc1</code>、<code>Pgc2</code>为更新集1和更新集2的页面分别在垃圾收集中有效的概率，并设<code>Pavg</code>为随机选择的页面有效的概率。<code>Pgc1</code>、<code>Pgc2</code>可以使用与第4.1节类似的逻辑表示，经过一系列操作后我们得到：<br>$$<br>\frac{log(p_{gc1})}{log(p_{gc2})}&#x3D;f_r ⇔ p_{gc1}&#x3D;p_{gc2}^{f_r}<br>$$<br>公式(16)总结了两组的有效页面概率之间的关系，并表明在垃圾收集中必须重新放置较冷的页面的概率与<code>fr-th</code>根向1增长。例如，如果集合2是冷<code>cold</code>则<code>fr &gt; 1</code>且<br>$$<br>P_{gc2}&#x3D;\sqrt[fr]{p_{gc1}}<br>$$<br><code>Pavg</code>和<code>pgc1</code>,<code>pgc2</code>之间的关系是从以下条件下推导出的，即总清洁开销等于与每个更新集相关的部分清洁开销的总和。也即：<br>$$<br>p_{avg}&#x3D;1-\frac{(1-p_{gc1})(1-p_{gc2})}{f_{s1}(1-p_{gc2})+f_{s2}(1-p_{gc1})}<br>$$<br><strong>解析近似：</strong>为了便于理解清理开销，我们还提出了一个封闭公式近似，用于<code>Pavg</code>，<code>Pgc1</code>，<code>Pgc2</code>。该近似基于对每个更新集的页面数量计数。如果我们在某一时刻抓取日志结构<code>log-structure</code>中的所有页面，会发现有<br>$$<br>\frac{s_1+s_2}{1+\alpha}<br>$$<br>比例的页面包含集合1和集合2的有效用户页。</p>
+<h4 id="基于频率的数据放置策略"><a href="#基于频率的数据放置策略" class="headerlink" title="基于频率的数据放置策略"></a>基于频率的数据放置策略</h4><p>直观上，根据更新频率，可以通过分页减少清洁开销，正如之前的工作所观察到的那样。在第4.2.1节中，我们确定了热数据和冷数据之间的相对差异，根据更新频率来分离页面是合理的。<strong>接下来，我们将展示如何优化分离数据并计算最低清洁开销。</strong></p>
+<p>规定<br>$$<br>\beta \cdot N \quad (\beta &lt; \alpha)<br>$$<br>为分配给第一个日志结构的过度配置页数。剩余的过度配置分配给第二个日志结构。</p>
+<p>由于每个页面有单一的更新频率，新的页面更新概率可以用方程<code>(9)</code>来计算。</p>
+<p>全局清洁开销，<code>GCavg</code>，是每个区域的单个清洁开销的总和，按区域的更新频率加权：<br>$$<br>GC_{tot}&#x3D;f_{s1}\frac{p_{gc1}}{1-p_{gc1}}+f_{s2}\frac{p_{gc2}}{1-p_{gc2}}<br>$$<br>由于<code>Pgc1</code>，<code>Pgc2</code>依赖于额外的空间分配，剩余的挑战是如何将额外的容量预算最优地分配给每个更新集合。即如何选择β以减小<code>GCtot</code>。</p>
+<p>通过对方程10求导，我们找到了使 <code>GC(β)</code> 达到全局最小值的 <code>β</code> （<code>GC(β)</code> 是一个凸函数）。将方程3代入方程10之后，我们将导数表示为：<br>$$<br>\frac{\partial GC_{tot}}{\partial \beta} &#x3D; \frac{f_{s1} W_1}{s_1(W_1 + 1)(W_1 + z_1)} - \frac{f_{s2} W_2}{s_2(W_2 + 1)(W_2 + z_2)}<br>$$<br>使用简化符号：<br>$$<br>z_1&#x3D;1+\frac{\beta}{s_1};\<br>z_2&#x3D;1+\frac{\alpha-\beta}{s_2};\<br>W_i&#x3D;W(-z_ie^{z_i});\<br>$$<br>最优点<code>β</code>是导数为0的点，也即当：<br>$$<br>f_r&#x3D;\frac{W_1}{(W_1+1)(W_1+z_1)}&#x3D;\frac{W_2}{(W_2+1)(W_2+z_2)}<br>$$<br>影响最优点<code>β</code>的参数有三个：</p>
+<ul>
+<li>过度配置<code>α</code></li>
+<li>相对更新频率<code>fr</code></li>
+<li>更新集合的大小<code>si</code></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/01/17/SSD-based-Workload-Characteristics-and-Their-Performance-Implications/" rel="prev" title="SSD-based Workload Characteristics and Their Performance Implications">
+      <i class="fa fa-chevron-left"></i> SSD-based Workload Characteristics and Their Performance Implications
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/01/22/HOT-COLD-DATA-SEPARATION-POLICIES/" rel="next" title="HOT/COLD DATA SEPARATION POLICIES">
+      HOT/COLD DATA SEPARATION POLICIES <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Improving-Flash-Write-Performance-by-Using-Update-Frequency"><span class="nav-number">1.</span> <span class="nav-text">Improving Flash Write Performance by Using Update Frequency</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%99%E7%89%87%E6%96%87%E7%AB%A0%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A%E9%80%9A%E8%BF%87%E5%88%A9%E7%94%A8%E5%86%99%E6%96%9C%E6%9D%A5%E6%8C%87%E5%AF%BC%E6%95%B0%E6%8D%AE%E6%94%BE%E7%BD%AE%EF%BC%8C%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E5%9C%A8%E5%A4%9A%E5%A4%A7%E7%A8%8B%E5%BA%A6%E4%B8%8A%E5%87%8F%E5%B0%91FTL%E7%9A%84%E5%86%99%E5%85%A5%E5%BC%80%E9%94%80%EF%BC%9F"><span class="nav-number">1.1.1.</span> <span class="nav-text">这片文章回答的问题：通过利用写斜来指导数据放置，我们可以在多大程度上减少FTL的写入开销？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%A1%E7%8C%AE%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">贡献：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">相关工作：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E6%95%B0%E6%8D%AE%E6%94%BE%E7%BD%AE%E7%AE%97%E6%B3%95%EF%BC%9A"><span class="nav-number">1.3.1.</span> <span class="nav-text">一些数据放置算法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%94%BE%E7%BD%AE%E6%8C%91%E6%88%98%EF%BC%9A"><span class="nav-number">1.3.2.</span> <span class="nav-text">数据放置挑战：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E5%92%8C%E5%81%87%E8%AE%BE"><span class="nav-number">1.4.</span> <span class="nav-text">符号和假设</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%81%87%E8%AE%BE"><span class="nav-number">1.4.1.</span> <span class="nav-text">模型假设</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FTL%E6%B8%85%E7%90%86%E7%AD%96%E7%95%A5"><span class="nav-number">1.5.</span> <span class="nav-text">FTL清理策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E6%9B%B4%E6%96%B0-1-Modal-Distribution"><span class="nav-number">1.5.1.</span> <span class="nav-text">随机更新(1-Modal Distribution)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%AA%E5%A9%AA%E6%B8%85%E9%99%A4%E7%AD%96%E7%95%A5Greedy-cleaning-policy"><span class="nav-number">1.5.1.1.</span> <span class="nav-text">贪婪清除策略Greedy cleaning policy</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-modal-Distribution"><span class="nav-number">1.5.2.</span> <span class="nav-text">2-modal Distribution</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E6%95%B0%E6%8D%AE%E6%94%BE%E7%BD%AE"><span class="nav-number">1.5.2.1.</span> <span class="nav-text">随机数据放置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E9%A2%91%E7%8E%87%E7%9A%84%E6%95%B0%E6%8D%AE%E6%94%BE%E7%BD%AE%E7%AD%96%E7%95%A5"><span class="nav-number">1.5.2.2.</span> <span class="nav-text">基于频率的数据放置策略</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">250k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:48</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ConfZNS学习记录阅读confZNS论文confzns是一个基于femu的zns ssd模拟器。源码地址在 https:&#x2F;&#x2F;github.com&#x2F;DKU-StarLab&#x2F;ConfZNS。 论文地址在 https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;abs&#x2F;10.1145&#x2F;3579370.3594772 解决的问题：ZNS SSD的内部架构是如何影响使用这些设备的应用程序的并行性和隔离性的。  例">
+<meta property="og:type" content="article">
+<meta property="og:title" content="confzns">
+<meta property="og:url" content="http://example.com/2023/12/27/confzns/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="ConfZNS学习记录阅读confZNS论文confzns是一个基于femu的zns ssd模拟器。源码地址在 https:&#x2F;&#x2F;github.com&#x2F;DKU-StarLab&#x2F;ConfZNS。 论文地址在 https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;abs&#x2F;10.1145&#x2F;3579370.3594772 解决的问题：ZNS SSD的内部架构是如何影响使用这些设备的应用程序的并行性和隔离性的。  例">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.11.11.png">
+<meta property="og:image" content="http://example.com/images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.49.23.png">
+<meta property="og:image" content="http://example.com/images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.49.37.png">
+<meta property="article:published_time" content="2023-12-27T06:08:58.000Z">
+<meta property="article:modified_time" content="2024-01-02T12:33:46.778Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.11.11.png">
+
+<link rel="canonical" href="http://example.com/2023/12/27/confzns/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>confzns | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/12/27/confzns/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          confzns
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-12-27 14:08:58" itemprop="dateCreated datePublished" datetime="2023-12-27T14:08:58+08:00">2023-12-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-02 20:33:46" itemprop="dateModified" datetime="2024-01-02T20:33:46+08:00">2024-01-02</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ConfZNS学习记录"><a href="#ConfZNS学习记录" class="headerlink" title="ConfZNS学习记录"></a>ConfZNS学习记录</h1><h2 id="阅读confZNS论文"><a href="#阅读confZNS论文" class="headerlink" title="阅读confZNS论文"></a>阅读confZNS论文</h2><p><code>confzns</code>是一个基于<code>femu</code>的<code>zns ssd</code>模拟器。源码地址在 <a target="_blank" rel="noopener" href="https://github.com/DKU-StarLab/ConfZNS%E3%80%82">https://github.com/DKU-StarLab/ConfZNS。</a></p>
+<p>论文地址在 <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/abs/10.1145/3579370.3594772">https://dl.acm.org/doi/abs/10.1145/3579370.3594772</a></p>
+<h3 id="解决的问题："><a href="#解决的问题：" class="headerlink" title="解决的问题："></a>解决的问题：</h3><p><code>ZNS SSD</code>的内部架构是如何影响使用这些设备的应用程序的并行性和隔离性的。</p>
+<blockquote>
+<p>例如，如果区域与多个通道和路径相关联，即使在与单个区域进行大请求大小交互时，应用程序也可以获得高内部并行性的好处。</p>
+</blockquote>
+<h3 id="ConfZNS的特性"><a href="#ConfZNS的特性" class="headerlink" title="ConfZNS的特性"></a><code>ConfZNS</code>的特性</h3><ol>
+<li><code>ConfZNS</code>支持<code>zns ssd</code>多样化区域映射。</li>
+<li><code>ConfZNS</code>模拟的时间是精确的。</li>
+<li><code>ConfZNS</code>允许从内部设备结构到应用软件的全栈探索。</li>
+</ol>
+<h3 id="ConfZNS设计"><a href="#ConfZNS设计" class="headerlink" title="ConfZNS设计"></a><code>ConfZNS</code>设计</h3><ol>
+<li><code>ZNS</code>架构</li>
+<li>时间估算器</li>
+<li>资源监视器</li>
+<li><code>ZNS</code>配置器</li>
+</ol>
+<h3 id="ZNS架构"><a href="#ZNS架构" class="headerlink" title="ZNS架构"></a><code>ZNS</code>架构</h3><p>在<code>SSD</code>中，通道<code>(channels)</code>、路径<code>(ways)</code>、晶圆<code>(dies)</code>、平面<code>(planes)</code>等都可以称为并行单元。可以利用这样的并行单元来达到最大的吞吐量。</p>
+<p>如图所示，同一区域可以分配给不同的并行单元。</p>
+<p><img src="/../images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.11.11.png" alt="截屏2023-12-27 16.11.11"></p>
+<h3 id="时间估算器"><a href="#时间估算器" class="headerlink" title="时间估算器"></a><code>时间估算器</code></h3><p>服务延迟和队列延迟是影响<code>SSD I/O</code>延迟的两个因素。</p>
+<p>图3、图4展示了<code>confzns</code>如何估算读写请求的延迟。</p>
+<p>其中<code>Logic Page Numbers</code>被暴露给主机，而<code>Physic Page Numbers</code>靠设备维护。</p>
+<p>由于区域映射的方式不同，每个区域覆盖的<code>PPN</code>也不同。</p>
+<p>通过使用两种时钟，全局时钟<code>gc</code>，本地时钟<code>lc</code>。</p>
+<ul>
+<li><p><code>gc</code>: 会在每一个<code>tick</code>是增加</p>
+</li>
+<li><p><code>lc</code>: 每个资源维护一个<code>lc</code>，<code>lc</code>表示该资源的下一次可用时间。</p>
+<p><code>lc = max(gc, lc) + service_time</code>，表示该资源的下一次可用时间。</p>
+</li>
+<li><p>如果<code>local clock</code>小于或者等于<code>global clock</code>，这表示该<code>local clock</code>对应的资源当前是空闲的。</p>
+</li>
+</ul>
+<p><img src="/../images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.49.23.png" alt="截屏2023-12-27 16.49.23"></p>
+<p><img src="/../images/confzns/%E6%88%AA%E5%B1%8F2023-12-27%2016.49.37.png" alt="截屏2023-12-27 16.49.37"></p>
+<h3 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h3><p>**混合区域支持<code>Mixed zone support</code>**：<code>confzns</code>可以同时支持<code>Single Unit Zone</code>或者<code>Full Unit Zone</code>。这使得<code>ZNS SSD</code>的应用程序有两种控制方式。一种是传统的线程，通过创建不同数量的线程，它们可以控制并行性。第二个是不同的区域。通过分配不同的区域，它们可以控制SSD中可以使用多少并行单元。同时也支持每个鱼去使用不同类型的闪存。</p>
+<p><strong>传统区域支持</strong>：<code>ConfZNS</code>同样支持传统区域。</p>
+<p><strong>PCIe链接带宽延迟模型</strong>：在ConfZNS中，PCIe链接带宽和版本是可配置的。此外，ConfZNS可以调节I&#x2F;O请求以满足PCIe接口的最大带宽。带宽调节的时间模型是基于漏桶算法实现的。当PCIe链接带宽未饱和时，所有请求都可以无延迟转移，只有转移时间会应用于这些请求。然而，如果达到最大带宽（例如3.94GB&#x2F;s），剩余的请求必须等待直到它们可以被转移。随着带宽接近其极限，这个等待时间会增加，并且会应用于所有待处理的请求。</p>
+<h2 id="运行ConfZNS："><a href="#运行ConfZNS：" class="headerlink" title="运行ConfZNS："></a>运行<code>ConfZNS</code>：</h2><p>拉取<code>ConfZNS</code>源码：<a target="_blank" rel="noopener" href="https://github.com/DKU-StarLab/ConfZNS">https://github.com/DKU-StarLab/ConfZNS</a></p>
+<p>根据<code>README.md</code>运行</p>
+<p>先安装必要的工具链</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Switch to the FEMU building directory</span></span><br><span class="line">cd build-femu</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">only Debian/Ubuntu based distribution supported</span></span><br><span class="line">sudo ./pkgdep.sh</span><br></pre></td></tr></table></figure>
+
+<p>编译<code>FEMU</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./femu-compile.sh</span><br></pre></td></tr></table></figure>
+
+<p>下载镜像，这里我们用到的是<code>FEMU</code>官网提供的镜像。填个问卷就可以获得了。</p>
+<p>然后模拟运行<code>zns ssd</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./run-zns.sh</span><br></pre></td></tr></table></figure>
+
+<p>我在这里遇到了一些打印时结构体访问越界的错误问题，把那段代码注释后可以成功运行。</p>
+<p>不过接着遇到的问题是<code>run-zns.sh</code>运行失败。这是因为在<code>confzns</code>的源码中<code>-device femu, devsz_mb = 4096, femu_mode = 1</code>，其中<code>femu_mode = 1</code>表示<code>ssd</code>类型为<code>black box</code>。修改后的<code>run-zns.sh</code>如下：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Huaicheng Li &lt;hcli@cmu.edu&gt;</span></span><br><span class="line"><span class="comment"># Run FEMU as Zoned-Namespace (ZNS) SSDs</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Image directory</span></span><br><span class="line">IMGDIR=/home/parallels/images</span><br><span class="line"><span class="comment"># Virtual machine disk image</span></span><br><span class="line">OSIMGF=<span class="variable">$IMGDIR</span>/u20s.qcow2</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [[ ! -e <span class="string">&quot;<span class="variable">$OSIMGF</span>&quot;</span> ]]; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;&quot;</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;VM disk image couldn&#x27;t be found ...&quot;</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;Please prepare a usable VM image and place it as <span class="variable">$OSIMGF</span>&quot;</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;Once VM disk image is ready, please rerun this script again&quot;</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;&quot;</span></span><br><span class="line">	<span class="built_in">exit</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">sudo x86_64-softmmu/qemu-system-x86_64 \</span><br><span class="line">    -name <span class="string">&quot;FEMU-ZNSSD-VM&quot;</span> \</span><br><span class="line">    -enable-kvm \</span><br><span class="line">    -cpu host \</span><br><span class="line">    -smp $(<span class="built_in">nproc</span>) \ 虚拟机CPU数量等于宿主机的处理器数量</span><br><span class="line">    -m 4G \					为虚拟机分配4GB内存</span><br><span class="line">    -device virtio-scsi-pci,<span class="built_in">id</span>=scsi0 \	</span><br><span class="line">    -device scsi-hd,drive=hd0 \</span><br><span class="line">    -drive file=<span class="variable">$OSIMGF</span>,<span class="keyword">if</span>=none,aio=native,cache=none,format=qcow2,<span class="built_in">id</span>=hd0 \</span><br><span class="line">    -device femu,devsz_mb=4096,femu_mode=3 \	表示分配的FEMU设备的大小为4GB 模式为zns ssd</span><br><span class="line">    -net user,hostfwd=tcp::8080-:22 \	设置端口为 8080</span><br><span class="line">    -net nic,model=virtio \</span><br><span class="line">    -nographic \</span><br><span class="line">    -qmp unix:./qmp-sock,server,nowait 2&gt;&amp;1 | <span class="built_in">tee</span> <span class="built_in">log</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在<code>ConfZNS</code>启动后，我们新建一个终端，通过命令<code>ssh -p 8080 femu@localhost</code>远程连接终端，输入密码后成功连接。</p>
+<p>首先键入命令<code>nvme list</code>查看系统中所有的<code>NVMe</code>设备的概览。</p>
+<ul>
+<li><code>node</code>是设备节点。</li>
+<li><code>SN</code>是设备序列号<code>serial number</code>的缩写，用于唯一标识硬件设备。</li>
+<li><code>Model</code>: 这是NVMe设备的模型名称，由制造商指定。（比如这里是 FEMU模拟的ZNS SSD）</li>
+<li><code>Namespace</code>这是NVMe设备上的命名空间编号，命名空间是NVMe存储的逻辑分区。</li>
+<li><code>Usage</code>:显示当前命名空间已使用的存储空间以及总可用空间。</li>
+<li><code>Format</code>：描述了该命名空间的数据格式，包括扇区大小。这里的<code>512B + 0B</code>表示扇区大小为<code>512</code>字节加上<code>0</code>字节的元数。</li>
+<li><code>FW Rev</code></li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme list</span><br><span class="line">Node          SN       Model                    Namespace   Usage              Format           FW Rev  </span><br><span class="line">-----------------------------------------------------------------------------------------------------</span><br><span class="line">/dev/nvme0n1  vZNSSD0  FEMU ZNS-SSD Controller  1          4.29  GB / 4.29  GB  512   B +  0 B   1.0     </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>输入命令<code>nvme zns help</code>查看命令的帮助。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ nvme zns help</span><br><span class="line">nvme-1.13.48.g33c6</span><br><span class="line">usage: nvme zns &lt;command&gt; [&lt;device&gt;] [&lt;args&gt;]</span><br><span class="line"></span><br><span class="line">The &#x27;&lt;device&gt;&#x27; may be either an NVMe character device (ex: /dev/nvme0) or an</span><br><span class="line">nvme block device (ex: /dev/nvme0n1).</span><br><span class="line"></span><br><span class="line">Zoned Namespace Command Set</span><br><span class="line"></span><br><span class="line">The following are all implemented sub-commands:</span><br><span class="line">  id-ctrl             Retrieve ZNS controller identification</span><br><span class="line">  id-ns               Retrieve ZNS namespace identification</span><br><span class="line">  zone-mgmt-recv      Sends the zone management receive command</span><br><span class="line">  zone-mgmt-send      Sends the zone management send command</span><br><span class="line">  report-zones        Retrieve the Report Zones report</span><br><span class="line">  close-zone          Closes one or more zones</span><br><span class="line">  finish-zone         Finishes one or more zones</span><br><span class="line">  open-zone           Opens one or more zones</span><br><span class="line">  reset-zone          Resets one or more zones</span><br><span class="line">  offline-zone        Offlines one or more zones</span><br><span class="line">  set-zone-desc       Attaches zone descriptor extension data</span><br><span class="line">  zone-append         Writes data and metadata (if applicable), appended to the end of the requested zone</span><br><span class="line">  changed-zone-list   Retrieves the changed zone list log</span><br><span class="line">  version             Shows the program version</span><br><span class="line">  help                Display this help</span><br><span class="line"></span><br><span class="line">See &#x27;nvme zns help &lt;command&gt;&#x27; for more information on a specific command</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>让我们一一解释这些命令的用法：</p>
+<ul>
+<li><p><code>nvme zns id-ctrl</code>: Send NVMe Zoned Command Set Identify Controller, return result and structure.下面给出一个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns id-ctrl /dev/nvme0n1</span><br><span class="line">NVMe ZNS Identify Controller:</span><br><span class="line">zasl    : 5</span><br></pre></td></tr></table></figure>
+
+<p><code>zone append size limit</code>是区域追加大小限制，这里指的区域追加大小限制应该是append命令的大小限制。</p>
+<blockquote>
+<p>分区命名空间命令集规范目前在命令集的识别控制器中只定义了一个字段：区域追加大小限制（ZASL）。区域追加大小限制（ZASL）编码了区域追加命令的最大命令大小。下面的例子返回的是‘5’，这对应于128千字节（在这个例子中可以追加的最大大小）。</p>
+</blockquote>
+</li>
+<li><p><code>nvme zns id-ns</code> 获取 <code>ZNS namespace</code> 标识</p>
+<p>人不可读的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns id-ns /dev/nvme0n1 </span><br><span class="line">ZNS Command Set Identify Namespace:</span><br><span class="line">zoc     : 0</span><br><span class="line">ozcs    : 1</span><br><span class="line">mar     : 0xffffffff</span><br><span class="line">mor     : 0xffffffff</span><br><span class="line">rrl     : 0</span><br><span class="line">frl     : 0</span><br><span class="line">lbafe  0: zsze:0x20000 zdes:0 (in use)</span><br><span class="line">lbafe  1: zsze:0x0 zdes:0</span><br><span class="line">lbafe  2: zsze:0x0 zdes:0</span><br><span class="line">lbafe  3: zsze:0x0 zdes:0</span><br><span class="line">lbafe  4: zsze:0x0 zdes:0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>人可读的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns id-ns /dev/nvme0n1 -H</span><br><span class="line">ZNS Command Set Identify Namespace:</span><br><span class="line">zoc     : 0	Zone Operation Characteristics</span><br><span class="line">  [1:1] : 0	  Zone Active Excursions: No</span><br><span class="line">  [0:0] : 0	  Variable Zone Capacity: No</span><br><span class="line"></span><br><span class="line">ozcs    : 1	Optional Zoned Command Support</span><br><span class="line">  [0:0] : 0x1	  Read Across Zone Boundaries: Yes</span><br><span class="line">mar     : No Active Resource Limit</span><br><span class="line">mor     : No Open Resource Limit</span><br><span class="line">rrl     : Not Reported</span><br><span class="line">frl     : Not Reported</span><br><span class="line">LBA Format Extension  0 : Zone Size: 0x20000 LBAs - Zone Descriptor Extension Size: 0 bytes (in use)</span><br><span class="line">LBA Format Extension  1 : Zone Size: 0x0 LBAs - Zone Descriptor Extension Size: 0 bytes</span><br><span class="line">LBA Format Extension  2 : Zone Size: 0x0 LBAs - Zone Descriptor Extension Size: 0 bytes</span><br><span class="line">LBA Format Extension  3 : Zone Size: 0x0 LBAs - Zone Descriptor Extension Size: 0 bytes</span><br><span class="line">LBA Format Extension  4 : Zone Size: 0x0 LBAs - Zone Descriptor Extension Size: 0 bytes</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>zoc</code>：区域活动波动<code>Zone Active Excursions</code>和可变区域容量<code>Variable Zone Capability</code>的特性都不支持。</li>
+<li><code>Optional Zoned Command Support</code>：表示支持的可选分区命令。<code>1</code>表示跨区域边界读取是支持的。</li>
+<li><code>mar</code> <code>Max Active Resources</code>：表示没有限制可以活动的资源数量。</li>
+<li><code>mor</code> <code>Maximum Open Resources</code>：表示没有开放资源的限制。</li>
+<li><code>rrl</code> <code>Read Recovery Levels</code>：未报告，意味着没有读取恢复级别的信息。</li>
+<li><code>frl</code> <code>Finish Recovery Levels</code>：未报告，意味着没有提供关于完成恢复级别的信息。</li>
+<li><code>LBA Format Extension</code>：这些是逻辑块地址格式扩展条目，描述了不同区域的大小和描述符扩展大小。‘<ul>
+<li><code>Zone Size</code>的大小为：<code>0x20000</code>的逻辑块地址，区域描述符扩展大小为0字节，表示这个区域格式当前正在使用中。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong><code>zone-mgmt-recv      Sends the zone management receive command</code> 不太明白咋用，一用内核就挂了。</strong></p>
+</li>
+<li><p><strong><code>zone-mgmt-send      Sends the zone management send command</code> 同上。</strong></p>
+</li>
+<li><p><code>report-zones</code>：获取分区的报告，以下是一部分输出。</p>
+<ul>
+<li><code>nr_zones</code>表示一共有64个分区。</li>
+<li><code>SLBA</code>表示每个分区的起始逻辑块地址。</li>
+<li><code>WP</code>表示每个分区的写指针指向的逻辑块地址。<ul>
+<li><code>Cap</code>表示每个分区的<code>Zone capability</code>，大小为<code>0x20000</code>。</li>
+<li><code>State</code>表示每个分区的类型，这里的类型是<code>EMPTY</code>。</li>
+<li><code>Type</code>类型为<code>Unknown</code>或者<code>SEQWRITE_REQ</code>顺序写规定。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns report-zones /dev/nvme0n1 </span><br><span class="line">nr_zones: 64</span><br><span class="line">SLBA: 0x380000   WP: 0x380000   Cap: 0x20000    State: EMPTY        Type: Unknown        Attrs: 0x0</span><br><span class="line">SLBA: 0x3a0000   WP: 0x3a0000   Cap: 0x20000    State: EMPTY        Type: Unknown        Attrs: 0x0</span><br><span class="line">SLBA: 0x3c0000   WP: 0x3c0000   Cap: 0x20000    State: EMPTY        Type: Unknown        Attrs: 0x0</span><br><span class="line">SLBA: 0x3e0000   WP: 0x3e0000   Cap: 0x20000    State: EMPTY        Type: Unknown        Attrs: 0x0</span><br><span class="line">SLBA: 0x400000   WP: 0x400000   Cap: 0x20000    State: EMPTY        Type: SEQWRITE_REQ   Attrs: 0x0</span><br><span class="line">SLBA: 0x420000   WP: 0x420000   Cap: 0x20000    State: EMPTY        Type: SEQWRITE_REQ   Attrs: 0x0</span><br><span class="line">SLBA: 0x440000   WP: 0x440000   Cap: 0x20000    State: EMPTY        Type: SEQWRITE_REQ   Attrs: 0x0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>open-zone</code>: 显示打开区域，<code>action:3</code>表示执行的具体操作；<code>zone:0</code>表示操作的是第0个区域；<code>nsid:1</code>表示操作的区域的命名空间标识符是1。<strong>区域需要先打开才能关闭，否则会出现错误。</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns open-zone /dev/nvme0n1</span><br><span class="line">zns-open-zone: Success, action:3 zone:0 nsid:1</span><br></pre></td></tr></table></figure>
+
+<p>执行命令<code>sudo nvme zns report-zones /dev/nvme0n1</code>查看区域状态。我们可以发现区域的状态为<code>EXP_OPENED</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nr_zones: 64</span><br><span class="line">SLBA: 0x0        WP: 0x0        Cap: 0x20000    State: EXP_OPENED   Type: Unknown        Attrs: 0x0</span><br><span class="line">SLBA: 0x20000    WP: 0x20000    Cap: 0x20000    State: EMPTY        Type: Unknown        Attrs: 0x0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>close-zone</code>关闭区域，关闭后再通过<code>report-zones</code>命令得到区域的报告。状态为关闭。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns close-zone /dev/nvme0n1</span><br><span class="line">zns-close-zone: Success, action:1 zone:0 nsid:1</span><br><span class="line">femu@fvm:~$ sudo nvme zns report-zones /dev/nvme0n1</span><br><span class="line">nr_zones: 64</span><br><span class="line">SLBA: 0x0        WP: 0x0        Cap: 0x20000    State: CLOSED       Type: Unknown        Attrs: 0x0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>finish-zone</code>完成区域，即将该区域设置为满。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ sudo nvme zns finish-zone /dev/nvme0n1 </span><br><span class="line">zns-finish-zone: Success, action:2 zone:0 nsid:1</span><br><span class="line">femu@fvm:~$ sudo nvme zns report-zones /dev/nvme0n1 </span><br><span class="line">nr_zones: 64</span><br><span class="line">SLBA: 0x0        WP: 0xffffffffffffffff Cap: 0x20000    State: FULL         Type: Unknown        Attrs: 0x0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>offline-zone</code>：将一个区域设置为离线会使该区域变得无法访问。在离线区域上的数据将无法访问，且在区域被重置之前，无法向该区域写入数据。运行此命令来将第一个区域设置为离线。</p>
+<p><strong>对状态为空的区域关闭不行，对状态为显示打开的区域关闭也不行，对状态为满的区域关闭也不行。</strong></p>
+</li>
+<li><p><code>zone-append</code>和<code>read</code>命令，这里 <code>-z 512</code>代表追加操作追加的数据大小为<code>512B</code>。通过区域报告，我们可以知道每个逻辑块的大小为<code>512B</code>（因为我们发现读指针增加了1）。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ echo &quot;Hello World&quot; | sudo nvme zns zone-append /dev/nvme0n1 -z 512</span><br><span class="line">Success appended data to LBA 0</span><br><span class="line">femu@fvm:~$ sudo nvme read /dev/nvme0n1 -z 512</span><br><span class="line">Hello World</span><br><span class="line">read: Success</span><br><span class="line">femu@fvm:~$ sudo nvme zns report-zones /dev/nvme0n1</span><br><span class="line">nr_zones: 64</span><br><span class="line">SLBA: 0x0        WP: 0x1        Cap: 0x20000    State: EXP_OPENED   Type: Unknown        Attrs: 0x0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">femu@fvm:~$ echo &quot;Goodbye World&quot; | sudo nvme zns zone-append /dev/nvme0n1 -z 512</span><br><span class="line">Success appended data to LBA 1</span><br><span class="line">femu@fvm:~$ sudo nvme read /dev/nvme0n1 -z 512</span><br><span class="line">Hello World</span><br><span class="line">read: Success</span><br><span class="line">femu@fvm:~$ sudo nvme read /dev/nvme0n1 -z 1024</span><br><span class="line">Hello World</span><br><span class="line">read: Success</span><br><span class="line">femu@fvm:~$ sudo nvme read /dev/nvme0n1 -z 512 -s 1</span><br><span class="line">Goodbye World</span><br><span class="line">read: Success</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>​	当我们再次使用<code>zone-append</code>命令写入数据时，我们无须指定逻辑块地址。但在读取数据的时候，我们需要通过<code>-s</code>选项指定逻辑块地址以实现随机读。</p>
+<ul>
+<li>为什么使用nvme-cli write 命令也可以？</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/16/Lab-system-calls-1/" rel="prev" title="Lab: system calls">
+      <i class="fa fa-chevron-left"></i> Lab: system calls
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/01/11/Lab-page-tables/" rel="next" title="Lab: page tables">
+      Lab: page tables <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ConfZNS%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">ConfZNS学习记录</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%85%E8%AF%BBconfZNS%E8%AE%BA%E6%96%87"><span class="nav-number">1.1.</span> <span class="nav-text">阅读confZNS论文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">解决的问题：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConfZNS%E7%9A%84%E7%89%B9%E6%80%A7"><span class="nav-number">1.1.2.</span> <span class="nav-text">ConfZNS的特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConfZNS%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.1.3.</span> <span class="nav-text">ConfZNS设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZNS%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.4.</span> <span class="nav-text">ZNS架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%BC%B0%E7%AE%97%E5%99%A8"><span class="nav-number">1.1.5.</span> <span class="nav-text">时间估算器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">1.1.6.</span> <span class="nav-text">实现细节</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8CConfZNS%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">运行ConfZNS：</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">250k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:48</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
