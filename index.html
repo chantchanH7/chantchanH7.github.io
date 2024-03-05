@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-03-04 18:42:45" itemprop="dateModified" datetime="2024-03-04T18:42:45+08:00">2024-03-04</time>
+                <time title="修改时间：2024-03-05 19:39:27" itemprop="dateModified" datetime="2024-03-05T19:39:27+08:00">2024-03-05</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>38k</span>
+              <span>44k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>35 分钟</span>
+              <span>40 分钟</span>
             </span>
 
         </div>
@@ -569,6 +569,97 @@ printf(&quot;x=%d y=%d&quot;, 3);
 </li>
 </ul>
 <p>一旦你的回溯功能正常工作，就从<code>kernel/printf.c</code>中的<code>panic</code>函数调用它，这样当内核出现panic时，你就能看到内核的回溯信息。</p>
+<p><img src="/../images/Lab-traps/%E6%88%AA%E5%B1%8F2024-03-04%2019.43.45.png" alt="截屏2024-03-04 19.43.45"></p>
+<h3 id="Alarm"><a href="#Alarm" class="headerlink" title="Alarm"></a>Alarm</h3><blockquote>
+<p>在这个练习中，你将为xv6添加一个特性，该特性会定期提醒一个进程关于它所使用的CPU时间。这对于想要限制自己消耗CPU时间的计算密集型进程来说可能很有用，或者对于想要计算同时又想定期执行某些操作的进程来说也很有用。更一般地，你将实现一种原始形式的用户级中断&#x2F;故障处理器；例如，你可以使用类似的机制来处理应用中的页面故障。如果你的解决方案通过了alarmtest和’usertests -q’，则认为是正确的。</p>
+</blockquote>
+<p>你应该添加一个新的<code>sigalarm(interval, handler)</code>系统调用。如果一个应用程序调用了<code>sigalarm(n, fn)</code>，那么在程序消耗了每<code>n</code>个”ticks”的CPU时间后，内核应该使应用程序函数<code>fn</code>被调用。当<code>fn</code>返回时，应用程序应该从中断处继续执行。在xv6中，一个tick是一个相当任意的时间单位，由硬件定时器产生中断的频率决定。如果应用程序调用<code>sigalarm(0, 0)</code>，内核应该停止生成周期性的警报调用。</p>
+<p>在你的xv6仓库中，你会找到一个名为<code>user/alarmtest.c</code>的文件。将它添加到Makefile中。在你添加了<code>sigalarm</code>和<code>sigreturn</code>系统调用之前（见下文），它不会正确编译。</p>
+<p><code>alarmtest</code>在<code>test0</code>中调用<code>sigalarm(2, periodic)</code>，请求内核每2个ticks强制调用一次<code>periodic()</code>函数，然后进行一段时间的循环。你可以在<code>user/alarmtest.asm</code>中看到<code>alarmtest</code>的汇编代码，这可能对调试很有帮助。当<code>alarmtest</code>产生如下输出，并且<code>usertests -q</code>也正确运行时，你的解决方案就是正确的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">alarmtest</span></span><br><span class="line">test0 start</span><br><span class="line">........alarm!</span><br><span class="line">test0 passed</span><br><span class="line">test1 start</span><br><span class="line">...alarm!</span><br><span class="line">..alarm!</span><br><span class="line">...alarm!</span><br><span class="line">..alarm!</span><br><span class="line">...alarm!</span><br><span class="line">..alarm!</span><br><span class="line">...alarm!</span><br><span class="line">..alarm!</span><br><span class="line">...alarm!</span><br><span class="line">..alarm!</span><br><span class="line">test1 passed</span><br><span class="line">test2 start</span><br><span class="line">................alarm!</span><br><span class="line">test2 passed</span><br><span class="line">test3 start</span><br><span class="line">test3 passed</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">usertest -q</span></span><br><span class="line">...</span><br><span class="line">ALL TESTS PASSED</span><br><span class="line"><span class="meta prompt_">$</span></span><br></pre></td></tr></table></figure>
+
+<p>完成这个任务时，你的解决方案只需要几行代码，但要做到正确可能会有些棘手。我们将使用原始仓库中的<code>alarmtest.c</code>版本来测试你的代码。你可以修改<code>alarmtest.c</code>来帮助你调试，但请确保原始的<code>alarmtest</code>表示所有测试都通过了。</p>
+<h4 id="Test0-invoke-handler"><a href="#Test0-invoke-handler" class="headerlink" title="Test0: invoke handler"></a>Test0: invoke handler</h4><p>开始时，通过修改内核来跳转到用户空间的警报处理程序，这将导致<code>test0</code>打印”alarm!”。目前不用担心alarm后会发生什么；如果你的程序在打印”alarm!”之后崩溃，目前这样也是可以的。以下是一些提示：</p>
+<ul>
+<li><p>修改Makefile文件，是的<code>alarmtest.c</code>将被当作xv6的用户程序被编译</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UPROGS=\</span><br><span class="line">	$U/_alarmtest\</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在<code>user/user.h</code>中声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">sigalarm</span><span class="params">(<span class="type">int</span> ticks, <span class="type">void</span> (*handler)())</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">sigreture</span><span class="params">(<span class="type">void</span>)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>更新<code>user/usys.pl</code>（该文件会生成<code>user/usys.S</code>），<code>kernel/syscall.h</code>，和<code>kernel/syscall.c</code>以允许<code>alarmtest</code>调用<code>sigalarm</code>和<code>sigreturn</code>系统调用。</p>
+<p>In <code>user/usys.pl</code>:</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">entry(<span class="string">&quot;sigalarm&quot;</span>);</span><br><span class="line">entry(<span class="string">&quot;sigreturn&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>In <code>kernel/syscall.h</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> SYS_sigalarm 22</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SYS_sigreturn 23</span></span><br></pre></td></tr></table></figure>
+
+<p>In <code>kernel/syscall.c</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> uint64 <span class="title function_">sys_sigalarm</span><span class="params">(<span class="type">void</span>)</span>;   <span class="comment">// add syscall</span></span><br><span class="line"><span class="keyword">extern</span> uint64 <span class="title function_">sys_sigreturn</span><span class="params">(<span class="type">void</span>)</span>;  <span class="comment">// add syscall</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="title function_">uint64</span> <span class="params">(*syscalls[])</span><span class="params">(<span class="type">void</span>)</span> = &#123; </span><br><span class="line">  ...</span><br><span class="line">	[SYS_sigalarm] sys_sigalarm,</span><br><span class="line">	[SYS_sigreturn] sys_sigreturn,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当前，<code>sys_sigreturn</code>只用返回0。</p>
+</li>
+<li><p>函数<code>sys_sigalarm</code>应该在结构体<code>proc</code>的新区域中保存<code>alarm interval</code>和<code>the pointer to the handler function</code>。</p>
+<p>In <code>kernel/proc.h</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">proc</span> &#123;</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="type">int</span> alarm_interval;</span><br><span class="line">  uint64 handler_pointer;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>In <code>kernel/sysproc.c</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">uint64 <span class="title function_">sys_sigalarm</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * get the alarm interval and handler pointer from syscall</span></span><br><span class="line"><span class="comment">     * and store them in process</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     **/</span></span><br><span class="line">    <span class="type">int</span> alarm_interval = <span class="number">0</span>;</span><br><span class="line">    uint64 handler_pointer = <span class="number">0</span>;</span><br><span class="line">    argint(<span class="number">0</span>, &amp;alarm_interval);</span><br><span class="line">    argaddr(<span class="number">1</span>, &amp;handler_pointer);</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proc</span> * <span class="title">proc</span> =</span> myproc();</span><br><span class="line">    proc-&gt;alarm_interval = alarm_interval;</span><br><span class="line">    proc-&gt;handler_pointer = handler_pointer;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>你需要跟踪自上一次调用（或距离下一次调用）进程的警报处理程序以来已经过去了多少个ticks；为此你还需要在<code>struct proc</code>中添加一个新的字段。你可以在<code>proc.c</code>中的<code>allocproc()</code>函数中初始化<code>proc</code>字段。</p>
+<p>In <code>kernel/proc.h</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">proc</span> &#123;</span></span><br><span class="line">	<span class="type">int</span> passed_time;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>In <code>kernel/proc.c</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">struct</span> proc* <span class="title function_">allocproc</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  	...</span><br><span class="line">found:</span><br><span class="line">  p-&gt;passed_time = <span class="number">0</span>;</span><br><span class="line">  p-&gt;alarm_interval = <span class="number">0</span>;</span><br><span class="line">  p-&gt;handler_pointer = <span class="number">0</span>;</span><br><span class="line">  	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>每个tick，硬件时钟产生一个中断，该中断在<code>kernel/trap.c</code>中的函数<code>usertrap()</code>里被处理。</p>
+</li>
+<li><p>你只想在有定时器中断的情况下操作进程的警报计时器；你需要像如下的东西一样：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(which_dev == <span class="number">2</span>) ... <span class="comment">// this is a timer interrupt</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>只需要在计时器超时时调用警报函数。注意用户的警报函数的地址看可能为0。</p>
+</li>
+<li><p>你需要修改<code>usertrap()</code>，这样当进程的警报间隔到期时，用户进程执行处理函数。当RISC-V上的一个陷阱返回到用户空间时，决定用户空间代码恢复执行的指令地址是什么？</p>
+<p>从<code>trampoline.S</code>的<code>userret</code>函数中我们可以看到，内核通过<code>sret</code>指令返回到用户空间。</p>
+<p>In <code>kernel/trap.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// give up the CPU if this is a timer interrupt.</span></span><br><span class="line"><span class="keyword">if</span>(which_dev == <span class="number">2</span>) &#123;</span><br><span class="line">    ++p-&gt;passed_time;</span><br><span class="line">    <span class="keyword">if</span>(p-&gt;passed_time % p-&gt;alarm_interval == <span class="number">0</span>) &#123;</span><br><span class="line">        p-&gt;trapframe-&gt;epc = p-&gt;handler_pointer;</span><br><span class="line">    &#125;</span><br><span class="line">    yield();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果你告诉 QEMU 只使用一个 CPU，在 GDB 中查看陷阱会更容易，你可以通过运行以下命令来实现这一点：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make CPUS=1 qemu-gdb</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>You’ve succeeded if alarmtest prints “alarm!”.</p>
+<p><img src="/../images/Lab-traps/%E6%88%AA%E5%B1%8F2024-03-05%2015.48.18.png" alt="截屏2024-03-05 15.48.18"></p>
+</li>
+</ul>
+<h4 id="test1-x2F-test2-x2F-test3-resume-interrupted-code"><a href="#test1-x2F-test2-x2F-test3-resume-interrupted-code" class="headerlink" title="test1&#x2F;test2()&#x2F;test3(): resume interrupted code"></a>test1&#x2F;test2()&#x2F;test3(): resume interrupted code</h4><p>有可能在<code>alarmtest</code>执行<code>test0</code>或<code>test1</code>并打印出”alarm!”之后会发生崩溃，或者<code>alarmtest</code>最终打印出”test1 failed”，或者<code>alarmtest</code>退出而没有打印出”test1 passed”。为了解决这个问题，你必须确保当警报处理器完成时，控制权返回到用户程序原本由于定时器中断而被打断的那条指令处。你必须确保寄存器内容被恢复到中断时的值，这样用户程序在警报之后可以继续无干扰地运行。最后，你应该在每次警报计数器触发后重新设置它，以便定期调用处理器。</p>
+<p>作为一个起点，我们已经为你做了一个设计决定：用户警报处理程序在完成后需要调用<code>sigreturn</code>系统调用。可以查看<code>alarmtest.c</code>中的<code>periodic</code>函数作为一个例子。这意味着你可以在<code>usertrap</code>和<code>sys_sigreturn</code>中添加代码，使它们协作，以便在用户处理完警报之后，用户进程能够正确地恢复执行。</p>
+<p>提示：</p>
+<ul>
+<li><p>你的解决方案需要你保存和恢复寄存器——你需要保存和重新加载哪些寄存器来恢复中断的程序？</p>
+</li>
+<li><p>当定时器触发时，让<code>usertrap</code>在<code>struct proc</code>中保存足够的状态，以便<code>sigreturn</code>可以正确返回到被中断的用户代码。</p>
+</li>
+<li><p>防止对处理程序的重入调用——如果一个处理程序还没有返回，内核不应该再次调用它。<code>test2</code>就是用来测试这一点的。</p>
+</li>
+<li><p>确保恢复<code>a0</code>。<code>sigreturn</code>是一个系统调用，它的返回值存储在<code>a0</code>中。</p>
+</li>
+</ul>
+<p>首先我们在<code>struct proc</code>中增加两个成员，用于表示当前进程是否正在执行<code>handler</code>和保存执行<code>handler</code>之前的<code>trapframe</code>：</p>
+<p>In <code>kernel/proc.h</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">proc</span> &#123;</span></span><br><span class="line">	...</span><br><span class="line">	<span class="type">int</span> is_handling;             <span class="comment">// indicates that the process is handling the handler</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">trapframe</span> *<span class="title">saved_trapframe</span>;</span>    <span class="comment">// used to save the trapframe</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着，我们要在<code>kernel/proc.c</code>中的<code>allocproc()</code>函数中初始化它们；并在<code>freeproc()</code>函数中释放它们。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">struct</span> proc* <span class="title function_">allocproc</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  p-&gt;is_handling = <span class="number">0</span>;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// Allocate a trapframe page.</span></span><br><span class="line">  <span class="keyword">if</span>((p-&gt;saved_trapframe = (<span class="keyword">struct</span> trapframe *)kalloc()) == <span class="number">0</span>)&#123;</span><br><span class="line">      freeproc(p);</span><br><span class="line">      release(&amp;p-&gt;lock);</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">freeproc</span><span class="params">(<span class="keyword">struct</span> proc *p)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">if</span>(p-&gt;saved_trapframe)</span><br><span class="line">      kfree((<span class="type">void</span>*)p-&gt;saved_trapframe);</span><br><span class="line">  p-&gt;saved_trapframe = <span class="number">0</span>;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着在<code>usertrap</code>函数中处理时间中断<code>timer interrupt</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">usertrap</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">	<span class="comment">// give up the CPU if this is a timer interrupt.</span></span><br><span class="line">  <span class="keyword">if</span>(which_dev == <span class="number">2</span>) &#123;</span><br><span class="line">      p-&gt;passed_time++;	<span class="comment">// 每一次时间中断，使进程的passed_time增加1</span></span><br><span class="line">    	<span class="comment">// 如果增加的时间为间隔时间的倍数，且当前进程没有执行处理函数</span></span><br><span class="line">      <span class="keyword">if</span>(p-&gt;passed_time % p-&gt;alarm_interval == <span class="number">0</span> &amp;&amp; p-&gt;is_handling == <span class="number">0</span>) &#123;</span><br><span class="line">        	<span class="comment">// 保存现场</span></span><br><span class="line">          memmove(p-&gt;saved_trapframe, p-&gt;trapframe, PGSIZE);</span><br><span class="line">        	<span class="comment">// 将当前进程跳转到handler函数的地址上</span></span><br><span class="line">          p-&gt;trapframe-&gt;epc = p-&gt;handler_pointer;</span><br><span class="line">        	<span class="comment">// 置正在处理为1</span></span><br><span class="line">          p-&gt;is_handling = <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      yield();</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后修改<code>sys_sigreturn</code>函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">uint64 <span class="title function_">sys_sigreturn</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  	<span class="comment">// 恢复现场</span></span><br><span class="line">    memmove(myproc()-&gt;trapframe, myproc()-&gt;saved_trapframe, PGSIZE);</span><br><span class="line">    <span class="comment">// 置为0</span></span><br><span class="line"> 		myproc()-&gt;is_handling = <span class="number">0</span>;</span><br><span class="line">  	<span class="comment">// 恢复寄存器a0的值</span></span><br><span class="line">    <span class="keyword">return</span> myproc()-&gt;trapframe-&gt;a0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试通过：</p>
+<p><img src="/../images/Lab-traps/%E6%88%AA%E5%B1%8F2024-03-05%2019.39.18.png" alt="截屏2024-03-05 19.39.18"></p>
 
       
     </div>
@@ -2495,12 +2586,12 @@ printf(&quot;x=%d y=%d&quot;, 3);
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">295k</span>
+    <span title="站点总字数">301k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:28</span>
+    <span title="站点阅读时长">4:33</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
