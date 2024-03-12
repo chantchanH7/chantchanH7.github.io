@@ -164,6 +164,614 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/22/dlco-nju/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/08/22/dlco-nju/" class="post-title-link" itemprop="url">dlco_nju</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-22 15:13:02" itemprop="dateCreated datePublished" datetime="2023-08-22T15:13:02+08:00">2023-08-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-09-13 17:26:26" itemprop="dateModified" datetime="2023-09-13T17:26:26+08:00">2023-09-13</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>22k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>20 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="南京大学-计算机科学与技术系-数字逻辑与计算机组成-课程实验"><a href="#南京大学-计算机科学与技术系-数字逻辑与计算机组成-课程实验" class="headerlink" title="南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验"></a><a target="_blank" rel="noopener" href="https://nju-projectn.github.io/dlco-lecture-note/index.html">南京大学 计算机科学与技术系 数字逻辑与计算机组成 课程实验</a></h2><h2 id="实验一-选择器"><a href="#实验一-选择器" class="headerlink" title="实验一 选择器"></a>实验一 选择器</h2><h3 id="任务：1-上板实验-二位四选一选择器；2-实现一个简单的二位四选一选择器。"><a href="#任务：1-上板实验-二位四选一选择器；2-实现一个简单的二位四选一选择器。" class="headerlink" title="任务：1.上板实验: 二位四选一选择器；2.实现一个简单的二位四选一选择器。"></a>任务：1.<strong>上板实验: 二位四选一选择器</strong>；2.实现一个简单的二位四选一选择器。</h3><blockquote>
+<p>用选择器模板实现一个2位4选1的选择器，如下图所示，选择器有5个2位输入端，分别为X0, X1, X2, X3和Y，输出端为F；X0, X1, X2, X3是四个2位的输入变量。输出F端受控制端Y的控制，选择其中的一个X输出，当Y &#x3D; 00时，输出端输出X0，即F &#x3D; X0；当Y &#x3D; 01时，输出端输出X1，即F &#x3D; X1；以此类推。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.30.30.png" alt="截屏2023-08-22 15.30.30"></p>
+<p>选择开发板上的SW0和SW1作为控制端Y，SW2—SW9作为四个两位数据输入端X0–X3，将两位的输出端F接到发光二极管LEDR0和LEDR1上显示输出，完成设计，对自己的设计进行功能仿真，并下载到开发板上验证电路性能。</p>
+</blockquote>
+<p>​	简单的二位四选一选择器实现比较简单，参照讲义上 <em>Listing 5</em> <em>4选1选择器case语句实现</em> 使用<code>case</code>语句实现即可。但是选择器模版应该如何使用呢？阅读并观察讲义中<em>Listing 8</em> <em>使用选择器模板实现选择器</em>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">module mux21e(a,b,s,y);</span><br><span class="line">  input   a,b,s;</span><br><span class="line">  output  y;</span><br><span class="line">  MuxKey #(2, 1, 1) i0 (y, s, &#123;</span><br><span class="line">    1&#x27;b0, a,</span><br><span class="line">    1&#x27;b1, b</span><br><span class="line">  &#125;);</span><br><span class="line">endmodule</span><br><span class="line"></span><br><span class="line">module mux41b(a,s,y);</span><br><span class="line">  input  [3:0] a;</span><br><span class="line">  input  [1:0] s;</span><br><span class="line">  output y;</span><br><span class="line">  MuxKeyWithDefault #(4, 2, 1) i0 (y, s, 1&#x27;b0, &#123;</span><br><span class="line">    2&#x27;b00, a[0],</span><br><span class="line">    2&#x27;b01, a[1],</span><br><span class="line">    2&#x27;b10, a[2],</span><br><span class="line">    2&#x27;b11, a[3]</span><br><span class="line">  &#125;);</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">module MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (</span><br><span class="line">  output [DATA_LEN-1:0] out,</span><br><span class="line">  input [KEY_LEN-1:0] key,</span><br><span class="line">  input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>​	<code>MuxKey</code>接受6个参数，三个一组，<code>#(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1)</code>前三个参数以#开始在()内，分别为键值对的数量，键值的位宽，数据的位宽 ，后三个参数为引脚名称，分别为输出引脚out，给定的键值和<code>(键值，数据)</code> 的列表 <code>lut</code>。</p>
+<p>​	现在我们可以编写用选择器模板实现的一个2位4选1的选择器，键值对的数量为4，键值的位宽，数据的位宽均为2。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">module top(X0, X1, X2, X3, Y, F);</span><br><span class="line">	input [1:0] X0, X1, X2, X3, Y;</span><br><span class="line">	output [1:0] F;</span><br><span class="line">	MuxKey #(4, 2, 2) i0 (F, Y, &#123;</span><br><span class="line">		2&#x27;b00, X0,</span><br><span class="line">		2&#x27;b01, X1,</span><br><span class="line">		2&#x27;b10, X2,</span><br><span class="line">		2&#x27;b11, X3	</span><br><span class="line">		&#125;);</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	此时编译未成功，提示缺少模块<code>MuxKey</code>。如何结构化模块？首先寻找示例代码中是否有相关的例子。观察到<code>nvboard/example/vsrc</code>中有多个<code>.v</code>文件，且<code>top.v</code>中有实例化模块的例子，这说明该示例使用了结构化模块，阅读<code>Makefile</code>文件发现，编译时使用–top-module指出顶层模块名。我们仿照示例编写<code>Makefile</code>文件，并在目录中添加<code>MuxKey.v</code>和<code>MuxKeyInternal.v</code>模块。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(VERILATOR) $(VERILATOR_CFLAGS) \</span><br><span class="line">		--top-module $(TOPNAME) $^ \</span><br><span class="line">		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \</span><br><span class="line">		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))</span><br></pre></td></tr></table></figure>
+
+<p>​	通过前一节搭建verilator仿真环境，我们知道如何在<code>nvboard</code>上连接引脚进行测试。此处就不再赘述。实现效果如下：	 <img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2015.55.17-2690921.png" alt="截屏2023-08-22 15.55.17"></p>
+<p>​	当使能端<code>Y = 10</code>时，选择器选择<code>X2 = 11</code>，<code>LED0，LED1</code>被点亮。而不会输出其他信号。</p>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p>​	不要使用行为建模方式设计电路，即Verilog不像C语言编程一样是在过程中发现错误并优化代码的。一定要在脑海或者图纸上先将电路画出来，再进行编码仿真。特别是当开发者心里没有电路但期望通过行为建模让综合器生成某种行为的电路，这就已经偏离“描述电路”的本质了。对于代码来说，多尝试总是没错的，尽量把自己脑海中想到的东西写下来验证，电脑永远是对的。</p>
+<h3 id="遗留问题："><a href="#遗留问题：" class="headerlink" title="遗留问题："></a>遗留问题：</h3><blockquote>
+<p>​	所以，直到大家掌握“描述电路”的思维而不被行为建模误导之前，我们强烈建议初学者远离行为建模方式，仅通过数据流建模和结构化建模方式直接描述电路。例如，上文关于if和always的说法从某种程度上来说是正确的，但下面的问题可以帮助大家测试自己是否已经掌握了Verilog的本质：</p>
+<ul>
+<li>在硬件描述语言中，“执行”的精确含义是什么？</li>
+<li>是谁在执行Verilog的语句？ 是电路，综合器，还是其它的？</li>
+<li>if的条件满足，就不执行else后的语句，这里的“不执行”又是什么意思？ 和描述电路有什么联系？</li>
+<li>有“并发执行”，又有“顺序执行”，还有“任何一个变量发生变化就立即执行”，以及“在任何情况下都执行”，它们都是如何在设计出来的电路中体现的？</li>
+</ul>
+<p>​	如果你无法对这些问题作出明确的回答，我们强烈建议你不要使用行为建模方式。如果你真的想弄懂它们，你需要阅读 <a target="_blank" rel="noopener" href="https://nju-projectn.github.io/dlco-lecture-note/exp/inst.eecs.berkeley.edu/~cs150/fa06/Labs/verilog-ieee.pdf">Verilog标准手册</a> 。</p>
+</blockquote>
+<p>​		标准手册太长了，留着慢慢读。</p>
+<h2 id="实验二-译码器和编码器"><a href="#实验二-译码器和编码器" class="headerlink" title="实验二 译码器和编码器"></a>实验二 译码器和编码器</h2><h3 id="任务：实现一个8-3优先编码器并在七段数码管上显示"><a href="#任务：实现一个8-3优先编码器并在七段数码管上显示" class="headerlink" title="任务：实现一个8-3优先编码器并在七段数码管上显示"></a>任务：<strong>实现一个8-3优先编码器并在七段数码管上显示</strong></h3><blockquote>
+<p><strong>功能描述</strong></p>
+<p>查找8-3优先编码器相关原理和实现方法，实现一个8-3编码器，完成8-3编码器的设计、功能仿真和硬件实现。</p>
+<p>输入一个8位二进制数，对此8位二进制数进行高位优先编码成一个3位二进制值，并根据是否有输入增加一位输入指示位，即8个输入全0时指示位为0，有任何一个输入为1时指示位为1。编码器的使能端可选实现。将此编码结果及指示位以二进制形式显示在四个发光二极管LED上。再将此结果跟据七段数码管的显示进行译码，将二进制的优先编码结果以十进制的形式显示在数码管上。</p>
+<p><strong>输入输出建议</strong></p>
+<p>输入可以使用拨动开关SW7-SW0。使能端可以用SW8。输出为LED2-0，输出指示可以是LED4，数码管输出为HEX0。</p>
+<p>例：我们从SW7—SW0输入00001110，因为我们设计的是一个高位优先的优先编码器，从左（高位）开始，第一位为1的是第3号位，那么优先编码器的编码二进制结果就为011，将这个值显示在发光二极管上，并且指示位也同时置为1。再对这个数值跟据七段数码管的显示进行译码，此时应显示为 <code>3</code> ，用HEX0显示，所以HEX0[6:0]应该译码为0110000（注意高低位顺序），那么在七段数码管上就会显示 <code>3</code> 这个字符。</p>
+</blockquote>
+<p>​	首先我们先在<code>vsrc</code>中新建文件<code>bcd7seg.v</code>实现七段数码管编码的模块。该模块在网上已经有很多实现方式了，这里需要注意一点，我们在<code>nvboard/board/N4</code>中能找到LED数码管每个管的名称，在组合显示数字时多尝试查看显示是否正确。接着实现顶层模块<code>top.v</code>，代码及注释如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">module top(x, en, y, f, led);</span><br><span class="line">	input [7:0] x;	//输入码</span><br><span class="line">	input en;	// 使能端</span><br><span class="line">	output reg [6:0] led; // 灯，数码管的引脚</span><br><span class="line">	output reg f;					// 输入指示位</span><br><span class="line">	output reg [2:0] y;		// 输出编码</span><br><span class="line">	integer i;</span><br><span class="line">	</span><br><span class="line">	// 实例化七段数码管编码模块</span><br><span class="line">	bcd7seg seg(</span><br><span class="line">		.b(&#123;1&#x27;b0, y&#125;), //接入引脚</span><br><span class="line">		.h(led)</span><br><span class="line">	);</span><br><span class="line">	</span><br><span class="line">	// 逻辑</span><br><span class="line">	always @(x or en) begin</span><br><span class="line">		f = 0;</span><br><span class="line">		if (en) begin</span><br><span class="line">			y = 0;</span><br><span class="line">			for(i = 0; i &lt;= 7; i = i + 1)</span><br><span class="line">				if(x[i] == 1) begin </span><br><span class="line">					y = i[2:0];	// 把十进制i转化为3位二进制数存入y中</span><br><span class="line">					f = 1&#x27;b1;</span><br><span class="line">				end</span><br><span class="line">			end</span><br><span class="line">		else y = 0;</span><br><span class="line">	end</span><br><span class="line">endmodule</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>​	<code>nvboard</code>的引脚接线和<code>Makefile</code>参照上一个实验即可。</p>
+<p>​	最终效果如下图所示，<code>LED4</code>是输入指示位，<code>SW8</code>是使能端，当使能端为1时允许输出，输入端为<code>00010100</code>，由于是优先编码，最高位4对应的LED2被点亮，数码管显示4。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2016.41.08-2693675-2693707.png" alt="截屏2023-08-22 16.41.08"></p>
+<h3 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h3><p>​	在实例化时发现引脚数目不对，8-3优先编码器的输出端为3位而数码管的输入端为4位，用<code>&#123;&#125;</code>将输出扩展一位达到效果。</p>
+<p>​	在数字电路设计与计算机组成一书中有提到电路中存在高阻态<code>Z</code>和不定值<code>X</code>，这类状态在<code>Verilog</code>中用<code>casez</code>和<code>casex</code>解决。首先要明确的是’?’代表的不是don’t care，而是’z’。再有就是case&#x2F;casez&#x2F;casex其实都是可综合的，这一点也要记住。</p>
+<p> 区分：</p>
+<ul>
+<li><p>case语句的表达式的值有4中情况：0、1、z、x。4种是不同的，故表达式要严格的相等才可以操作分支语句。</p>
+</li>
+<li><p>casez语句中的表达式情况有三种：0、1、x。不用关心z，z可以和任何数值相等，即z &#x3D;0.z&#x3D; 1,z&#x3D;x;</p>
+</li>
+<li><p>casex语句的表达式情况有二种：0、1.不用关心x和z。即x&#x3D;z&#x3D;0,x&#x3D;z&#x3D;1<img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-22%2017.02.57-2694983.png" alt="截屏2023-08-22 17.02.57"></p>
+</li>
+</ul>
+<p>​		<code>casez </code>用<code>?</code>表示无关项；<code>casex</code>用<code>x</code>表示无关值。</p>
+<h2 id="实验三-加法器与ALU"><a href="#实验三-加法器与ALU" class="headerlink" title="实验三 加法器与ALU"></a>实验三 加法器与ALU</h2><h3 id="任务：实现一个带有逻辑运算的简单ALU"><a href="#任务：实现一个带有逻辑运算的简单ALU" class="headerlink" title="任务：实现一个带有逻辑运算的简单ALU"></a>任务：<strong>实现一个带有逻辑运算的简单ALU</strong></h3><blockquote>
+<p>设计一个能实现如下功能的4位带符号位的 <strong>补码</strong> ALU：</p>
+<table>
+<thead>
+<tr>
+<th>功能选择</th>
+<th>功能</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>000</td>
+<td>加法</td>
+<td>A+B</td>
+</tr>
+<tr>
+<td>001</td>
+<td>减法</td>
+<td>A-B</td>
+</tr>
+<tr>
+<td>010</td>
+<td>取反</td>
+<td>Not A</td>
+</tr>
+<tr>
+<td>011</td>
+<td>与</td>
+<td>A and B</td>
+</tr>
+<tr>
+<td>100</td>
+<td>或</td>
+<td>A or B</td>
+</tr>
+<tr>
+<td>101</td>
+<td>异或</td>
+<td>A xor B</td>
+</tr>
+<tr>
+<td>110</td>
+<td>比较大小</td>
+<td>If A&lt;B then out&#x3D;1; else out&#x3D;0;</td>
+</tr>
+<tr>
+<td>111</td>
+<td>判断相等</td>
+<td>If A&#x3D;&#x3D;B then out&#x3D;1; else out&#x3D;0;</td>
+</tr>
+</tbody></table>
+<p>ALU进行加减运算时，需要能够判断结果是否为0，是否溢出，是否有进位等。这里，输入的操作数A和B都已经是补码。比较大小请按带符号数的方式设置。</p>
+<p>执行逻辑操作时不需要考虑overflow和进位。</p>
+<p>由于开发板上输入有限，可以使用SW作为数据输入，button作为选择端。</p>
+</blockquote>
+<p>​	实现四位ALU，我们首先实现模块接口，有3个输入：两个操作数A，B，一个选择操作数sel；4个输出，结果res，零标志位zero，溢出标志overflow，进位标志carry。下面给出每位的输出表达式：</p>
+<ul>
+<li><code>&#123; carry, res &#125; = a + b</code>，verilog语法自动扩展位得到carry bit。</li>
+<li>溢出位的判断需要分类：<ul>
+<li>在补码加法中：<code>overflow = (a[3] == b[3]) &amp;&amp; (res[3] != a[3]) </code>，如果两个操作数的符号位相同且均不同于结果的符号位，则说明产生溢出，因为正数加正数不会产生负数，对于两个负操作数同理。</li>
+<li>在补码减法中：<code>overflow = (tmp_a[3] == 1 &amp;&amp; tmp_b[3] == 0 &amp;&amp; tmp_    res[3] == 0) || (tmp_a[3] == 0 &amp;&amp; tmp_b[3] == 1 &amp;&amp; tmp_res[3] == 1);</code>，正数-负数，结果为负数，称为上溢，负数-正数，结果为正数，称为下溢。</li>
+</ul>
+</li>
+<li><code>zero = (res == 0) ? 1 :  0 </code>，直接比较就好。</li>
+</ul>
+<p>​	通过<code>case</code>语句实现选择操作。再连接到<code>nvboard</code>上进行验证即可。效果如下：</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-23%2014.06.59-2770822-2770823.png" alt="截屏2023-08-23 14.06.59"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line">a (SW7, SW6, SW5, SW4)		// 操作数a连接 SW7-4</span><br><span class="line">b (SW11, SW10, SW9, SW8)	// 操作数b连接 SW11-8</span><br><span class="line">res (LD3, LD2, LD1, LD0)	// 结果显示在 LED灯3-0 上</span><br><span class="line">zero LD15									// LED15 显示标志零</span><br><span class="line">carry LD14								// LED14 显示进位位</span><br><span class="line">overflow LD13							// LED13 显示溢出位</span><br><span class="line">sel (SW2, SW1, SW0)				// SW2-0 控制操作符</span><br></pre></td></tr></table></figure>
+
+<p>​	如图：<code>0001b - 1000b = 0001b + 0001b + 0111b = 1001b</code> 产生上溢，LED13被点亮。其余功能不再一一展示。</p>
+<h3 id="总结：-2"><a href="#总结：-2" class="headerlink" title="总结："></a>总结：</h3><p>​	在写<code>top.v</code>文件中的always语句块时，会用到之前的<code>always @ (*)</code>来省略敏感事件，但在实际操作时有些情况编译会不通过。如<img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-08-23%2014.25.03-2772159.png" alt="截屏2023-08-23 14.25.03"></p>
+<p>​	箭头所指的地方解释了编译失败的原因，因为我们将<code>tmp_res</code>作为敏感事件，这导致<code>always</code>语句中为<code>tmp_res</code>赋值时会唤醒敏感事件，在组合电路中产生环路，这是不允许的。</p>
+<p>​	编译时出现的另一个问题时在电路中会产生latches，我遇到的情况是<strong>原信号赋值或者判断</strong>，即在取反时直接使用以下语句<code>b = ~b</code>。更多避免latch的方法请阅读菜鸟教程**<a target="_blank" rel="noopener" href="https://www.runoob.com/w3cnote/verilog-latch.html">Verilog 避免 Latch</a>**。</p>
+<p>​	总之，在使用<code>always</code>语法块的时候要时刻注意模拟的电路是否正确，更好的办法是将电路图先画下来，这样更方便debug。</p>
+<h3 id="疑问："><a href="#疑问：" class="headerlink" title="疑问："></a>疑问：</h3><p>​	既然ALU有那么多功能，那我们把每个功能模块化后再在顶层模块实例化并使用他们可以吗？不过出现的问题是，实例化无法在always语句中使用，这样我们只能在电路中实例化每一个模块，那引脚该怎么连呢？需要使用多个引线<code>(wire)</code>先接入引脚，再在每个<code>case</code>语句判断后接入输入输出吗？既然采用模块化，case也可以被替代为选择器模块？又该怎么实现仿真？</p>
+<h3 id="一些Linux系统问题："><a href="#一些Linux系统问题：" class="headerlink" title="一些Linux系统问题："></a><a target="_blank" rel="noopener" href="https://blog.csdn.net/yjk13703623757/article/details/81055980">一些Linux系统问题</a>：</h3><h4 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dev/sda1: Inodes that were part of a corrupted orphan linked list found.</span><br><span class="line">/dev/sda1: UNEXPECTED INCONSISTENCY:; RUN fsck MANUALLY</span><br><span class="line">        (i.e., without -a or -p options)</span><br><span class="line">fsck exited with status code 4</span><br><span class="line">The root filesystem on /dev/sda3 requires a manual fsck</span><br><span class="line">modprobe: module ehci-orion not found in modules.dep</span><br><span class="line"></span><br><span class="line">BusyBox v1.22.1 (Debian 1:1.22.0-9+deb8u1) built-in shell (ash)</span><br><span class="line">Enter &#x27;help&#x27; for a list of built-in commands.</span><br><span class="line"></span><br><span class="line">/bin/sh: can&#x27;t access tty; job control turned off</span><br><span class="line">(initramfs) _</span><br></pre></td></tr></table></figure>
+
+<p>出错原因：磁盘检测不能通过，可能是因为系统突然断电或其它未正常关闭系统导致。</p>
+<h4 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fsck /dev/sda1   *// 修复对象取决于出错的对象，可以是一块磁盘或者一个VG*</span><br></pre></td></tr></table></figure>
+
+<p>然后系统会问你一些问题，稍作调整后，重启系统。</p>
+<h2 id="一些verilator语法："><a href="#一些verilator语法：" class="headerlink" title="一些verilator语法："></a>一些verilator语法：</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">For synthesizing hardware, two types of always blocks are relevant:</span><br><span class="line">Combinational: always @(*)</span><br><span class="line">Clocked: always @(posedge clk)</span><br></pre></td></tr></table></figure>
+
+<p>​	组合块·<code>always @(*)</code>等价于赋值语句<code>assign</code>，因此总是有一种方法可以双向表达组合电路。在使用哪种语法之间的选择主要是哪种语法更方便的问题。过程块内部代码的语法与外部代码的语法不同。过程块有一组更丰富的语句（例如，if-then，case），不能包含连续赋值*，但也引入了许多新的非直观的出错方式。</p>
+<p>​	<code>Clocked: always @(posedge clk)</code>建一个组合逻辑块，就像组合总是块一样，但也在组合逻辑块的输出端创建一组触发器（或“寄存器”）。逻辑块的输出不是立即可见的，而是仅在下一个（posedge-clk）之后才可见的。</p>
+<h3 id="Blocking-vs-Non-Blocking-Assignment"><a href="#Blocking-vs-Non-Blocking-Assignment" class="headerlink" title="Blocking vs. Non-Blocking Assignment"></a>Blocking vs. Non-Blocking Assignment</h3><p>There are three types of assignments in Verilog:</p>
+<ul>
+<li><strong>Continuous</strong> assignments (<code>assign x = y;</code>). Can only be used when <strong>not</strong> inside a procedure (“always block”).</li>
+<li>Procedural <strong>blocking</strong> assignment: (<code>x = y;</code>). Can only be used inside a procedure.</li>
+<li>Procedural <strong>non-blocking</strong> assignment: (<code>x &lt;= y;</code>). Can only be used inside a procedure.</li>
+</ul>
+<p>​	在<code>combinational always block</code>中，使用<code>blocking assignments</code>。在<code>clocked always block</code>中，使用非块分配。充分理解为什么对硬件设计不是特别有用，需要充分理解Verilog模拟器如何跟踪事件。不遵循这一规则会导致极难发现的错误，这些错误既不具有确定性，又在模拟硬件和合成硬件之间有所不同。</p>
+<p>​	在组合逻辑中使用<code>=</code>赋值，在时序逻辑中使用<code>&lt;=</code>赋值：</p>
+<p>举个例子：初始化<code>m=1，n=2，p=3</code>；分别执行以下语句</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1、begin </span><br><span class="line">  m=n；n=p；p=m；</span><br><span class="line">  end</span><br><span class="line">  </span><br><span class="line">2、begin</span><br><span class="line">  m&lt;=n; n&lt;=p; p&lt;=m;</span><br><span class="line">  end</span><br></pre></td></tr></table></figure>
+
+<p>​	结果分别是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1、m=2,n=3,p=2;（在给p赋值时m=2已经生效） </span><br><span class="line"></span><br><span class="line">2、m=2,n=3,p=1;(在begin-end过程中，m=2一直无效而是在整体执行完后才生效）</span><br></pre></td></tr></table></figure>
+
+<p>​	这两种赋值“&#x3D;”用于阻塞式赋值；“&lt;&#x3D;”用于非阻塞式赋值中。</p>
+<p>​	阻塞赋值：阻塞赋值语句是在这句之后所有语句执行之前执行的，即后边的语句必须在这句执行完毕才能执行，所以称为阻塞，实际上就是顺序执行。</p>
+<p>​	非阻塞赋值：非阻塞赋值就是与后边相关语句同时执行，即就是并行执行。</p>
+<p>​	所以一般时序电路使用非阻塞赋值，assign语句一般使用&#x3D;阻塞赋值；</p>
+<h3 id="verilog-同步复位与异步复位"><a href="#verilog-同步复位与异步复位" class="headerlink" title="verilog-同步复位与异步复位"></a>verilog-同步复位与异步复位</h3><p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-09%2016.00.42-4246445.png" alt="截屏2023-09-09 16.00.42"></p>
+<h2 id="实验四-计数器和时钟"><a href="#实验四-计数器和时钟" class="headerlink" title="实验四 计数器和时钟"></a>实验四 计数器和时钟</h2><h3 id="任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示"><a href="#任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示" class="headerlink" title="任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示"></a>任务：在nvboard开发板上实现一个计数器，在七段数码管上直接以十进制显示</h3><blockquote>
+<p>利用开发板上的频率为50MHz的时钟，请先设计一个分频器，其输入为50MHz的时钟，输出为一个频率为1Hz，周期为1秒的时钟信号。再用这个新的频率为1Hz的时钟信号作为你设计的时钟信号，进行计数。</p>
+<p>要求此计时器有开始、暂停和清零功能，要求从00计数到99，计数值到99后重新从零开始计数。在数码管上用两位数字显示。</p>
+<p>可以在计时结束的时候让某一个发光二极管闪烁一个时钟周期，提示计时结束。</p>
+</blockquote>
+<p>​	这涉及到时序逻辑电路问题。回想原来做过的实验，我们在配置nvboard的时候曾经写过一个<code>flow_light</code>流水灯，流水灯的实现和这次计数器的实验大同小异。如何控制始终周期呢？<code>flow_light</code>代码使用一个32位寄存器<code>led</code>作为计数器，在大于5000000时置0并更新流水灯。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">module top(</span><br><span class="line">	input clk,</span><br><span class="line">	input rst,</span><br><span class="line">	output reg [15:0] led</span><br><span class="line">);</span><br><span class="line">	reg [31:0] count;</span><br><span class="line">	always @(posedge clk) begin</span><br><span class="line">		if (rst) begin led &lt;= 1; count &lt;= 0; end</span><br><span class="line">		else begin</span><br><span class="line">			if (count == 0) led &lt;= &#123;led[14:0], led[15]&#125;;</span><br><span class="line">			count &lt;= (count &gt;= 5000000 ? 32&#x27;b0 : count + 1);</span><br><span class="line">		end</span><br><span class="line">	end</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	同时，讲义 Listing 16 给出了一秒钟生成代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk)</span><br><span class="line">  if(count_clk==24999999)</span><br><span class="line">  begin</span><br><span class="line">    count_clk &lt;=0;</span><br><span class="line">    clk_1s &lt;= ~clk_1s;</span><br><span class="line">  end</span><br><span class="line">  else</span><br><span class="line">    count_clk &lt;= count_clk+1;</span><br></pre></td></tr></table></figure>
+
+<p>​	其中，为满足要求，变量<code>count_clk</code>的宽度应为26位。</p>
+<p>​	现在开始设计计数器，首先规定输入输出，按照实验要求，设置如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">module top(</span><br><span class="line">	input clk, // 时钟</span><br><span class="line">	input rst, // 复位位</span><br><span class="line">	output reg [3:0] b0, // 连接7位数码管</span><br><span class="line">	output reg [3:0] b1, // </span><br><span class="line">	output reg [6:0] h0, //</span><br><span class="line">  output reg [6:0] h1, // 同上</span><br><span class="line">	input en // 使能位，暂停位	</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>​	接着设置必要的模块内导线，其中设置暂存器的原因是<code>verilator</code>不支持不同位的导线相连，如<code>b0 = (count % 10) is not allowed</code>，尝试使用<code>b0 = ( count % 10)[3:0]</code>，仍然报错，可能是语法原因。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">reg [25:0] count_clk = 0; // 计时器，用于1秒的更新</span><br><span class="line">reg [6:0] count = 0;			// 计数器，从0更新到99</span><br><span class="line">reg [6:0] count_tmp1;			// 暂存器1，存储个位</span><br><span class="line">reg [6:0] count_tmp2;			// 暂存器2，存储十位</span><br></pre></td></tr></table></figure>
+
+<p>​	实例化七位数码管，七位数码管的代码已封装到<code>bcd7seg.v</code>中：</p>
+<pre><code>bcd7seg seg0(.b(b0), .h(h0));
+bcd7seg seg1(.b(b1), .h(h1));
+</code></pre>
+<p>​	最后展示代码实现：</p>
+<pre><code>always @(posedge clk or posedge rst) begin
+    if(en) begin
+        if (rst || count == 100) begin
+            count_clk &lt;= 0;
+            count &lt;= 0;
+       		end
+        else if(count_clk == 9999999) begin
+            count_clk &lt;= 26&#39;b0;
+            count_clk &lt;= ~count_clk;
+            count &lt;= count + 1;
+            count_tmp1 &lt;= count % 10;
+            b0 &lt;= count_tmp1[3:0];
+            count_tmp2 &lt;= ((count - count % 10) / 10);
+            b1 &lt;= count_tmp2[3:0];
+        end
+        else begin
+            count_clk &lt;= count_clk + 1;
+        end
+    end
+    else begin
+        count &lt;= count;
+        b0 &lt;= b0;
+        b1 &lt;= b1;
+    end
+end
+</code></pre>
+<p>简单展示实验结果：</p>
+<p>​	将<code>SW0</code>设置为使能位，点击变为绿色时计数开始，数码管开始变化：</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2010.18.29.png" alt="截屏2023-09-11 10.18.29">	</p>
+<p>​	再次点击<code>SW0</code> 置 <code>en = 0</code>使得计数器暂停，<code>PBC</code>为复位位，点击后置位为0，因为笔者还没学会在markdown中插入动态图片，展示略过。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2010.19.00-4398757.png" alt="截屏2023-09-11 10.19.00"></p>
+<h3 id="总结：-3"><a href="#总结：-3" class="headerlink" title="总结："></a>总结：</h3><p>​	计数器的实现涉及到时序逻辑电路的知识，简单归纳几点：</p>
+<ul>
+<li>时序逻辑电路使用<code>always @ (posedge clk)</code>，<code>clk</code>为<code>input</code>，在nvboard上自动更新；<code>posedge</code>指明时序逻辑块内的电路变化发生在时钟上沿，同理<code>negedge</code>指明变化发生在时钟下沿。</li>
+<li>在时序逻辑电路中，即<code>always @ (posedge clk)</code>块中，使用非阻塞声明<code>x &lt;= y</code>，这表明整个时序逻辑块内的电路是并行的。而在组合逻辑电路中，使用阻塞声明<code>x = y</code>。他们的区别在上文中有提到。</li>
+<li>遇到的问题：无法通过 <code>b0 = (count % 10)</code> 将26位宽的类型通过截断放入4位宽的b0中，笔者的解决方法是新声明一个暂存寄存器存储值后使用verilator语法<code>b0 = count_tmp1[3:0]</code>赋值，是否还有更好的办法？</li>
+</ul>
+<h2 id="实验五-寄存器组及存储器"><a href="#实验五-寄存器组及存储器" class="headerlink" title="实验五 寄存器组及存储器"></a>实验五 寄存器组及存储器</h2><h3 id="任务-请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为-，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。"><a href="#任务-请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为-，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。" class="headerlink" title="任务 请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为 ，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。"></a>任务 请在一个工程中完成如下的寄存器堆和RAM。寄存器堆和RAM的大小均为 ，即都有16个存储单元，每个存储单元都是8位的，均可以进行读写。</h3><blockquote>
+<h3 id="实现寄存器堆："><a href="#实现寄存器堆：" class="headerlink" title="实现寄存器堆："></a>实现寄存器堆：</h3><p>​	读取时不需要时钟控制，即读地址有效后，直接输出数据。写入时通过时钟上升沿进行控制。</p>
+<p>​	此时可用以下方式输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assign out = ram[addr];</span><br></pre></td></tr></table></figure>
+
+<p>​	采用下面的方式进行初始化。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">initial</span><br><span class="line">begin</span><br><span class="line">  $readmemh(&quot;D:/digital_logic/mem1.txt&quot;, ram, 0, 15);</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>​	初始化数值为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@0 00</span><br><span class="line">@1 01</span><br><span class="line">@2 02</span><br><span class="line">@3 03</span><br><span class="line">@4 04</span><br><span class="line">@5 05</span><br><span class="line">@6 06</span><br><span class="line">@7 07</span><br><span class="line">@8 08</span><br><span class="line">@9 09</span><br><span class="line">@a 0a</span><br><span class="line">@b 0b</span><br><span class="line">@c 0c</span><br><span class="line">@d 0d</span><br><span class="line">@e 0e</span><br><span class="line">@f 0f</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="存储器的行为和FPGA的RAM模块"><a href="#存储器的行为和FPGA的RAM模块" class="headerlink" title="存储器的行为和FPGA的RAM模块"></a><strong>存储器的行为和FPGA的RAM模块</strong></h3><blockquote>
+<p>​	以下存储器综合时，综合器是否会用FPGA的RAM模块来实现这个模块？</p>
+<p>​	Listing 19 存储器实现代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">module ram #(</span><br><span class="line">  parameter RAM_WIDTH = 32,</span><br><span class="line">  parameter RAM_ADDR_WIDTH = 10</span><br><span class="line">)(</span><br><span class="line">    input clk,</span><br><span class="line">    input we,</span><br><span class="line">    input [RAM_WIDTH-1:0] din,</span><br><span class="line">    input [RAM_ADDR_WIDTH-1:0] inaddr,</span><br><span class="line">    input [RAM_ADDR_WIDTH-1:0] outaddr,</span><br><span class="line">    output [RAM_WIDTH-1:0] dout</span><br><span class="line">);</span><br><span class="line">  reg [RAM_WIDTH-1:0] ram [(2**RAM_ADDR_WIDTH)-1:0];</span><br><span class="line">  always @(posedge clk)</span><br><span class="line">      if (we)</span><br><span class="line">        ram[inaddr] &lt;= din;</span><br><span class="line">  assign dout = ram[outaddr];</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	如果将表 Listing 19中存储器实现部分改为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk)</span><br><span class="line">  if (we)</span><br><span class="line">    ram[inaddr] &lt;= din;</span><br><span class="line">  else</span><br><span class="line">    dout &lt;= ram[outaddr];</span><br></pre></td></tr></table></figure>
+
+<p>该存储器的行为是否会发生变化？</p>
+</blockquote>
+<p>​	原代码<code>assign dout = ram[outaddr]</code>书写格式为组合逻辑电路格式，该读取数据不受时钟控制，只要输出地址有效，就会读取数据。而修改后的代码将<code>dout &lt;= ram[outaddr]</code>写入时序逻辑电路中，这样一来，读取数据将受到时钟信号控制，在时钟信号上沿且使能端为1时读取数据。</p>
+<h3 id="实验思路："><a href="#实验思路：" class="headerlink" title="实验思路："></a>实验思路：</h3><p>​	<em><strong>Listing 20</strong></em> 给出了存储器实例代码，我们只需要在此基础上稍加修改，就可以得到一个16 * 8 的存储器。</p>
+<pre><code>module top(clk, we, inaddr, outaddr, din, dout, rst);
+input clk; 
+input we;
+input rst;
+input [3:0] inaddr;
+input [3:0] outaddr;
+input [7:0] din;
+output reg [7:0] dout;
+reg [7:0] ram [15:0];
+
+initial
+begin
+    $readmemh(&quot;/home/thelonging/verilator/dlco-nju/lab05/v_rams_16/mem/mem1.txt&quot;, ram, 0, 15);
+end
+
+always @ (posedge clk)
+begin
+    if (we)
+        ram[inaddr] &lt;= din;
+end
+
+assign dout = ram[outaddr];
+endmodule
+</code></pre>
+<h3 id="实验结果："><a href="#实验结果：" class="headerlink" title="实验结果："></a>实验结果：</h3><p>​	通过nvboard观察实验结果，我们置<code>SW15-SW12</code>为读地址，<code>SW11-SW8</code>为写地址，<code>SW7-SW0</code>为输入数据，<code>LED7-LED0</code>显示读出的数据，<code>PBC</code>为写使能位。</p>
+<p>​	当前读取存储地址位为<code>0001</code>的数据，结果显示为1，如下图所示</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.12.10-4416337.png"></p>
+<p>​	现在我们尝试在地址为0的地方写入<code>00000111</code>，点击<code>PBC</code>使读使能位有效写入数据，结果如下图所示：</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-11%2015.18.01-4416688.png"></h3><h3 id="总结：-4"><a href="#总结：-4" class="headerlink" title="总结："></a>总结：</h3><ul>
+<li><p><code>verilator</code>语句中的<code>initial</code>语句块完成在RAM的初始化，该语句在一个verilator中只能使用一次。</p>
+</li>
+<li><p>当需要初始化的RAM数据量较大的时候，可以使用文件来在系统启动时直接装入RAM数据。 Verilog提供了以下语句来将文件中的数据导入到RAM中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">initial</span><br><span class="line">begin</span><br><span class="line">  $readmemh(&quot;D:/digital_logic/mem1.txt&quot;, ram, 0, 7);</span><br><span class="line">end</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="实验六-移位寄存器及桶形移位器"><a href="#实验六-移位寄存器及桶形移位器" class="headerlink" title="实验六 移位寄存器及桶形移位器"></a>实验六 移位寄存器及桶形移位器</h2><h3 id="任务-利用移位寄存器实现随机数发生器"><a href="#任务-利用移位寄存器实现随机数发生器" class="headerlink" title="任务 利用移位寄存器实现随机数发生器"></a>任务 <strong>利用移位寄存器实现随机数发生器</strong></h3><blockquote>
+<p>我们可以利用8位移位寄存器来实现一个简单的随机数发生器。 经典的LFSR（线性反馈移位寄存器， <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Linear-feedback_shift_register">Linear-feedback shift register</a> ）可以使用n位移位寄存器生成长度为 的二进制循环序列。 这类序列的片段在表观上是随机的，所以被广泛用于通信中的随机序列生成。例如，在CDMA通信中的长码的长度就是 <code>2^42 - 1</code>的伪随机序列。</p>
+<p>具体实现时，可以用一个8位右移移位寄存器，从左到右的比特以<br>$$<br>x_7x_6x_5x_4x_3x_2x_1x_0<br>$$<br>表示。每个时钟周期右移一位<code>x0</code>被移出，最左边移入的位按照上一周期的值计算 <a target="_blank" rel="noopener" href="https://nju-projectn.github.io/dlco-lecture-note/exp/06.html#f1">1</a> ：<br>$$<br>x_8 &#x3D; x_4⊕x_3⊕x_2⊕x_0<br>$$<br>例如，初始二进制值为00000001时，移位寄存器的状态将按 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0000 0001 -&gt; 1000 0000 -&gt; 0100 0000 -&gt; 0010 0000 -&gt; 1000 1000 ...</span><br></pre></td></tr></table></figure>
+
+<p>变化。 该序列的周期为255。 当然，当初始值为全零时，系统将一直停留在全零状态，所以需要对全零状态进行特殊处理。</p>
+<p>请实现一个8位的周期为255的伪随机序列，以按钮为时钟信号，并请将8位二进制数以十六进制显示在数码管上，在DE10-Standard开发板上观察生成的随机数序列。</p>
+</blockquote>
+<p>​	关键步骤的实现讲义已经给出了，我们只需要在开发板上实现它就可以了。具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">module top(</span><br><span class="line">	input clk,	// 时钟</span><br><span class="line">	output reg [3:0] b0,	// 存储高四位</span><br><span class="line">	output reg [3:0] b1,	// 存储低四位</span><br><span class="line">	output reg [6:0] h0,	// 数码管上显示低四位</span><br><span class="line">  output reg [6:0] h1,	// 数码管上显示高四位</span><br><span class="line">	output reg [7:0] show,	// 存储八位二进制</span><br><span class="line">	output reg [7:0] led	// 用于同步显示八位二进制</span><br><span class="line">);</span><br><span class="line">	reg [31:0] count;	//计时器</span><br><span class="line">	reg x8;						// 更新位</span><br><span class="line">	reg [7:0] start;	// 初始值</span><br><span class="line">	bcd7seg seg0 (.b(b0), .h(h0));	// 实例化灯0</span><br><span class="line">	bcd7seg seg1 (.b(b1), .h(h1));	// 实例化灯1</span><br><span class="line"></span><br><span class="line">	// 初始化</span><br><span class="line">	initial </span><br><span class="line">	begin</span><br><span class="line">		start = 8&#x27;b00000001;</span><br><span class="line">		count = 0;</span><br><span class="line">		show = start;</span><br><span class="line">	end</span><br><span class="line">	</span><br><span class="line">	// 时序逻辑块，按时钟上沿变化</span><br><span class="line">	always @ (posedge clk)</span><br><span class="line">	begin</span><br><span class="line">		// 当计数器为0时，更新数据</span><br><span class="line">		if(count == 0) begin</span><br><span class="line">			x8 &lt;= show[4] ^ show[3] ^ show[2] ^ show[0];</span><br><span class="line">			show &lt;= &#123;x8, show[7:1]&#125;;</span><br><span class="line">			b1 &lt;= show[7:4];</span><br><span class="line">			b0 &lt;= show[3:0];</span><br><span class="line">			led &lt;= show;</span><br><span class="line">			count &lt;= count + 1;</span><br><span class="line">		end</span><br><span class="line">		else begin</span><br><span class="line">			// 计数</span><br><span class="line">			count &lt;= (count &gt;= 25000000 ? 32&#x27;b0 : count + 1);</span><br><span class="line">		end</span><br><span class="line">	end</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	同时，因为此任务中需要在数码管上显示16进制数，我们需要更新七位数码管的模块代码，给出每个灯管对应字母，具体如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">		a</span><br><span class="line">		_</span><br><span class="line">f	| 	| b</span><br><span class="line">		-			g</span><br><span class="line">e	|		| c</span><br><span class="line">		-</span><br><span class="line">		d</span><br><span class="line">module bcd7seg(</span><br><span class="line">	input [3:0] b,</span><br><span class="line">	output reg [6:0] h</span><br><span class="line">);</span><br><span class="line">	always @ (*)</span><br><span class="line">		case (b)</span><br><span class="line">			//	   abcdefg</span><br><span class="line">			0: h =  7&#x27;b0000001;</span><br><span class="line">			1: h =  7&#x27;b1001111;</span><br><span class="line">			2: h =  7&#x27;b0010010; </span><br><span class="line">			3: h =  7&#x27;b0000110;</span><br><span class="line">			4: h =  7&#x27;b1001100;</span><br><span class="line">			5: h =  7&#x27;b0100100;</span><br><span class="line">			6: h =  7&#x27;b0100000;</span><br><span class="line">			7: h =  7&#x27;b0001111;</span><br><span class="line">			8: h =  7&#x27;b0000000; </span><br><span class="line">			9: h =  7&#x27;b0001100;</span><br><span class="line">			10: h = 7&#x27;b0001000; </span><br><span class="line">			11: h = 7&#x27;b1100000;</span><br><span class="line">			12: h = 7&#x27;b0110001;</span><br><span class="line">			13: h = 7&#x27;b1000010;</span><br><span class="line">			14: h = 7&#x27;b0110000;</span><br><span class="line">			15: h = 7&#x27;b0111000;</span><br><span class="line">		endcase</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<h3 id="实验展示"><a href="#实验展示" class="headerlink" title="实验展示"></a>实验展示</h3><p>​	下图截取了随机数发生器工作时的片段，<code>SEG0</code>和<code>SEG1</code>显示<code>LED7-LED0</code>所表示的八位二进制位，显示结果按十六进制给出，当前现实为 <code>7:0</code>，对应<code>0111 0000</code>。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-12%2011.50.44-4495909-4495915.png" alt="截屏2023-09-12 11.50.44"></p>
+<h3 id="总结：-5"><a href="#总结：-5" class="headerlink" title="总结："></a>总结：</h3><p>​	这次实验卡住笔者的地方是使七位数码管显示的结果与LED灯小时的结果保持一致。在verilator代码中，如果直接使用<code>show</code>连接LED灯，LED灯显示的数据会比数码管显示的数据快一个周期。这说明<code>show</code>的更新比 <code>b0 、b1</code>更快，观察代码，<u>这可能是因为需要把show的数据更新完之后，才能将数据输入到<code>b0</code>和<code>b1</code>中去？</u><strong>此问题笔者尚未解决，但是增加一个<code>led</code>作为新的输出后倒实现了同步的效果。</strong></p>
+<h2 id="实验七-状态机及键盘输入"><a href="#实验七-状态机及键盘输入" class="headerlink" title="实验七 状态机及键盘输入"></a>实验七 状态机及键盘输入</h2><h3 id="任务-实现单个按键的ASCII码显示"><a href="#任务-实现单个按键的ASCII码显示" class="headerlink" title="任务 实现单个按键的ASCII码显示"></a>任务 <strong>实现单个按键的ASCII码显示</strong></h3><blockquote>
+<ul>
+<li>七段数码管低两位显示当前按键的键码，中间两位显示对应的ASCII码（转换可以考虑自行设计一个ROM并初始化）。只需完成字符和数字键的输入，不需要实现组合键和小键盘。</li>
+<li>当按键松开时，七段数码管的低四位全灭。</li>
+<li>七段数码管的高两位显示按键的总次数。按住不放只算一次按键。只考虑顺序按下和放开的情况，不考虑同时按多个键的情况。</li>
+</ul>
+</blockquote>
+<p>​	要解决的问题：</p>
+<pre><code> 1. 如何判断按键是否松开
+ 2. 如何判断按键按住不放	
+ 3. 如何记录总按键次数
+ 4. 如何初始化一个ROM
+</code></pre>
+<p>​	既然要实现的功能这么多，我们不妨先把大体的框架搭好，回顾之前搭建nvboard实验平台，在example里面已经实现了如何接收按键并输出的模块，在文件<code>nvboard/example/vsrc/ps2_board.v</code>中，我们看懂了直接拿过来用就可以了，不过最终的版本要做一些修改，下面给出修改后的<code>ps2_board.v</code>代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">module ps2_keyboard(clk,resetn,ps2_clk,ps2_data, out0, out1);</span><br><span class="line">    input clk,resetn,ps2_clk,ps2_data;</span><br><span class="line">    output reg [3:0] out0[2:0], out1[2:0];</span><br><span class="line"></span><br><span class="line">    reg [9:0] buffer;        	// ps2_data bits</span><br><span class="line">    reg [3:0] count;  				// count ps2_data bits</span><br><span class="line">    reg [2:0] ps2_clk_sync;		</span><br><span class="line"></span><br><span class="line">    always @(posedge clk) begin</span><br><span class="line">        ps2_clk_sync &lt;=  &#123;ps2_clk_sync[1:0],ps2_clk&#125;;</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    wire sampling = ps2_clk_sync[2] &amp; ~ps2_clk_sync[1];</span><br><span class="line"></span><br><span class="line">    always @(posedge clk) begin</span><br><span class="line">        if (resetn == 0) begin // reset</span><br><span class="line">            count &lt;= 0;</span><br><span class="line">        end</span><br><span class="line">        else begin</span><br><span class="line">            if (sampling) begin</span><br><span class="line">              if (count == 4&#x27;d10) begin</span><br><span class="line">                if ((buffer[0] == 0) &amp;&amp;  // start bit</span><br><span class="line">                    (ps2_data)       &amp;&amp;  // stop bit</span><br><span class="line">                    (^buffer[9:1])) begin      // odd  parity</span><br><span class="line">                    $display(&quot;receive %x&quot;, buffer[8:1]);</span><br><span class="line">		    out0 &lt;= &#123;out0[1], out0[0], buffer[4:1]&#125;;</span><br><span class="line">		    out1 &lt;= &#123;out1[1], out1[0], buffer[8:5]&#125;;</span><br><span class="line">                end</span><br><span class="line">                count &lt;= 0;     // for next</span><br><span class="line">              end else begin</span><br><span class="line">                buffer[count] &lt;= ps2_data;  // store ps2_data</span><br><span class="line">                count &lt;= count + 3&#x27;b1;</span><br><span class="line">              end</span><br><span class="line">            end</span><br><span class="line">        end</span><br><span class="line">    end</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>​	讲义中解释了大部分参数，笔者在下面贴上讲义内容，在此着重介绍笔者修改的部分，添加了<code>output reg [3:0] out1[2:0], out[2:0]</code>用于记录三个时钟周期内的键盘输出变化，<code>out1</code>和<code>out0</code>分别记录高四位和低四位，这两个参数将在顶层模块用于解决上述提到的<strong>问题1</strong>和<strong>问题2</strong>，实现方法为每个时钟周期向左位移一次，抛弃最高位并更新最低位。</p>
+<blockquote>
+<p>​	代码首先通过ps2_clk_sync记录PS2时钟信号的历史信息，并检测时钟的下降沿，当发现下降沿时将sampling置一。然后开始逐位接收数据并放入缓冲区fifo队列,收集完11个bit后将缓冲区转移至数据队列fifo。</p>
+<p>​	键盘控制器模块设置了一个8字节的fifo队列，以防止键盘数据发送过快，处理模块来不及取走数据而丢失。这类fifo队列在数字系统中很常见，它主要用于在两个处理速度不同的模块之间传递数据。 上游模块负责在队列中添加数据，下游模块负责取出数据进行处理。fifo队列的缓冲作用可以在下游处理模块来不及处理数据时临时存放数据。 fifo是一个先进先出的队列，配有写指针和读指针。当队列不空时，送出ready信号，表示此时有数据要处理； 当队列溢出时，送出overflow信号。按键处理系统调用该模块时，需要在键盘控制器ready信号为1的情况下读取键盘数据，确认读取完毕后将nextdata_n置零 <strong>一个周期</strong> 。 这时，键盘控制器模块收到确认读取完毕的信号，将读指针前移，准备提供下一数据。请读者自行考虑处理模块与本模块的配合时序，避免漏键或者重复读取。当然，也可自行设计两个模块交互的时序。</p>
+</blockquote>
+<p>​	接着我们考虑如何实现七位数码管全熄灭，很显然我们需要修改七位数码管代码<code>bcd7seg.v</code>，笔者的想法是增加一位控制位<code>en</code>，<code>en = 1</code>时，灯亮，<code>en = 0</code>时灯灭，控制明暗的逻辑模块将放在顶层模块<code>top.v</code>中，由于实现简单这里将不给出代码的具体实现。</p>
+<p>​	最后我们要在顶层模块中实现实验要求，笔者的实现思路是从最简单的<strong>1.显示当前按键的键码开始，2.接着实现按键松开时数码管全灭，3.七段数码管的高两位显示按键的总次数，4.最后实现初始化ROM并输出对应ASCII码</strong>，本文将不再赘述具体细节。</p>
+<p>​	重点讲一讲上述问题的解决：</p>
+<ol>
+<li>通过记录三个周期内的键码变化，我们可以判断当前按键是否已松开，并更新使能位</li>
+<li>通过记录两个周期内使能位的变化，我们可以判断按键按下了多少次，相邻周期内使能位高低电平变化代表按键按下一次</li>
+<li>初始化ROM的方法在存储器一章已经给出具体实现，在本节中，我们通过<code>（通码，ASCII码）</code>的方式存储，其中通码为地址，ASCII码为值，这种方法会浪费大量的存储空间，但是实现简单。</li>
+</ol>
+<p>​	下面将给出代码实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">module top (</span><br><span class="line">	input clk,	// 时钟</span><br><span class="line">	input rst,	// 复位位</span><br><span class="line">	input ps2_clk,	// 键盘时钟</span><br><span class="line">	input ps2_data,	// 接收键值</span><br><span class="line">	output reg [3:0] b0,	// 用于显示键值低四位</span><br><span class="line">	output reg [3:0] b1,	// 用于显示键值高四位</span><br><span class="line">	output reg [6:0] h0,	</span><br><span class="line">	output reg [6:0] h1,</span><br><span class="line">	output reg [6:0] light6, light5, light4, light3, light2, light1,</span><br><span class="line">	output reg en,	// 用于控制灯管明暗</span><br><span class="line">	output reg [7:0] count,	// 记录按键的总次数</span><br><span class="line">	output reg [7:0] d1,	// 显示ASCII码的十位</span><br><span class="line">	output reg [7:0] d0		// 显示ASCII码的个位</span><br><span class="line">);</span><br><span class="line">	</span><br><span class="line">	reg [7:0] rom [255:0];	//	只读存储器，存储按键对应的ASCII码</span><br><span class="line">	reg [3:0] out0_clk_sync [2:0];	// 记录三个周期的键码低四位</span><br><span class="line">	reg [3:0] out1_clk_sync [2:0];	// 记录三个周期的键码高四位</span><br><span class="line">	reg [1:0] en_clk_sync;	// 记录两个周期内使能位的变化</span><br><span class="line">	reg [3:0] r1, r0;	// 临时寄存器</span><br><span class="line"></span><br><span class="line">	// 初始化</span><br><span class="line">	initial begin </span><br><span class="line">		count = 0;</span><br><span class="line">		en_clk_sync[1] = 0;</span><br><span class="line">		en_clk_sync[0] = 0;</span><br><span class="line">		$readmemh(&quot;/home/thelonging/verilator/dlco-nju/lab07/keyboard/mem/mem1.txt&quot;, rom);</span><br><span class="line">	end</span><br><span class="line">	</span><br><span class="line">	// 将最新的键值存储到显示中去</span><br><span class="line">	assign b0 = out0_clk_sync[0];</span><br><span class="line">	assign b1 = out1_clk_sync[0];</span><br><span class="line"></span><br><span class="line">	always @ (posedge clk) </span><br><span class="line">	// 用于判断按键是否松开，并更新数据</span><br><span class="line">	begin</span><br><span class="line">		if((out1_clk_sync[2] == out1_clk_sync[0]) &amp;&amp;</span><br><span class="line">			(out0_clk_sync[2] == out0_clk_sync[0]) &amp;&amp;</span><br><span class="line">			(out1_clk_sync[1] == 4&#x27;hf) &amp;&amp;</span><br><span class="line">			(out0_clk_sync[1] == 4&#x27;h0)</span><br><span class="line">		) begin</span><br><span class="line">			en &lt;= 0;</span><br><span class="line">		end else begin</span><br><span class="line">		       en &lt;= 1;</span><br><span class="line">		       &#123;r1, r0&#125; &lt;= rom[&#123;out1_clk_sync[0], out0_clk_sync[0]&#125;];</span><br><span class="line">		      d0 &lt;= &#123;r1, r0&#125; % 10;</span><br><span class="line">		      d1 &lt;= ((&#123;r1, r0&#125; - &#123;r1, r0&#125; % 10) / 10);</span><br><span class="line">	       	end</span><br><span class="line">	end</span><br><span class="line"></span><br><span class="line">	// 记录两个周期的使能位</span><br><span class="line">	always @ (posedge clk)</span><br><span class="line">	begin</span><br><span class="line">		en_clk_sync &lt;= &#123;en_clk_sync[1], en&#125;;</span><br><span class="line">	end</span><br><span class="line">	</span><br><span class="line">	// 记录按下的次数</span><br><span class="line">	always @ (en_clk_sync)</span><br><span class="line">	begin</span><br><span class="line">		if(en_clk_sync[1] != en_clk_sync[0]) begin</span><br><span class="line">			count = count + 1;</span><br><span class="line">		end else begin</span><br><span class="line">			count = (count == 8&#x27;b11111111) ? 0 : count;</span><br><span class="line">		end</span><br><span class="line">	end</span><br><span class="line"></span><br><span class="line">	// 实例化七位数码管并连线</span><br><span class="line">	bcd7seg seg0(.b(b0), .h(h0), .en(en));</span><br><span class="line">	bcd7seg seg1(.b(b1), .h(h1), .en(en));</span><br><span class="line">	</span><br><span class="line">	bcd7seg seg2(.b(d0[3:0]), .h(light1), .en(en));</span><br><span class="line">	bcd7seg seg3(.b(d1[3:0]), .h(light2), .en(en));</span><br><span class="line">	</span><br><span class="line">	bcd7seg seg6(.b(count[3:0]), .h(light5), .en(1));</span><br><span class="line">	bcd7seg seg7(.b(count[7:4]), .h(light6), .en(1));</span><br><span class="line"></span><br><span class="line">	// 实例化键盘并连线</span><br><span class="line">	ps2_keyboard my_keyboard(</span><br><span class="line">		.clk(clk),</span><br><span class="line">		.resetn(~rst),</span><br><span class="line">		.ps2_clk(ps2_clk),</span><br><span class="line">		.ps2_data(ps2_data),</span><br><span class="line">		.out0(out0_clk_sync),</span><br><span class="line">		.out1(out1_clk_sync)</span><br><span class="line">	);</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<h3 id="实验展示："><a href="#实验展示：" class="headerlink" title="实验展示："></a>实验展示：</h3><p>​	这个图比较难截，这里放一张简单说一下，因为mac截图时按下的是<code>shift</code>键，对应键值显示在SEG1、SEG0中，为12，<code>shift</code>的ASCII码为16，显示在SEG3，SEG2中，高两位数码管显示按下13次，<code>LED0</code>亮是因为这里接了使能位。</p>
+<p><img src="/../images/dlco-nju/%E6%88%AA%E5%B1%8F2023-09-13%2016.31.06-4593884.png" alt="截屏2023-09-13 16.31.06"></p>
+<h3 id="总结：-6"><a href="#总结：-6" class="headerlink" title="总结："></a>总结：</h3><p>​	verilator的一些语法问题笔者还没有充分理解：</p>
+<ol>
+<li><p>当声明<code>output reg [3:0] out0[2:0]</code>时，不能通过<code>out0 &lt;= &#123;out0[1：0], buffer[4:1]&#125;;</code>代码实现左移操作而必须通过拆开<code>out0[1],out0[0]</code>才能实现位移操作 <code>out0 &lt;= &#123;out0[1], out0[0], buffer[4:1]&#125;;</code></p>
+</li>
+<li><p>在记录按下次数时不能写位时序逻辑电路而必须写为组合逻辑电路，以下是错误写法，问题就是虽然是沿时钟上沿变化，但是里面的判断并未和时钟有关系，为什么这样写了之后数据会变化且无规律。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 记录按下的次数 错误版</span><br><span class="line">	always @ (posedge clk)</span><br><span class="line">	begin</span><br><span class="line">		if(en_clk_sync[1] != en_clk_sync[0]) begin</span><br><span class="line">			count = count + 1;</span><br><span class="line">		end else begin</span><br><span class="line">			count = (count == 8&#x27;b11111111) ? 0 : count;</span><br><span class="line">		end</span><br><span class="line">	end</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="评估电路综合后的时序"><a href="#评估电路综合后的时序" class="headerlink" title="评估电路综合后的时序:"></a>评估电路综合后的时序:</h2><blockquote>
+<p>​	我们提供了一个基于开源EDA的综合后时序评估项目. 这个项目通过<a target="_blank" rel="noopener" href="https://yosyshq.net/yosys">开源RTL综合器yosys</a>对RTL设计进行综合, 并映射到一个45nm的<a target="_blank" rel="noopener" href="https://mflowgen.readthedocs.io/en/latest/stdlib-freepdk45.html">开源工艺库nangate45</a>, 然后将综合得到的网表文件和工艺库中的标准单元信息文件输入到<a target="_blank" rel="noopener" href="https://github.com/OSCC-Project/iEDA/tree/master/src/operation/iSTA">开源静态时序分析工具iSTA</a>中, iSTA将快速评估RTL设计中的时序路径, 并给出时序余量最少的若干条路径, 供RTL设计者参考. 通过上述方式, RTL设计者可快速得知RTL设计的时序情况, 并对RTL设计进行快速迭代.</p>
+<p>你可以通过以下命令克隆该项目, 具体操作方式请阅读项目中的README.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@github.com:OSCPU/yosys-sta.git</span><br></pre></td></tr></table></figure>
+
+<p>尝试用上述项目评估你的数字电路实验.</p>
+</blockquote>
+<p>​	下载之后，会有个叫yosys-sta的文件，笔者目前找到的使用方法就是把之前verilator项目中的vsrc复制粘贴到该文件目录下，改名为exmaple，然后运行命令<code>make sta</code>，评估结果会存储在<code>result</code>目录中。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>​	笔者断断续续一个月把讲义要求的数字电路必做部分实验做完了，剩下的实验就先放着，去做PA1去，说实做到现在感觉也只学到了皮毛，感觉只会写代码，对于实际如何连线肯定还是存在很大困难，不知道在这个地方偷的懒后面会不会需要补回来，<del>遗留的问题也不想解决。</del></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/21/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/08/21/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">搭建verilator仿真环境</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-21 13:21:14 / 修改时间：17:04:57" itemprop="dateCreated datePublished" datetime="2023-08-21T13:21:14+08:00">2023-08-21</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="搭建verilator仿真环境"><a href="#搭建verilator仿真环境" class="headerlink" title="搭建verilator仿真环境"></a>搭建verilator仿真环境</h1><blockquote>
+<p>verilator是一款开源的verilog仿真工具, 在”一生一芯”项目中, 你将会使用它来进行RTL功能仿真, 从而验证你编写的RTL代码.</p>
+<p>框架代码默认提供了一个<code>npc</code>目录, 这里的<code>npc</code>是<code>New Processor Core</code>的含义, 将来大家就会在这个目录下设计自己的处理器. 不过为了设置一个环境变量<code>NPC_HOME</code>, 你需要运行如下命令:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ysyx-workbench</span><br><span class="line">bash init.sh npc</span><br></pre></td></tr></table></figure>
+
+<p>这个环境变量会在将来使用. <code>npc</code>目录下有一些简单的文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ysyx-workbench/npc</span><br><span class="line">├── csrc</span><br><span class="line">│   └── main.cpp</span><br><span class="line">├── Makefile</span><br><span class="line">└── vsrc</span><br><span class="line">    └── example.v</span><br></pre></td></tr></table></figure>
+
+<p>目前这三个文件几乎都是空文件, 在这一小节中, 我们将会引导大家搭建verilator仿真环境, 并编写两个简单的数字电路模块来进行仿真.</p>
+</blockquote>
+<h2 id="任务：认识verilator"><a href="#任务：认识verilator" class="headerlink" title="任务：认识verilator"></a>任务：认识verilator</h2><blockquote>
+<p>你很可能是第一次听说过verilator这个工具, 这是很正常的. 然后你就会想进一步了解verilator的各种信息, 这也是很正常的. 但如果你的第一反应是去问人, 这就不恰当了. 事实上, verilator这个工具在仿真领域已经非常有名, 以至于你可以很容易在互联网上搜索到它的相关信息. 你需要通过STFW找到它的官方网站, 然后阅读一下相关的介绍.</p>
+</blockquote>
+<p>​	verilator是一个用作仿真电路的软件，将Verilog或者SystemVerilog文件转换为c或者c++文件，然后可以通过自己编辑的testbench测试用例观察电路是否正确。</p>
+<h2 id="任务：安装verilator"><a href="#任务：安装verilator" class="headerlink" title="任务：安装verilator"></a>任务：安装verilator</h2><blockquote>
+<p>在官网中找到安装verilator的步骤, 然后按照从git安装的相应步骤进行操作. 我们之所以不采用<code>apt-get</code>安装, 是因为其版本较老. 此外, 为了统一版本, 你需要通过git安装<code>5.008</code>的版本. 为此, 你还需要进行一些简单的git操作, 如果你对此感到生疏, 你可能需要寻找一些git教程来学习. 另外, 你最好在<code>ysyx-workbench/</code>之外的目录进行这一操作, 否则git将会追踪到verilator的源代码, 从而占用不必要的磁盘空间.</p>
+<p>安装成功后, 运行以下命令来检查安装是否成功，以及版本是否正确</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">verilator --version</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>​	找到verilator官网的<a target="_blank" rel="noopener" href="https://verilator.org/guide/latest/install.html">install部分</a>，跟着官网步骤一步一步来就可以了，注意切换版本时使用git checkout的地方。</p>
+<h2 id="任务：运行示例"><a href="#任务：运行示例" class="headerlink" title="任务：运行示例"></a>任务：运行示例</h2><blockquote>
+<p>verilator手册中包含一个C++的示例, 你需要在手册中找到这个示例, 然后按照示例的步骤进行操作.</p>
+</blockquote>
+<p>​	也是照着<a target="_blank" rel="noopener" href="https://verilator.org/guide/latest/example_cc.html#example-c-execution">官网的步骤</a>，注意：verilog代码文件名必须与模块名一致，如our.v的模块名必须命名<code>module our</code>。</p>
+<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2013.47.39-2596869.png" alt="截屏2023-08-21 13.47.39"></p>
+<h2 id="示例：双控开关"><a href="#示例：双控开关" class="headerlink" title="示例：双控开关"></a>示例：双控开关</h2><blockquote>
+<p>手册中的示例非常简单, 甚至算不上是一个真正的电路模块. 接下来我们编写一个真正的电路模块, 双控开关, 来进行测试. 编写如下的verilog代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">module top(</span><br><span class="line">  input a,</span><br><span class="line">  input b,</span><br><span class="line">  output f</span><br><span class="line">);</span><br><span class="line">  assign f = a ^ b;</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+
+<p>双控开关的一个应用是通过两个开关(<code>a</code>和<code>b</code>)联合控制同一盏灯的亮灭(<code>f</code>). 和手册中的示例不同, 这个模块有输入输出端口. 为了驱动输入端口, 并从输出端口获得结果, 我们需要对C++文件中的<code>while</code>循环进行修改:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 以下为伪代码</span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line"></span><br><span class="line">while (???) &#123;</span><br><span class="line">  int a = rand() &amp; 1;</span><br><span class="line">  int b = rand() &amp; 1;</span><br><span class="line">  top-&gt;a = a;</span><br><span class="line">  top-&gt;b = b;</span><br><span class="line">  top-&gt;eval();</span><br><span class="line">  printf(&quot;a = %d, b = %d, f = %d\n&quot;, a, b, top-&gt;f);</span><br><span class="line">  assert(top-&gt;f == (a ^ b));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在一次循环中, 代码将会随机生成两个1比特信号, 用来驱动两个输入端口, 然后通过<code>eval()</code>函数更新电路的状态, 这样我们就可以读取输出端口的值并打印. 为了自动检查结果是否正确, 我们通过<code>assert()</code>语句对输出结果进行检查.</p>
+</blockquote>
+<h2 id="任务：对双控开关模块进行仿真"><a href="#任务：对双控开关模块进行仿真" class="headerlink" title="任务：对双控开关模块进行仿真"></a>任务：对双控开关模块进行仿真</h2><blockquote>
+<p>尝试在verilator中对双控开关模块进行仿真. 由于顶层模块名与手册中的示例有所不同, 你还需要对C++文件进行一些相应的修改. 此外, 这个项目没有指示仿真结束的语句, 为了退出仿真, 你需要键入<code>Ctrl+C</code>.</p>
+</blockquote>
+<p>​	verilog代码不做更改，但需要将它存放在<code>top.v</code>中，接着编辑C++文件，观察<strong>任务：运行示例</strong>中的C++代码。</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">mkdir test_our</span><br><span class="line">cd test_our</span><br><span class="line"></span><br><span class="line">cat &gt;our.v &lt;&lt;&#x27;EOF&#x27;</span><br><span class="line">  module our;</span><br><span class="line">     initial begin $display(&quot;Hello World&quot;); $finish; end</span><br><span class="line">  endmodule</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &gt;sim_main.cpp &lt;&lt;&#x27;EOF&#x27;</span><br><span class="line">  #include &quot;Vour.h&quot;</span><br><span class="line">  #include &quot;verilated.h&quot;</span><br><span class="line">  int main(int argc, char** argv) &#123;</span><br><span class="line">      VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">      contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">      Vour* top = new Vour&#123;contextp&#125;;</span><br><span class="line">      while (!contextp-&gt;gotFinish()) &#123; top-&gt;eval(); &#125;</span><br><span class="line">      delete top;</span><br><span class="line">      delete contextp;</span><br><span class="line">      return 0;</span><br><span class="line">  &#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>​	<code>#include &quot;Vour.h&quot;</code>和<code>#include &quot;verilated.h&quot;</code> 第一个头文件是verilator将our.v转换为的c++头文件，这样我们可以在C++文件中构建一个our模块的实例<code>Vour* top = new Vour&#123;contextp&#125;;</code> <code>top-&gt;eval();</code>用来更新模拟状态。</p>
+<p>​	<strong>以下是个人的理解！！不一定对！！</strong></p>
+<ul>
+<li><code>contextp</code>是一个指向<code>VerilatedContext</code>(Verilated 上下文)的指针 。<code>contextp-&gt;commandArgs(argc, argv);</code>将verilator上下文与命令行参数联系在一起。<code>Vour* top = new Vour&#123;contextp&#125;;</code> 将实例与上下文联系在一起。<code>contextp-&gt;gotFinish()</code>是用来判断verilator是否接收到终止指令。</li>
+</ul>
+<p>​	现在我们编写双控开关的C++文件，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">#include &quot;verilated.h&quot;</span><br><span class="line">int main(int argc, char ** argv) &#123;</span><br><span class="line">	VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">	contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">	Vtop* top = new Vtop&#123;contextp&#125;;</span><br><span class="line">	while (!contextp-&gt;gotFinish()) &#123;</span><br><span class="line">		int a = rand() &amp; 1;</span><br><span class="line">		int b = rand() &amp; 1;</span><br><span class="line">		top-&gt;a = a;</span><br><span class="line">		top-&gt;b = b;</span><br><span class="line">		top-&gt;eval();</span><br><span class="line">		printf(&quot;a = %d, b = %d, f = %d\n&quot;, a, b, top-&gt;f);</span><br><span class="line">		assert(top-&gt;f == (a ^ b));</span><br><span class="line">	&#125;</span><br><span class="line">	delete top;</span><br><span class="line">	delete contextp;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="任务：理解RTL仿真的行为"><a href="#任务：理解RTL仿真的行为" class="headerlink" title="任务：理解RTL仿真的行为"></a>任务：理解RTL仿真的行为</h2><blockquote>
+<p>阅读verilator编译出的C++代码, 然后结合verilog代码, 尝试理解仿真器进行仿真的时候都发生了什么。</p>
+</blockquote>
+<p>​	将verilog的模块作为一个类实现。并且结合C++testbench文件实现了仿真功能。</p>
+<h2 id="打印并查看波形"><a href="#打印并查看波形" class="headerlink" title="打印并查看波形"></a>打印并查看波形</h2><blockquote>
+<p>查看波形文件是RTL调试的常用手段之一. verilator支持波形的生成, 你可以通过开源的波形查看工具GTKWave来查看波形.</p>
+</blockquote>
+<h2 id="任务：生成波形并查看"><a href="#任务：生成波形并查看" class="headerlink" title="任务：生成波形并查看"></a>任务：生成波形并查看</h2><blockquote>
+<p>verilator手册中已经介绍了波形生成的方法, 你需要阅读手册找到相关内容, 然后按照手册中的步骤生成波形文件, 并通过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install gtkwave</span><br></pre></td></tr></table></figure>
+
+<p>安装GTKWave来查看波形.</p>
+</blockquote>
+<p>​	下载手册后用<code>ctrl+f</code>搜索<code>gtkwave</code>找到<code>Install GTKWave</code>，跟着步骤一步一步来就装好了。装好之后怎么用呢？提示说verilator中有答案，但是我们在手册里面没有搜到有关教程。回到代码里看一看，我们知道一般代码包里都会有example，打开example发现有如下文件。</p>
+<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2014.44.20-2600269.png" alt="截屏2023-08-21 14.44.20"></p>
+<p>​	<del>之前有说-c是C++文件-SC是systemC文件，我们用的是Makefile，tracing后缀用来追踪波形，那就打开<code>make_tracing_sc</code>文件看看Makefile写了些什么。(笔者好像是在网上搜索了一下博客发现的，有点忘记了)。</del></p>
+<p>​	这部分是在南京大学数字逻辑与计算机组成课程实验里找到答案的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Make waveforms</span><br><span class="line">VERILATOR_FLAGS += --trace</span><br></pre></td></tr></table></figure>
+
+<p>​	现在我们知道要得到波形文件需要添加<code>--trace</code>，由于波形文件一般会占用较多的磁盘空间, 长时间生成波形可能会导致磁盘空间耗尽, 从而导致系统崩溃。所以适当修改testbench。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">#include &quot;verilated.h&quot;</span><br><span class="line">+++</span><br><span class="line">#include &quot;verilated_vcd_c.h&quot;</span><br><span class="line">+++</span><br><span class="line">int main(int argc, char** argv, char** env) &#123;</span><br><span class="line">	VerilatedContext* contextp = new VerilatedContext;</span><br><span class="line">	contextp-&gt;commandArgs(argc, argv);</span><br><span class="line">	Vtop* top = new Vtop&#123;contextp&#125;;</span><br><span class="line"></span><br><span class="line">+++</span><br><span class="line">	VerilatedVcdC* tfp = new VerilatedVcdC; // initialize VDC pointer</span><br><span class="line">	contextp-&gt;traceEverOn(true); // turn on the tracing mode</span><br><span class="line">	top-&gt;trace(tfp, 0);</span><br><span class="line">	tfp-&gt;open(&quot;wave.vcd&quot;); // set the output file wave.vcd</span><br><span class="line">+++</span><br><span class="line"></span><br><span class="line">	// while(!contextp-&gt;gotFinish()) &#123;</span><br><span class="line">	for(int i = 0; i &lt; 10; ++i) &#123;</span><br><span class="line">		int a = rand() &amp; 1;</span><br><span class="line">		int b = rand() &amp; 1;</span><br><span class="line">		top-&gt;a = a;</span><br><span class="line">		top-&gt;b = b;</span><br><span class="line">		top-&gt;eval();</span><br><span class="line">		printf(&quot;a = %d, b = %d, f= %d\n&quot;, a, b , top-&gt;f);</span><br><span class="line">+++</span><br><span class="line">		tfp-&gt;dump(contextp-&gt;time()); // dump wave</span><br><span class="line">		contextp-&gt;timeInc(1); // push simulate time                      +++                   </span><br><span class="line">		assert(top-&gt;f == (a ^ b));</span><br><span class="line">	&#125;</span><br><span class="line">	delete top;</span><br><span class="line">	tfp-&gt;close();</span><br><span class="line">	delete contextp;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	大概是这样的写法，波形文件如下图所示：符合 <code>f = a ^ b </code></p>
+<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2015.11.15-2601879-2601886-2601889-2601914.png" alt="截屏2023-08-21 15.11.15"></p>
+<h2 id="任务：一键仿真"><a href="#任务：一键仿真" class="headerlink" title="任务：一键仿真"></a>任务：一键仿真</h2><blockquote>
+<p>反复键入编译运行的命令是很不方便的, 尝试为<code>npc/Makefile</code>编写规则<code>sim</code>, 实现一键仿真, 如键入<code>make sim</code>即可进行上述仿真.</p>
+</blockquote>
+<p>​	这部分是关于Makefile的学习，推荐看<a target="_blank" rel="noopener" href="https://www.itsembedded.com/dhd/vivado_sim_3/">itsembedded的教程</a>进行学习。笔者将自己的简易实现放在这里。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">all:</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">sim:</span><br><span class="line">	$(call git_commit, &quot;sim RTL&quot;) # DO NOT REMOVE THIS LINE!!!</span><br><span class="line">	@echo &quot;Write this Makefile by your self.&quot;</span><br><span class="line">	verilator -Wall csrc/main.cpp vsrc/example.v --cc --trace --exe --build</span><br><span class="line">include ../Makefile</span><br></pre></td></tr></table></figure>
+
+<h2 id="接入NVBOARD"><a href="#接入NVBOARD" class="headerlink" title="接入NVBOARD"></a>接入NVBOARD</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/NJU-ProjectN/nvboard.git">NVBoard</a>(NJU Virtual Board)是南京大学开发的, 用于教学的虚拟FPGA板卡项目, 可以在RTL仿真环境中提供一个虚拟板卡的界面, 支持拨码开关, LED灯, VGA显示等功能, 在速度要求不高的场景下可完全替代真实的FPGA板卡(毕竟不是每人身边都有一块FPGA). 通过以下命令获取NVBoard的代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ysyx-workbench</span><br><span class="line">bash init.sh nvboard</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="任务：运行NVBoard示例"><a href="#任务：运行NVBoard示例" class="headerlink" title="任务：运行NVBoard示例"></a>任务：运行NVBoard示例</h2><blockquote>
+<p>阅读NVBoard项目的介绍, 尝试运行NVBoard项目中提供的示例.</p>
+</blockquote>
+<p>​	浏览器可以直接搜到nvboard的github，阅读readme，并运行example里的实例</p>
+<h2 id="任务：在NVBoard上实现双控开关"><a href="#任务：在NVBoard上实现双控开关" class="headerlink" title="任务：在NVBoard上实现双控开关"></a>任务：在NVBoard上实现双控开关</h2><blockquote>
+<p>阅读NVBoard项目的说明, 然后仿照该示例下的C++文件和Makefile, 修改你的C++文件, 为双控开关的输入输出分配引脚, 并修改<code>npc/Makefile</code>使其接入NVBoard.</p>
+</blockquote>
+<p>​	双控开关的verilog 文件不需要更改，仿照<code>NVboard/example</code>的testbench文件修改C++文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;nvboard.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line">static TOP_NAME dut;</span><br><span class="line">void nvboard_bind_all_pins(Vtop* top);</span><br><span class="line">int main() &#123;</span><br><span class="line">	nvboard_bind_all_pins(&amp;dut);</span><br><span class="line">	nvboard_init();</span><br><span class="line">	while(1) &#123;</span><br><span class="line">		dut.eval();</span><br><span class="line">		nvboard_update();</span><br><span class="line">	&#125;</span><br><span class="line">	nvboard_quit();</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	TOP_NAME 实例化一个top模块dut，<code>nvboard_bind_all_pins(Vtop* top);</code>将模块上的引脚按照<code>constr/top.nxdc</code>中描述的方式连接。<code>nvboard_init();</code>初始化nvboard，通过<code>while(1)</code>循环等待鼠标事件发生。<code>dut.eval() nvboard_update();</code>用于更新模块和nvboard。<code>nvboard_quit();</code>退出nvboard。</p>
+<p>​	NVBoard的引脚名字在<code>nvboard/board/N4</code>中。top.nxdc文件中给出连接方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line"></span><br><span class="line">a SW0</span><br><span class="line">b SW1</span><br><span class="line">f LD0</span><br></pre></td></tr></table></figure>
+
+<p>​	top &#x3D; top_modulename, 顶层模块名，<code>a SW0</code>表示a 连接到SW0上。makefile文件仿照nvboard示例即可。 效果如下：</p>
+<p><img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2016.47.47-2607672.png" alt="截屏2023-08-21 16.47.47"></p>
+<h2 id="示例：流水灯"><a href="#示例：流水灯" class="headerlink" title="示例：流水灯"></a>示例：流水灯</h2><h2 id="任务：将流水灯接入NVBoard"><a href="#任务：将流水灯接入NVBoard" class="headerlink" title="任务：将流水灯接入NVBoard"></a>任务：将流水灯接入NVBoard</h2><blockquote>
+<p>编写流水灯模块, 然后接入NVBoard并分配引脚. 如果你的实现正确, 你将看到灯从右端往左端依次亮起并熄灭.</p>
+</blockquote>
+<p>​	理解了如何接入NVBoard后，这个任务非常的简单。Makefile保持不变，要注意的地方就是C++文件和nxdc文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;nvboard.h&gt;</span><br><span class="line">#include &quot;Vtop.h&quot;</span><br><span class="line"></span><br><span class="line">static TOP_NAME dut;</span><br><span class="line"></span><br><span class="line">void nvboard_bind_all_pins(Vtop* top);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void single_cycle() &#123;</span><br><span class="line">	dut.clk = 0; dut.eval();</span><br><span class="line">	dut.clk = 1; dut.eval();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void reset(int n) &#123;</span><br><span class="line">	dut.rst = 1;</span><br><span class="line">	while(n-- &gt; 0) single_cycle();</span><br><span class="line">	dut.rst = 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main() &#123;</span><br><span class="line">	nvboard_bind_all_pins(&amp;dut);</span><br><span class="line">	nvboard_init();</span><br><span class="line">	reset(10);</span><br><span class="line"></span><br><span class="line">	while(1) &#123;</span><br><span class="line">		nvboard_update();</span><br><span class="line">		single_cycle();</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">top=top</span><br><span class="line"></span><br><span class="line">led (LD15, LD14, LD13, LD12, LD11, LD10, LD9, LD8, LD7, LD6, LD5, LD4, LD3, LD2, LD1, LD0)</span><br><span class="line"></span><br><span class="line">clk PS2_CLK</span><br><span class="line">rst BTNC </span><br></pre></td></tr></table></figure>
+
+<p>​	效果如下，等会一个一个的点亮，但是在连接reset的时候没有找到RST，改到PB_C成功实现reset功能。<img src="/../images/%E6%90%AD%E5%BB%BAverilator%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83/%E6%88%AA%E5%B1%8F2023-08-21%2016.37.47-2607075.png" alt="截屏2023-08-21 16.37.47"></p>
+<h2 id="任务：理解RTL仿真的行为-2"><a href="#任务：理解RTL仿真的行为-2" class="headerlink" title="任务：理解RTL仿真的行为(2)"></a>任务：理解RTL仿真的行为(2)</h2><blockquote>
+<p>阅读verilator编译出的C++代码, 然后结合verilog代码, 尝试理解仿真器是如何对时序逻辑电路进行仿真的.</p>
+</blockquote>
+<p>​	对时序逻辑电路的仿真主要是要维护一个时钟，在时钟上沿改变电路的状态。</p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>​	搭建verilator仿真环境这一章耗费了笔者大约一周的时间，掌握一个新的工具困难在于对未知的恐惧，特别是在学习verilator和nvboard的过程中，由于网络上只有很少的中文博客，导致STFW无法很好的解决问题，只能通过RTFM和RTFSC来学习verilator如何使用。幸运的是几乎所有的README都写的详细并且附带示例，读者只需要在阅读完之后加以模仿，就可以完成讲义里的任务，RTFM的好处在于可以更全面的了解整个程序是如何工作的，一定要动手写代码并运行，观察报错信息并改正它。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/17/Itsembedded/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1490,7 +2098,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1535,12 +2143,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">301k</span>
+    <span title="站点总字数">335k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:34</span>
+    <span title="站点阅读时长">5:05</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

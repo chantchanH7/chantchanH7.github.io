@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="title: ‘Lab: Copy-on-Write Fork for xv6’  date: 2024-03-08 16:31:49  tags:Lab: Copy-on-Write Fork for xv6准备工作我们先说一下整个流程 设备驱动器也会产生中断，这也是一种陷阱。 许多设备驱动器在两种上下文中执行代码：  top half运行在进程的内核线程上。上半部分是通过诸如read和w">
+<meta property="og:type" content="article">
+<meta property="og:title" content="talk is cheap, show me the code.">
+<meta property="og:url" content="http://example.com/2024/03/08/Lab-Copy-on-Write-Fork-for-xv6/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="title: ‘Lab: Copy-on-Write Fork for xv6’  date: 2024-03-08 16:31:49  tags:Lab: Copy-on-Write Fork for xv6准备工作我们先说一下整个流程 设备驱动器也会产生中断，这也是一种陷阱。 许多设备驱动器在两种上下文中执行代码：  top half运行在进程的内核线程上。上半部分是通过诸如read和w">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2019.48.22.png">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.02.53.png">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.09.48.png">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.11.59.png">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-12%2014.31.22.png">
+<meta property="og:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-12%2014.57.58.png">
+<meta property="article:published_time" content="2024-03-08T08:31:49.120Z">
+<meta property="article:modified_time" content="2024-03-12T07:00:21.877Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2019.48.22.png">
+
+<link rel="canonical" href="http://example.com/2024/03/08/Lab-Copy-on-Write-Fork-for-xv6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/03/08/Lab-Copy-on-Write-Fork-for-xv6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-03-08 16:31:49" itemprop="dateCreated datePublished" datetime="2024-03-08T16:31:49+08:00">2024-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-03-12 15:00:21" itemprop="dateModified" datetime="2024-03-12T15:00:21+08:00">2024-03-12</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>30k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>27 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<h2 id="title-‘Lab-Copy-on-Write-Fork-for-xv6’-date-2024-03-08-16-31-49-tags"><a href="#title-‘Lab-Copy-on-Write-Fork-for-xv6’-date-2024-03-08-16-31-49-tags" class="headerlink" title="  title: ‘Lab: Copy-on-Write Fork for xv6’  date: 2024-03-08 16:31:49  tags:"></a>  title: ‘Lab: Copy-on-Write Fork for xv6’<br>  date: 2024-03-08 16:31:49<br>  tags:</h2><h1 id="Lab-Copy-on-Write-Fork-for-xv6"><a href="#Lab-Copy-on-Write-Fork-for-xv6" class="headerlink" title="Lab: Copy-on-Write Fork for xv6"></a>Lab: Copy-on-Write Fork for xv6</h1><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>我们先说一下整个流程</p>
+<p>设备驱动器也会产生中断，这也是一种陷阱。</p>
+<p>许多设备驱动器在两种上下文中执行代码：</p>
+<ul>
+<li><code>top half</code>运行在进程的内核线程上。上半部分是通过诸如read和write这样的系统调用来调用的，这些调用希望设备执行I&#x2F;O操作。</li>
+<li><code>bottom half</code>是驱动器中断处理程序。</li>
+</ul>
+<h3 id="5-1-Code-Console-input"><a href="#5-1-Code-Console-input" class="headerlink" title="5.1 Code: Console input"></a>5.1 Code: Console input</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户键入字符 =&gt; RISC-V 上的 UART 串行接口 =&gt; console 驱动器 </span><br></pre></td></tr></table></figure>
+
+<p><code>UART</code>硬件对于软件来说是一组内存映射控制寄存器,<code>RISC-V</code>硬件有一些物理地址链接<code>UART</code>设备</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main() = call =&gt;		 	consoleinit 	   =&gt;</span><br><span class="line">            		 |initialize the UART|</span><br></pre></td></tr></table></figure>
+
+<p><code>consoleinit</code>初始化UART硬件，配置<code>UART</code>在接收到字节输入时，产生一个接收中断<code>receive interrupt</code>；在完成输出一个字节的数据时，产生一个传输中断，<code>transmit interrput</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">init.c = open =&gt; file descriptor for console (fp)</span><br><span class="line"></span><br><span class="line">xv6 shell reads from fp</span><br><span class="line"></span><br><span class="line">= call =&gt; read() = invoke =&gt; consoleread() </span><br><span class="line"></span><br><span class="line">consoleread() wait for input arrive (via interrupt) and be buffered in cons.buf</span><br></pre></td></tr></table></figure>
+
+<p>中断是如何产生的？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户键入字符 =&gt; UART =&gt; 让RISC-V产生中断 =&gt; 激活xv6陷阱处理程序 trap handler</span><br><span class="line"></span><br><span class="line">trap handler = invoke =&gt; devintr() = 在 scause 寄存器中发现中断来自额外设备</span><br><span class="line"></span><br><span class="line">硬件唤醒 PLIC 告知哪个设备产生的中断，如果是UART devintr 调用 uartintr</span><br></pre></td></tr></table></figure>
+
+<p>数据如何输入的？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">uartintr = 从UART硬件的等待输入字符中读取并传输给 =&gt; consoleintr</span><br><span class="line"></span><br><span class="line">consoleintr 将输入的字符存入cons.buf中，直到一行输入完成。</span><br><span class="line"></span><br><span class="line">当一个新的行到达时，consoleintr 唤醒 consoleread</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="kernelvec-S"><a href="#kernelvec-S" class="headerlink" title="kernelvec.S:"></a><code>kernelvec.S</code>:</h3><h4 id="kernelvec"><a href="#kernelvec" class="headerlink" title="kernelvec"></a><code>kernelvec</code></h4><p>当处于<code>Supervisor mode</code>时，中断<code>interrupts</code>和异常<code>exception</code>会来到这里。</p>
+<p>当前堆栈为<code>kernel stack</code>。将所有寄存器的值推入栈中，调用<code>kerneltrap()</code>，调用完成时恢复寄存器然后返回。</p>
+<blockquote>
+<p>这段注释是关于寄存器<code>tp</code>（Thread Pointer）的说明，它通常包含当前硬件线程的ID（hartid）。注释指出不使用<code>tp</code>寄存器的值，以防在中断或异常发生后处理器（CPU）发生了变化。</p>
+<p>在多核心或多线程的CPU环境中，每个核心或线程有一个唯一的标识符，通常称为hartid。当一个核心或线程正在执行任务时，它可能会因为中断或调度策略而切换到另一个CPU。如果在中断处理或任务切换过程中代码依赖于特定的<code>tp</code>值，而这个值在不同的CPU之间是不同的，就可能出现问题。</p>
+<p>因此，这段注释表明，由于可能会发生CPU切换，代码不应该假设<code>tp</code>寄存器中的hartid在处理过程中是不变的。这是在多核处理器环境中进行系统编程时需要注意的并发和一致性问题之一。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">.globl kerneltrap</span><br><span class="line">.globl kernelvec</span><br><span class="line">.align 4</span><br><span class="line">kernelvec:</span><br><span class="line">        # make room to save registers.</span><br><span class="line">        # 在栈中开辟空间</span><br><span class="line">        addi sp, sp, -256</span><br><span class="line"></span><br><span class="line">        # save the registers.</span><br><span class="line">        sd ra, 0(sp)</span><br><span class="line">        sd sp, 8(sp)	# 保存stack pointer</span><br><span class="line">        sd gp, 16(sp)</span><br><span class="line">        sd tp, 24(sp)</span><br><span class="line">        sd t0, 32(sp)</span><br><span class="line">        sd t1, 40(sp)</span><br><span class="line">        sd t2, 48(sp)</span><br><span class="line">        sd s0, 56(sp)</span><br><span class="line">        sd s1, 64(sp)</span><br><span class="line">        sd a0, 72(sp)</span><br><span class="line">        sd a1, 80(sp)</span><br><span class="line">        sd a2, 88(sp)</span><br><span class="line">        sd a3, 96(sp)</span><br><span class="line">        sd a4, 104(sp)</span><br><span class="line">        sd a5, 112(sp)</span><br><span class="line">        sd a6, 120(sp)</span><br><span class="line">        sd a7, 128(sp)</span><br><span class="line">        sd s2, 136(sp)</span><br><span class="line">        sd s3, 144(sp)</span><br><span class="line">        sd s4, 152(sp)</span><br><span class="line">        sd s5, 160(sp)</span><br><span class="line">        sd s6, 168(sp)</span><br><span class="line">        sd s7, 176(sp)</span><br><span class="line">        sd s8, 184(sp)</span><br><span class="line">        sd s9, 192(sp)</span><br><span class="line">        sd s10, 200(sp)</span><br><span class="line">        sd s11, 208(sp)</span><br><span class="line">        sd t3, 216(sp)</span><br><span class="line">        sd t4, 224(sp)</span><br><span class="line">        sd t5, 232(sp)</span><br><span class="line">        sd t6, 240(sp)</span><br><span class="line"></span><br><span class="line">        # call the C trap handler in trap.c</span><br><span class="line">        call kerneltrap</span><br><span class="line"></span><br><span class="line">        # restore registers.</span><br><span class="line">        ld ra, 0(sp)</span><br><span class="line">        ld sp, 8(sp)</span><br><span class="line">        ld gp, 16(sp)</span><br><span class="line">        # not tp (contains hartid), in case we moved CPUs</span><br><span class="line">        # thread pointer 是当前硬件线程的ID hartid</span><br><span class="line">        </span><br><span class="line">        ld t0, 32(sp)</span><br><span class="line">        ld t1, 40(sp)</span><br><span class="line">        ld t2, 48(sp)</span><br><span class="line">        ld s0, 56(sp)</span><br><span class="line">        ld s1, 64(sp)</span><br><span class="line">        ld a0, 72(sp)</span><br><span class="line">        ld a1, 80(sp)</span><br><span class="line">        ld a2, 88(sp)</span><br><span class="line">        ld a3, 96(sp)</span><br><span class="line">        ld a4, 104(sp)</span><br><span class="line">        ld a5, 112(sp)</span><br><span class="line">        ld a6, 120(sp)</span><br><span class="line">        ld a7, 128(sp)</span><br><span class="line">        ld s2, 136(sp)</span><br><span class="line">        ld s3, 144(sp)</span><br><span class="line">        ld s4, 152(sp)</span><br><span class="line">        ld s5, 160(sp)</span><br><span class="line">        ld s6, 168(sp)</span><br><span class="line">        ld s7, 176(sp)</span><br><span class="line">        ld s8, 184(sp)</span><br><span class="line">        ld s9, 192(sp)</span><br><span class="line">        ld s10, 200(sp)</span><br><span class="line">        ld s11, 208(sp)</span><br><span class="line">        ld t3, 216(sp)</span><br><span class="line">        ld t4, 224(sp)</span><br><span class="line">        ld t5, 232(sp)</span><br><span class="line">        ld t6, 240(sp)</span><br><span class="line"></span><br><span class="line">        addi sp, sp, 256</span><br><span class="line"></span><br><span class="line">        # return to whatever we were doing in the kernel.</span><br><span class="line">        sret</span><br></pre></td></tr></table></figure>
+
+<h4 id="timervec"><a href="#timervec" class="headerlink" title="timervec:"></a><code>timervec:</code></h4><p><code>start.c</code>已经设置了<code>mscratch</code>指向的地址：</p>
+<ul>
+<li><code>scratch[0, 8, 16]:</code>存储寄存器的值</li>
+<li><code>scratch[24]:</code>保存了CLINT的<code>MTIMECMP</code>寄存器的地址。<code>MTIMECMP</code>寄存器用于设置RISC-V系统的定时器中断阈值。</li>
+<li><code>scratch[32]:</code>保存中断之间的期望时间间隔</li>
+</ul>
+<p>**<code>MTIMECMP</code>**是一个RISC-V架构中的一个定时寄存器，其全称为<code>Machine Time Compare Register</code>，该寄存器是<code>RISC-V</code>的机器模式定时器的一部分，用于设置下一个定时器中断的时间阈值。</p>
+<p>工作原理：</p>
+<ul>
+<li>RISC-V 的 <code>mtime</code> 寄存器持续增加，它通常代表着机器的实时计数器，按照固定的频率（通常与处理器的时钟频率一致）递增。</li>
+<li>当 <code>mtime</code> 的值等于或超过 <code>MTIMECMP</code> 寄存器中设置的值时，会触发一个定时器中断。</li>
+<li>中断服务程序可以通过设置 <code>MTIMECMP</code> 为 <code>mtime</code> 当前值加上期望的延迟，来安排下一次中断。</li>
+</ul>
+<p>在多核 RISC-V 系统中，每个处理器核心（hart）通常有它自己的 <code>MTIMECMP</code> 寄存器，允许独立地为每个核心安排中断。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">#</span><br><span class="line"># machine-mode timer interrupt.</span><br><span class="line">#</span><br><span class="line">.globl timervec</span><br><span class="line">.align 4</span><br><span class="line">timervec:</span><br><span class="line">        # start.c has set up the memory that mscratch points to:</span><br><span class="line">        # scratch[0,8,16] : register save area.</span><br><span class="line">        # scratch[24] : address of CLINT&#x27;s MTIMECMP register.</span><br><span class="line">        # scratch[32] : desired interval between interrupts.</span><br><span class="line">        </span><br><span class="line">        csrrw a0, mscratch, a0 # 读取mscratch寄存器的值到a0，并将a0的旧值写回mscratch</span><br><span class="line">        sd a1, 0(a0)</span><br><span class="line">        sd a2, 8(a0)</span><br><span class="line">        sd a3, 16(a0)</span><br><span class="line"></span><br><span class="line">        # schedule the next timer interrupt</span><br><span class="line">        # by adding interval to mtimecmp.</span><br><span class="line">        ld a1, 24(a0) # CLINT_MTIMECMP(hart)</span><br><span class="line">        ld a2, 32(a0) # interval</span><br><span class="line">        ld a3, 0(a1)  # 加载当前MTIMECMP的值到a3</span><br><span class="line">        add a3, a3, a2 # 将中断间隔时间加载到MTIMECMP上，准备下一个中断</span><br><span class="line">        sd a3, 0(a1) # 新的MTIMECMP存回到相应的内存位置</span><br><span class="line"></span><br><span class="line">        # arrange for a supervisor software interrupt</span><br><span class="line">        # after this handler returns.</span><br><span class="line">        li a1, 2 	# 2表示软件中断</span><br><span class="line">        csrw sip, a1 # 将软件中断请求写入sip寄存器中</span><br><span class="line"></span><br><span class="line">				# 恢复现场</span><br><span class="line">        ld a3, 16(a0)</span><br><span class="line">        ld a2, 8(a0)</span><br><span class="line">        ld a1, 0(a0)</span><br><span class="line">        csrrw a0, mscratch, a0</span><br><span class="line"></span><br><span class="line">        mret</span><br></pre></td></tr></table></figure>
+
+<h3 id="plic-c-the-RISC-V-Platform-Level-Interrupt-Controller-PLIC"><a href="#plic-c-the-RISC-V-Platform-Level-Interrupt-Controller-PLIC" class="headerlink" title="plic.c: the RISC-V Platform Level Interrupt Controller (PLIC)"></a><code>plic.c:</code> the RISC-V Platform Level Interrupt Controller (PLIC)</h3><p>这段代码对应的硬件设备说明在<a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/6.828/2023/readings/FU540-C000-v1.0.pdf%E7%9A%8460%E9%A1%B5">https://pdos.csail.mit.edu/6.828/2023/readings/FU540-C000-v1.0.pdf的60页</a></p>
+<p>给出了<code>PLIC Register Map</code></p>
+<h4 id="plicinit"><a href="#plicinit" class="headerlink" title="plicinit():"></a><code>plicinit():</code></h4><ul>
+<li><code>PLIC = 0x0c000000</code>是PLIC控制寄存器在物理内存中的起始地址。通过这个地址进行内存映射输入输出的操作。</li>
+<li>设置UART0中断优先级</li>
+<li>设为VIRTIO0设备的中断优先级</li>
+<li>乘4是因为寄存器的值是32位的</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">plicinit</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="comment">// set desired IRQ priorities non-zero (otherwise disabled).</span></span><br><span class="line">  	<span class="comment">// 设置中断请求优先级</span></span><br><span class="line">    *(uint32*)(PLIC + UART0_IRQ*<span class="number">4</span>) = <span class="number">1</span>;</span><br><span class="line">    *(uint32*)(PLIC + VIRTIO0_IRQ*<span class="number">4</span>) = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="plicinithart"><a href="#plicinithart" class="headerlink" title="plicinithart():"></a><code>plicinithart():</code></h4><p>初始化了每个处理器核心（hart）在平台级中断控制器（PLIC）中的设置，具体操作包括启用特定的中断并设置优先级。</p>
+<ul>
+<li><p><code>PLIC_SENABLE(hart)</code>宏通过给定的核心编号（hart）和以上规则，计算出该核心对应到的<code>supervisor mode</code>中断启用寄存器的地址。</p>
+<p>当<code>hart = 0</code>时，我们使用PLIC_SENABLE计算出物理地址<code>0x0c00_2080</code>，通过<code>PLIC Register Map</code>可知：</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2019.48.22.png" alt="截屏2024-03-08 19.48.22"></p>
+<p>也即使能核心0在Machine mode下的全局中断1</p>
+<p>查表发现PLIC_SPRIORITY对应的地址：</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.02.53.png" alt="截屏2024-03-08 20.02.53"></p>
+<p>0会屏蔽所有优先级小于或等于阈值的PLIC中断。例如，阈值为零时允许所有非零优先级的中断，而阈值为7时则屏蔽所有中断。</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">plicinithart</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="type">int</span> hart = cpuid();	<span class="comment">// 获取当前处理器核心的hart id ( 硬件线程id )</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// set enable bits for this hart&#x27;s S-mode</span></span><br><span class="line">  <span class="comment">// for the uart and virtio disk.</span></span><br><span class="line">  *(uint32*)PLIC_SENABLE(hart) = (<span class="number">1</span> &lt;&lt; UART0_IRQ) | (<span class="number">1</span> &lt;&lt; VIRTIO0_IRQ);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// set this hart&#x27;s S-mode priority threshold to 0.</span></span><br><span class="line">  <span class="comment">// 将当前hart的supervisor mode中断优先级阈值设置为0</span></span><br><span class="line">  <span class="comment">// 阈值为0 意味着所有优先级大于0的中断都会被当前hart接受</span></span><br><span class="line">  *(uint32*)PLIC_SPRIORITY(hart) = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="plic-claim"><a href="#plic-claim" class="headerlink" title="plic_claim()"></a><code>plic_claim()</code></h4><p>向 <code>plant level interrupt controller</code> 询问我们应该处理什么中断</p>
+<p><code>PLIC_SCLAIM</code>宏定义到</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.09.48.png" alt="截屏2024-03-08 20.09.48"></p>
+<p>现在我们知道该代码实际上是读取当前hart的supervisor mode中断 认领&#x2F;完成<code>(SCLAIM)</code>寄存器</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-08%2020.11.59.png" alt="截屏2024-03-08 20.11.59"></p>
+<blockquote>
+<p>读取到的零表示没有中断待处理。非零的读取结果包含了最高优先级待处理中断的ID。向这个寄存器写入数据表示完成了写入的中断ID所对应的中断处理。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这行代码实际上是读取当前hart的S模式中断认领/完成（SCLAIM）寄存器。PLIC_SCLAIM(hart)根据核心ID</span></span><br><span class="line"><span class="comment"> * 计算出SCLAIM寄存器的地址，然后通过解引用该地址获取存储在其中的值。</span></span><br><span class="line"><span class="comment"> * 读取这个寄存器会返回当前有待处理的最高优先级中断的ID。如果没有待处理的中断，寄存器会返回0。</span></span><br><span class="line"><span class="comment"> * 同时，读取操作会自动清除相应的中断源上的待处理位，这意味着中断被核心成功认领。</span></span><br><span class="line"><span class="comment"> * */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">plic_claim</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="type">int</span> hart = cpuid();</span><br><span class="line">  <span class="type">int</span> irq = *(uint32*)PLIC_SCLAIM(hart);</span><br><span class="line">  <span class="keyword">return</span> irq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="plic-complete"><a href="#plic-complete" class="headerlink" title="plic_complete()"></a><code>plic_complete()</code></h4><p>向该寄存器写入数据表示完成了写入的中断ID对应的中断处理</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// tell the PLIC we&#x27;ve served this IRQ.</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">plic_complete</span><span class="params">(<span class="type">int</span> irq)</span> &#123;</span><br><span class="line">  <span class="type">int</span> hart = cpuid();</span><br><span class="line">  *(uint32*)PLIC_SCLAIM(hart) = irq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="console-c"><a href="#console-c" class="headerlink" title="console.c:"></a><code>console.c:</code></h3><p>控制台输入输出，通过UART。<br>读取操作是一行一行进行的。<br>实现了特殊输入字符：<br>换行符 – 行尾<br>Control-H – 退格<br>Control-U – 删除行<br>Control-D – 文件结束<br>Control-P – 打印进程列表</p>
+<h4 id="void-consputc"><a href="#void-consputc" class="headerlink" title="void consputc()"></a><code>void consputc()</code></h4><p>向UART发送一个字符，被函数<code>printf()</code>调用，用于回显输入字符，但不能由<code>write()</code>调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">consputc</span><span class="params">(<span class="type">int</span> c)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span>(c == BACKSPACE)&#123;</span><br><span class="line">    <span class="comment">// if the user typed backspace, overwrite with a space.</span></span><br><span class="line">    uartputc_sync(<span class="string">&#x27;\b&#x27;</span>); uartputc_sync(<span class="string">&#x27; &#x27;</span>); uartputc_sync(<span class="string">&#x27;\b&#x27;</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    uartputc_sync(c); <span class="comment">// 向uart中发送字符c</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>uartputc_sync</code>和<code>uartputc</code>的区别：</p>
+<blockquote>
+<p>假设你的操作系统正在运行一个用户程序，用户程序想要通过调用<code>write()</code>系统调用来输出一些字符到控制台。同时，假设操作系统也希望能够在处理某些内核事件时（如打印内核日志）输出字符到控制台。</p>
+<h3 id="使用uartputc"><a href="#使用uartputc" class="headerlink" title="使用uartputc"></a>使用<code>uartputc</code></h3><p>当用户程序调用<code>write()</code>系统调用来输出字符时，内核会使用<code>uartputc</code>函数。因为用户程序的执行不是时间敏感的，如果输出缓冲区满了，它可以等待（即阻塞），直到有空间可用再继续输出。这种方式允许操作系统高效地管理UART的输出缓冲区，减少对CPU资源的占用。</p>
+<ul>
+<li><strong>例子</strong>：用户程序通过<code>write()</code>输出”Hello, world!”。如果输出缓冲区已满，<code>write()</code>操作会等待，直到缓冲区有足够的空间来存放这些字符。</li>
+</ul>
+<h3 id="使用uartputc-sync"><a href="#使用uartputc-sync" class="headerlink" title="使用uartputc_sync"></a>使用<code>uartputc_sync</code></h3><p>另一方面，如果内核需要在处理中断时输出字符（例如，打印调试信息），它不能使用会阻塞的<code>uartputc</code>，因为中断处理程序需要快速执行并返回，避免阻塞和延迟。在这种情况下，内核会使用<code>uartputc_sync</code>，它通过轮询等待，直到UART准备好发送新字符，不涉及等待或阻塞。</p>
+<ul>
+<li><strong>例子</strong>：内核需要在处理一个硬件中断时打印一条调试信息。使用<code>uartputc_sync</code>可以确保信息被立即输出到控制台，而不会阻塞中断处理的其余部分。即使输出寄存器不立即可用，它也会通过忙等（busy-waiting）直到可以发送字符，而不是挂起当前进程。</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><code>uartputc</code>适合在正常的程序执行流程中使用，其中阻塞等待输出空间变得可用是可接受的。<code>uartputc_sync</code>适用于那些不能被阻塞的上下文，如内核打印或中断处理程序，需要立即输出字符而不影响系统的响应性。</p>
+</blockquote>
+<h4 id="struct-cons"><a href="#struct-cons" class="headerlink" title="struct cons:"></a><code>struct cons:</code></h4><p>这是一个<code>console</code>输入缓冲区的数据结构，用于管理从用户接收到的输入字符。</p>
+<ul>
+<li><code>spinlock</code>用于保证对缓冲区的访问是互斥的</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">lock</span>;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// input</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INPUT_BUF_SIZE 128</span></span><br><span class="line">  <span class="type">char</span> buf[INPUT_BUF_SIZE];	<span class="comment">// 字符缓冲区数组</span></span><br><span class="line">  uint r;  <span class="comment">// Read index  指向缓冲区中下一个要被读取的字符位置</span></span><br><span class="line">  uint w;  <span class="comment">// Write index 指向缓冲区下一个要写入字符的位置</span></span><br><span class="line">  uint e;  <span class="comment">// Edit index  光标位置或编辑位置</span></span><br><span class="line">&#125; cons;</span><br></pre></td></tr></table></figure>
+
+<h4 id="consolewrite"><a href="#consolewrite" class="headerlink" title="consolewrite()"></a><code>consolewrite()</code></h4><p>用户对<code>console</code>调用的<code>write()</code>来到这里，也即：用于处理用户空间程序向控制台写入数据的请求。</p>
+<ul>
+<li><p><code>either_copying(void *dst, int user_src, uint64 src, uint64 len)</code></p>
+<p>可以实现从用户态或者内核态拷贝数据到目的地址</p>
+<p>其中<code>user_src</code>为真是表示原地址在用户态中</p>
+</li>
+<li><p><code>uartputc(c)</code>将字符c发送至<code>uart</code>中（该函数在uart.c中，稍后我们在讨论这个文件时会做详细解释）</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/</span><br><span class="line"><span class="comment">// user write()s to the console go here.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">consolewrite</span><span class="params">(<span class="type">int</span> user_src, uint64 src, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; i++)&#123;</span><br><span class="line">    <span class="type">char</span> c;</span><br><span class="line">    <span class="keyword">if</span>(either_copyin(&amp;c, user_src, src+i, <span class="number">1</span>) == <span class="number">-1</span>)</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    uartputc(c);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="consoleread"><a href="#consoleread" class="headerlink" title="consoleread()"></a><code>consoleread()</code></h4><p>用于处理用户空间程序从控制台读取数据的请求。</p>
+<p>拷贝整个输入行到目的地址<code>dst</code></p>
+<ul>
+<li><p><code>Sleep(&amp;cons.r, &amp;cons.lock)</code>中传入<code>&amp;cons.r</code>的原因：</p>
+<p><code>sleep</code>函数将<code>&amp;cons.r</code>作为<code>chan</code>参数传入，这表示当前进程希望在控制台输入缓冲区的读索引<code>cons.r</code>上睡眠，当前进程将等待，知道有新的数据写入缓冲区（此时<code>cons.r</code>会发生变化）并在另一个进程（可能是中断处理程序）在相同的通道（即<code>&amp;cons.r</code>）上调用<code>wakeup</code>后被唤醒。</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">consoleread</span><span class="params">(<span class="type">int</span> user_dst, uint64 dst, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">  uint target;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">char</span> cbuf;</span><br><span class="line"></span><br><span class="line">  target = n;</span><br><span class="line">  acquire(&amp;cons.lock); <span class="comment">// 尝试获取控制台缓冲区的锁，以保证对缓冲区的访问的互斥</span></span><br><span class="line">  <span class="keyword">while</span>(n &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    <span class="comment">// wait until interrupt handler has put some</span></span><br><span class="line">    <span class="comment">// input into cons.buffer.</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 不断检查是否有数据可读（即检查读索引和写索引是否相等）</span></span><br><span class="line">    <span class="keyword">while</span>(cons.r == cons.w)&#123;</span><br><span class="line">      <span class="keyword">if</span>(killed(myproc()))&#123;</span><br><span class="line">        release(&amp;cons.lock);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 若缓冲区为空，则当前进程睡眠</span></span><br><span class="line">      sleep(&amp;cons.r, &amp;cons.lock);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从缓冲区中读取数据</span></span><br><span class="line">    c = cons.buf[cons.r++ % INPUT_BUF_SIZE]; <span class="comment">// input is buffered in buf</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// C(&#x27;D&#x27;) control-D 表示文件结束</span></span><br><span class="line">    <span class="keyword">if</span>(c == C(<span class="string">&#x27;D&#x27;</span>))&#123;  <span class="comment">// end-of-file</span></span><br><span class="line">      <span class="keyword">if</span>(n &lt; target)&#123;</span><br><span class="line">        <span class="comment">// Save ^D for next time, to make sure</span></span><br><span class="line">        <span class="comment">// caller gets a 0-byte result.</span></span><br><span class="line">        cons.r--;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// copy the input byte to the user-space buffer.</span></span><br><span class="line">    <span class="comment">// 将输入的字节拷贝到用户空间缓冲区</span></span><br><span class="line">    cbuf = c;</span><br><span class="line">    <span class="keyword">if</span>(either_copyout(user_dst, dst, &amp;cbuf, <span class="number">1</span>) == <span class="number">-1</span>)</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">		</span><br><span class="line">    dst++; <span class="comment">// 移动dst一个字节</span></span><br><span class="line">    --n;   <span class="comment">// 已经拷贝了一个字节的数据，n -1 表示剩余要拷贝的数据的字节数</span></span><br><span class="line">		</span><br><span class="line">    <span class="comment">// 已经读取了一行，返回到用户空间的read函数</span></span><br><span class="line">    <span class="keyword">if</span>(c == <span class="string">&#x27;\n&#x27;</span>)&#123;</span><br><span class="line">      <span class="comment">// a whole line has arrived, return to</span></span><br><span class="line">      <span class="comment">// the user-level read().</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  release(&amp;cons.lock); <span class="comment">// 解锁</span></span><br><span class="line">  <span class="keyword">return</span> target - n; <span class="comment">// 返回实际读取到的数据的字节数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="consoleintr"><a href="#consoleintr" class="headerlink" title="consoleintr()"></a><code>consoleintr()</code></h4><ul>
+<li>控制台输入处理程序</li>
+<li>当输入字符时，<code>uartintr()</code>调用该函数</li>
+<li>执行擦出&#x2F;删除处理，追加到cons.buf</li>
+<li>如果一整行数据到来时，唤醒<code>consoleread()</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">consoleintr</span><span class="params">(<span class="type">int</span> c)</span> &#123;</span><br><span class="line">  acquire(&amp;cons.lock); <span class="comment">// 上锁</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span>(c)&#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">C</span><span class="params">(<span class="string">&#x27;P&#x27;</span>)</span>:  <span class="comment">// Print process list. 打印进程的信息</span></span><br><span class="line">    <span class="title function_">procdump</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">C</span><span class="params">(<span class="string">&#x27;U&#x27;</span>)</span>:  <span class="comment">// Kill line. 删除这一行</span></span><br><span class="line">    <span class="title function_">while</span><span class="params">(cons.e != cons.w &amp;&amp;</span></span><br><span class="line"><span class="params">          cons.buf[(cons.e<span class="number">-1</span>) % INPUT_BUF_SIZE] != <span class="string">&#x27;\n&#x27;</span>)</span>&#123;</span><br><span class="line">      cons.e--;</span><br><span class="line">      consputc(BACKSPACE); <span class="comment">//对每次删除发送一个退格字符以反映回显</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">C</span><span class="params">(<span class="string">&#x27;H&#x27;</span>)</span>: <span class="comment">// Backspace 回退操作</span></span><br><span class="line">  <span class="keyword">case</span> &#x27;\x7f&#x27;: <span class="comment">// Delete key 删除键</span></span><br><span class="line">    <span class="title function_">if</span><span class="params">(cons.e != cons.w)</span>&#123;</span><br><span class="line">      cons.e--; <span class="comment">// 删除缓冲区的最后一个字符</span></span><br><span class="line">      consputc(BACKSPACE); <span class="comment">// 发送退格字符进行回显</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">     </span><br><span class="line">    <span class="comment">// 输入字符不为空，且控制台缓冲区读取的索引 - 编辑的索引 小于缓冲区大小</span></span><br><span class="line">    <span class="keyword">if</span>(c != <span class="number">0</span> &amp;&amp; cons.e-cons.r &lt; INPUT_BUF_SIZE)&#123;</span><br><span class="line">      c = (c == <span class="string">&#x27;\r&#x27;</span>) ? <span class="string">&#x27;\n&#x27;</span> : c;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// echo back to the user.</span></span><br><span class="line">      consputc(c);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// store for consumption by consoleread().</span></span><br><span class="line">      <span class="comment">// 将该字符追加到控制台缓冲区中</span></span><br><span class="line">      cons.buf[cons.e++ % INPUT_BUF_SIZE] = c;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span>(c == <span class="string">&#x27;\n&#x27;</span> || c == C(<span class="string">&#x27;D&#x27;</span>) || cons.e-cons.r == INPUT_BUF_SIZE)&#123;</span><br><span class="line">        <span class="comment">// wake up consoleread() if a whole line (or end-of-file)</span></span><br><span class="line">        <span class="comment">// has arrived.</span></span><br><span class="line">        <span class="comment">// 整行到达，唤醒consoleread</span></span><br><span class="line">        cons.w = cons.e;</span><br><span class="line">        wakeup(&amp;cons.r);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  release(&amp;cons.lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="consoleinit"><a href="#consoleinit" class="headerlink" title="consoleinit()"></a><code>consoleinit()</code></h4><ul>
+<li><p><code>devsw[CONSOLE]</code></p>
+<ul>
+<li><p>首先我们查看<code>devsw</code>和<code>CONSOLE</code>的定义：</p>
+<ul>
+<li>devsw用于映射主设备号到设备函数</li>
+<li>定义了CONSOLE为第一个设备</li>
+<li>允许操作系统根据设备号调用相应设备的读取和写入操作函数</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// map major device number to device functions.</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">devsw</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> (*read)(<span class="type">int</span>, uint64, <span class="type">int</span>);</span><br><span class="line">  <span class="type">int</span> (*write)(<span class="type">int</span>, uint64, <span class="type">int</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="class"><span class="keyword">struct</span> <span class="title">devsw</span> <span class="title">devsw</span>[];</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONSOLE 1</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p><code>consoleinit</code>函数将设备CONSOLE的读取和写入函数映射到设备号中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">consoleinit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  initlock(&amp;cons.lock, <span class="string">&quot;cons&quot;</span>); <span class="comment">// 初始化 控制台结构的锁</span></span><br><span class="line"></span><br><span class="line">  uartinit(); <span class="comment">// 初始化uart接口</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// connect read and write system calls</span></span><br><span class="line">  <span class="comment">// to consoleread and consolewrite.</span></span><br><span class="line">  devsw[CONSOLE].read = consoleread;</span><br><span class="line">  devsw[CONSOLE].write = consolewrite;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="uart-c"><a href="#uart-c" class="headerlink" title="uart.c"></a><code>uart.c</code></h3><p>这段代码是针对<code>16550A UART</code>的低级驱动程序。</p>
+<p><code>16550A UART</code>是一种广泛使用的串行通信接口芯片。</p>
+<h4 id="宏定义"><a href="#宏定义" class="headerlink" title="宏定义"></a>宏定义</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">#<span class="keyword">define</span> Reg(reg) ((volatile unsigned char *)(UART0 + reg)) <span class="comment">// 返回uart control register在内存映射中的位置。</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ReadReg(reg) (*(Reg(reg)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> WriteReg(reg, v) (*(Reg(reg)) = (v))</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="UART-control-registers"><a href="#UART-control-registers" class="headerlink" title="UART control registers"></a>UART control registers</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> RHR 0                 <span class="comment">// receive holding register (for input bytes)      暂存接收到的输入字节</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> THR 0                 <span class="comment">// transmit holding register (for output bytes)  暂存即将发送的输出字节</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IER 1                 <span class="comment">// interrupt enable register</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IER_RX_ENABLE (1&lt;&lt;0)  <span class="comment">// 启动接收中断的位掩码</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IER_TX_ENABLE (1&lt;&lt;1)  <span class="comment">// 启动发送中断的位掩码</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FCR 2                 <span class="comment">// FIFO control register </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FCR_FIFO_ENABLE (1&lt;&lt;0) <span class="comment">// 启用FIFO位掩码</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FCR_FIFO_CLEAR (3&lt;&lt;1) <span class="comment">// clear the content of the two FIFOs 清除两个FIFO内容的位掩码。</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ISR 2                 <span class="comment">// interrupt status register</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LCR 3                 <span class="comment">// line control register LCR寄存器的地址定义为3。这个寄存器用于配置数据格式，比如数据位、停止位和奇偶校验位。 </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LCR_EIGHT_BITS (3&lt;&lt;0) <span class="comment">// 设置数据位为8位的位掩码。</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LCR_BAUD_LATCH (1&lt;&lt;7) <span class="comment">// special mode to set baud rate</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LSR 5                 <span class="comment">// line status register</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LSR_RX_READY (1&lt;&lt;0)   <span class="comment">// input is waiting to be read from RHR</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LSR_TX_IDLE (1&lt;&lt;5)    <span class="comment">// THR can accept another character to send</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ReadReg(reg) (*(Reg(reg)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> WriteReg(reg, v) (*(Reg(reg)) = (v))</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="uartinit"><a href="#uartinit" class="headerlink" title="uartinit()"></a><code>uartinit()</code></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">uartinit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// disable interrupts.</span></span><br><span class="line">  WriteReg(IER, <span class="number">0x00</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// special mode to set baud rate.</span></span><br><span class="line">  WriteReg(LCR, LCR_BAUD_LATCH);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// LSB for baud rate of 38.4K. 低字节</span></span><br><span class="line">  WriteReg(<span class="number">0</span>, <span class="number">0x03</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// MSB for baud rate of 38.4K. 高字节</span></span><br><span class="line">  WriteReg(<span class="number">1</span>, <span class="number">0x00</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// leave set-baud mode,</span></span><br><span class="line">  <span class="comment">// and set word length to 8 bits, no parity.</span></span><br><span class="line">  <span class="comment">// 离开设置波特率的模式，并配置数据字长为8位，无校验位。</span></span><br><span class="line">  <span class="comment">// 这是通过再次写入LCR寄存器，但这次使用LCR_EIGHT_BITS来完成的。</span></span><br><span class="line">  WriteReg(LCR, LCR_EIGHT_BITS);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// reset and enable FIFOs.</span></span><br><span class="line">  <span class="comment">// 通过写入FIFO控制寄存器（FCR），启用并清除FIFO（先进先出队列）。</span></span><br><span class="line">  <span class="comment">// 这有助于确保发送和接收的数据能够被正确地缓存，同时清除可能存在的任何旧数据。</span></span><br><span class="line">  WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// enable transmit and receive interrupts.</span></span><br><span class="line">  <span class="comment">// 再次写入IER寄存器，这次是为了启用发送（IER_TX_ENABLE）和接收（IER_RX_ENABLE）中断。</span></span><br><span class="line">  <span class="comment">// 这允许UART在发送缓冲区空闲或接收到数据时，通过中断通知CPU。</span></span><br><span class="line">  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化UART发送锁：</span></span><br><span class="line">  initlock(&amp;uart_tx_lock, <span class="string">&quot;uart&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>uartputc()</code></p>
+<ul>
+<li>将一个字符添加到输出缓冲区并通知UART开始发送（如果尚未开始）</li>
+<li>如果输出缓冲区已满，则阻塞</li>
+<li>因为该函数可能会阻塞，所以不能被中断调用</li>
+<li>所以该函数只适合被<code>write()</code>调用</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">uartputc</span><span class="params">(<span class="type">int</span> c)</span></span><br><span class="line">&#123;</span><br><span class="line">  acquire(&amp;uart_tx_lock);</span><br><span class="line">	</span><br><span class="line">  <span class="comment">// 如果系统遇到一个严重的错误，则panicked为真，不再执行后续代码</span></span><br><span class="line">  <span class="keyword">if</span>(panicked)&#123;</span><br><span class="line">    <span class="keyword">for</span>(;;)</span><br><span class="line">      ;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// UART 传输缓冲区 满</span></span><br><span class="line">  <span class="keyword">while</span>(uart_tx_w == uart_tx_r + UART_TX_BUF_SIZE)&#123;</span><br><span class="line">    <span class="comment">// buffer is full.</span></span><br><span class="line">    <span class="comment">// wait for uartstart() to open up space in the buffer.</span></span><br><span class="line">    <span class="comment">// 调用sleep会导致调用线程阻塞</span></span><br><span class="line">    sleep(&amp;uart_tx_r, &amp;uart_tx_lock);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 向uart输出循环缓冲区写入字符c</span></span><br><span class="line">  uart_tx_buf[uart_tx_w % UART_TX_BUF_SIZE] = c;</span><br><span class="line">  uart_tx_w += <span class="number">1</span>; <span class="comment">// 写索引加1</span></span><br><span class="line">  uartstart();</span><br><span class="line">  release(&amp;uart_tx_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="uartstart"><a href="#uartstart" class="headerlink" title="uartstart()"></a><code>uartstart()</code></h4><p>如果<code>UART</code>当前是空闲的，且一个字符正在输出缓冲区中等待，该函数将会把这个字符传输出去。</p>
+<p>该函数的调用者必须先对<code>uart_tx_lock</code>上锁</p>
+<p>设备中断的上半和下半部分都可以调用该函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">uartstart</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span>(uart_tx_w == uart_tx_r)&#123;</span><br><span class="line">      <span class="comment">// transmit buffer is empty.</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 读取 Line Status Register 并判断 UART Transmit Holding Register 是否空闲 </span></span><br><span class="line">    <span class="keyword">if</span>((ReadReg(LSR) &amp; LSR_TX_IDLE) == <span class="number">0</span>)&#123;</span><br><span class="line">      <span class="comment">// the UART transmit holding register is full,</span></span><br><span class="line">      <span class="comment">// so we cannot give it another byte.</span></span><br><span class="line">      <span class="comment">// it will interrupt when it&#x27;s ready for a new byte.</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 读取 uart 输出缓冲区的一个字符</span></span><br><span class="line">    <span class="type">int</span> c = uart_tx_buf[uart_tx_r % UART_TX_BUF_SIZE];</span><br><span class="line">    uart_tx_r += <span class="number">1</span>; <span class="comment">// uart输出缓冲区读索引加1</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// maybe uartputc() is waiting for space in the buffer.</span></span><br><span class="line">    <span class="comment">// 或许有uartputc正在等待uart输出缓冲区的空间</span></span><br><span class="line">    wakeup(&amp;uart_tx_r);</span><br><span class="line">    <span class="comment">// 将缓冲区读取的数据写入UART的发送保持寄存器</span></span><br><span class="line">    WriteReg(THR, c);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="uartputc-sync"><a href="#uartputc-sync" class="headerlink" title="uartputc_sync()"></a><code>uartputc_sync()</code></h4><p>uartputc的另一个版本，不使用中断，用于内核的printf和回显字符。它等待循环，知道UART的输出寄存器为空</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">uartputc_sync</span><span class="params">(<span class="type">int</span> c)</span> &#123;</span><br><span class="line">  push_off(); <span class="comment">// 禁止中断</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(panicked)&#123;</span><br><span class="line">    <span class="keyword">for</span>(;;)</span><br><span class="line">      ;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 轮询等待知道THR为空</span></span><br><span class="line">  <span class="comment">// wait for Transmit Holding Empty to be set in LSR.</span></span><br><span class="line">  <span class="keyword">while</span>((ReadReg(LSR) &amp; LSR_TX_IDLE) == <span class="number">0</span>)</span><br><span class="line">    ;</span><br><span class="line">  <span class="comment">// 向 THR 中写入数据c</span></span><br><span class="line">  WriteReg(THR, c);</span><br><span class="line">	</span><br><span class="line">  pop_off(); <span class="comment">// 启用中断</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>uartputc_sync</code>并没有使用 uart输出缓冲区 <code>UART_TX_BUF</code></p>
+<h4 id="uartgetc"><a href="#uartgetc" class="headerlink" title="uartgetc()"></a><code>uartgetc()</code></h4><p>从UART中读取一个输入字符，如果没有则返回-1</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">uartgetc</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span>(ReadReg(LSR) &amp; <span class="number">0x01</span>)&#123;</span><br><span class="line">    <span class="comment">// input data is ready.</span></span><br><span class="line">    <span class="keyword">return</span> ReadReg(RHR); <span class="comment">// Receive Holding Register</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="uartintr"><a href="#uartintr" class="headerlink" title="uartintr()"></a><code>uartintr()</code></h4><p>处理一个uart中断，当一个输入到达时，或者uart已经准备好更多的输出时使用，被<code>devintr()</code>调用，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">uartintr</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="comment">// read and process incoming characters.</span></span><br><span class="line">  <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">    <span class="type">int</span> c = uartgetc();<span class="comment">// 读取uart中的输入字符</span></span><br><span class="line">    <span class="keyword">if</span>(c == <span class="number">-1</span>)</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    consoleintr(c); <span class="comment">// 将c传输给console</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// send buffered characters. 传输缓冲区的字符</span></span><br><span class="line">  acquire(&amp;uart_tx_lock);</span><br><span class="line">  uartstart();</span><br><span class="line">  release(&amp;uart_tx_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="printf-c"><a href="#printf-c" class="headerlink" title="printf.c"></a><code>printf.c</code></h3><h4 id="pr-struct"><a href="#pr-struct" class="headerlink" title="pr struct"></a><code>pr struct</code></h4><p>锁，用于避免并发的printf操作交互执行</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">lock</span>;</span></span><br><span class="line">  <span class="type">int</span> locking;</span><br><span class="line">&#125; pr;</span><br></pre></td></tr></table></figure>
+
+<h4 id="printint"><a href="#printint" class="headerlink" title="printint"></a><code>printint</code></h4><p>打印整型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">printint</span><span class="params">(<span class="type">int</span> xx, <span class="type">int</span> base, <span class="type">int</span> sign)</span> &#123;</span><br><span class="line">  <span class="type">char</span> buf[<span class="number">16</span>];</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  uint x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(sign &amp;&amp; (sign = xx &lt; <span class="number">0</span>))</span><br><span class="line">    x = -xx;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    x = xx;</span><br><span class="line"></span><br><span class="line">  i = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    buf[i++] = digits[x % base];</span><br><span class="line">  &#125; <span class="keyword">while</span>((x /= base) != <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(sign)</span><br><span class="line">    buf[i++] = <span class="string">&#x27;-&#x27;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span>(--i &gt;= <span class="number">0</span>)</span><br><span class="line">    consputc(buf[i]); <span class="comment">// 向console输入</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="printptr"><a href="#printptr" class="headerlink" title="printptr"></a><code>printptr</code></h4><p>打印指针</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">printptr</span><span class="params">(uint64 x)</span> &#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  consputc(<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">  consputc(<span class="string">&#x27;x&#x27;</span>);</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; (<span class="keyword">sizeof</span>(uint64) * <span class="number">2</span>); i++, x &lt;&lt;= <span class="number">4</span>)</span><br><span class="line">    consputc(digits[x &gt;&gt; (<span class="keyword">sizeof</span>(uint64) * <span class="number">8</span> - <span class="number">4</span>)]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="printf"><a href="#printf" class="headerlink" title="printf"></a><code>printf</code></h4><ul>
+<li><code>ap</code>是一个可变参数列表</li>
+<li><code>va_start(ap, fmt)</code>，fmt是函数中最后一个已知的固定参数，它告诉<code>va_start</code>可变参数列表在内存中的起始位置在哪里</li>
+<li><code>va_arg(ap, int)</code>，从<code>ap</code>中提取一个类型为<code>int</code>的参数</li>
+<li><strong>用法示例</strong>：在处理<code>printf</code>格式字符串中的<code>%d</code>占位符时，可以使用<code>printint(va_arg(ap, int), 10, 1);</code>来读取一个整数参数，并将其按十进制格式输出。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// Print to the console. only understands %d, %x, %p, %s.</span></span><br><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">printf</span><span class="params">(<span class="type">char</span> *fmt, ...)</span></span><br><span class="line">&#123;</span><br><span class="line">  va_list ap;</span><br><span class="line">  <span class="type">int</span> i, c, locking;</span><br><span class="line">  <span class="type">char</span> *s;</span><br><span class="line"></span><br><span class="line">  locking = pr.locking;</span><br><span class="line">  <span class="keyword">if</span>(locking)</span><br><span class="line">    acquire(&amp;pr.lock);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (fmt == <span class="number">0</span>)</span><br><span class="line">    panic(<span class="string">&quot;null fmt&quot;</span>);</span><br><span class="line"></span><br><span class="line">  va_start(ap, fmt); <span class="comment">// 初始化 va_list类型的变量 args 以便后续通过va_arg宏访问函数的可变参数列表</span></span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; (c = fmt[i] &amp; <span class="number">0xff</span>) != <span class="number">0</span>; i++)&#123;</span><br><span class="line">    <span class="keyword">if</span>(c != <span class="string">&#x27;%&#x27;</span>)&#123;</span><br><span class="line">      consputc(c); <span class="comment">// 如果不是%d这样的占位符，则直接输出到console中</span></span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    c = fmt[++i] &amp; <span class="number">0xff</span>;</span><br><span class="line">    <span class="keyword">if</span>(c == <span class="number">0</span>) <span class="comment">// 结束输出</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">switch</span>(c)&#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">      printint(va_arg(ap, <span class="type">int</span>), <span class="number">10</span>, <span class="number">1</span>); <span class="comment">// 输出整型</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;x&#x27;</span>:</span><br><span class="line">      printint(va_arg(ap, <span class="type">int</span>), <span class="number">16</span>, <span class="number">1</span>);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;p&#x27;</span>:</span><br><span class="line">      printptr(va_arg(ap, uint64));</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span>((s = va_arg(ap, <span class="type">char</span>*)) == <span class="number">0</span>)</span><br><span class="line">        s = <span class="string">&quot;(null)&quot;</span>;</span><br><span class="line">      <span class="keyword">for</span>(; *s; s++)</span><br><span class="line">        consputc(*s);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;%&#x27;</span>:</span><br><span class="line">      consputc(<span class="string">&#x27;%&#x27;</span>);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="comment">// Print unknown % sequence to draw attention.</span></span><br><span class="line">      consputc(<span class="string">&#x27;%&#x27;</span>);</span><br><span class="line">      consputc(c);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  va_end(ap);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(locking)</span><br><span class="line">    release(&amp;pr.lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="panic"><a href="#panic" class="headerlink" title="panic"></a><code>panic</code></h4><p>打印panic</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">panic</span><span class="params">(<span class="type">char</span> *s)</span> &#123;</span><br><span class="line">  pr.locking = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;panic: &quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(s);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  panicked = <span class="number">1</span>; <span class="comment">// freeze uart output from other CPUs</span></span><br><span class="line">  <span class="keyword">for</span>(;;)</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="printfinit"><a href="#printfinit" class="headerlink" title="printfinit"></a><code>printfinit</code></h4><p>初始化printf锁</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">printfinit</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  initlock(&amp;pr.lock, <span class="string">&quot;pr&quot;</span>);</span><br><span class="line">  pr.locking = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="实验部分"><a href="#实验部分" class="headerlink" title="实验部分"></a>实验部分</h2><p>虚拟内存提供了一定程度的间接性：内核可以通过将 PTE 标记为无效或只读来拦截内存引用，从而导致页面错误，并且可以通过修改 PTE 来更改地址的含义。 计算机系统中有一种说法，任何系统问题都可以通过一定程度的间接解决。 本实验探讨了一个示例：copy-on-write fork</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>xv6中的<code>fork()</code>系统调用会复制父进程的所有用户空间内存到子进程。如果父进程很大，复制操作可能会花费很长时间。更糟糕的是，这项工作往往大部分是浪费的：<code>fork()</code>通常会在子进程中紧接着执行<code>exec()</code>，这将丢弃已复制的内存，通常在未使用大部分已复制内存的情况下。另一方面，如果父进程和子进程都使用了复制的页面，并且它们中的一个或两个对其进行了写操作，那么真正需要这个副本。</p>
+<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><p>Copy-on-write (COW) fork() 的目标是推迟分配和复制物理内存页，直到实际需要副本（如果有）。<br>COW fork() 只为子进程创建一个页表，用户内存的 PTE 指向父进程的物理页。 COW fork() 将父级和子级中的所有用户 PTE 标记为只读。 当任一进程尝试写入其中一个 COW 页时，CPU 将强制发生页错误。 内核页面错误处理程序检测到这种情况，为错误进程分配物理内存页面，将原始页面复制到新页面，并修改错误进程中的相关 PTE 以引用新页面，这次使用 PTE 标记为可写。 当页面错误处理程序返回时，用户进程将能够写入其页面副本。</p>
+<p>COW fork() 使得释放实现用户内存的物理页变得有点棘手。 给定的物理页可能被多个进程的页表引用，并且仅当最后一个引用消失时才应释放。 在像 xv6 这样的简单内核中，这种簿记相当简单，但在生产内核中，这可能很难正确执行； 例如，参见修补直到奶牛回家。</p>
+<h3 id="Implement-copy-on-write-fork"><a href="#Implement-copy-on-write-fork" class="headerlink" title="Implement copy-on-write fork"></a>Implement copy-on-write fork</h3><blockquote>
+<p>Your task is to implement copy-on-write fork in the xv6 kernel. You are done if your modified kernel executes both the cowtest and ‘usertests -q’ programs successfully.</p>
+</blockquote>
+<p>为了帮助你测试你的实现，我们提供了一个名为<code>cowtest</code>的xv6程序（源代码在<code>user/cowtest.c</code>中）。<code>cowtest</code>运行各种测试，但即使是第一个测试也会在未修改的xv6上失败。因此，最初你会看到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cowtest</span><br><span class="line">simple: fork() failed</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+
+<p>“simple”测试分配了超过可用物理内存一半的空间，然后执行<code>fork()</code>。<code>fork</code>失败是因为没有足够的空闲物理内存给子进程完整复制父进程的内存。</p>
+<p>当你完成后，你的内核应该通过<code>cowtest</code>和<code>usertests -q</code>中的所有测试。也就是说：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cowtest</span><br><span class="line">simple: ok</span><br><span class="line">simple: ok</span><br><span class="line">three: zombie!</span><br><span class="line">ok</span><br><span class="line">three: zombie!</span><br><span class="line">ok</span><br><span class="line">three: zombie!</span><br><span class="line">ok</span><br><span class="line">file: ok</span><br><span class="line">ALL COW TESTS PASSED</span><br><span class="line">$ usertests -q</span><br><span class="line">...</span><br><span class="line">ALL TESTS PASSED</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+
+<p>这表明，完成后的内核应该能够处理写时复制（COW，Copy-On-Write）机制下的内存管理，使得即使在物理内存紧张的情况下也能成功执行<code>fork()</code>，并且通过所有相关的功能和性能测试。</p>
+<h3 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h3><ol>
+<li>修改<code>uvmcopy()</code>将父进程的物理页映射到子进程中，而不是分配新的页。将子进程和父进程所有设置PTE_W的PTE修改为PTE_R</li>
+<li>修改<code>usertrap()</code>检测页面错误。当一个向写入页面错误在COW页上发生时，用<code>kalloc()</code>分配一个新的页面并设置PTE_W。最初只读的页面（未映射 PTE_W，如文本段中的页面）应保持只读状态并在父子之间共享； 尝试写入此类页面的进程应该被终止。</li>
+<li>确保每个物理页在最后一个 PTE 引用消失时被释放——但不是在此之前。 实现此目的的一个好方法是为每个物理页保留引用该页的用户页表数量的“引用计数”。当 <code>kalloc()</code> 分配页面时，将页面的引用计数设置为 1。 当 <code>fork</code> 导致子进程共享页面时增加页面的引用计数，并在每次任何进程从其页表中删除页面时减少页面的计数。 <code>kfree()</code> 仅当其引用计数为零时才应将页面放回到空闲列表中。 将这些计数保存在固定大小的整数数组中是可以的。 您必须制定一个如何索引数组以及如何选择其大小的方案。 例如，您可以使用页面的物理地址除以 4096 来索引数组，并为数组提供与 <code>kalloc.c</code> 中的 <code>kinit()</code> 放置在空闲列表上的任何页面的最高物理地址相同的元素数。 请随意修改 <code>kalloc.c</code>（例如 <code>kalloc()</code> 和 <code>kfree()</code>）以维护引用计数。</li>
+<li>修改 <code>copyout()</code> 以在遇到 <code>COW</code> 页面时使用与页面错误相同的方案。</li>
+</ol>
+<h3 id="提示"><a href="#提示" class="headerlink" title="提示"></a>提示</h3><ul>
+<li>It may be useful to have a way to record, for each PTE, whether it is a COW mapping. You can use the RSW (reserved for software) bits in the RISC-V PTE for this.</li>
+<li><code>usertests -q</code> explores scenarios that <code>cowtest</code> does not test, so don’t forget to check that all tests pass for both.</li>
+<li>Some helpful macros and definitions for page table flags are at the end of <code>kernel/riscv.h</code>.</li>
+<li>If a COW page fault occurs and there’s no free memory, the process should be killed.</li>
+</ul>
+<h2 id="实验思路"><a href="#实验思路" class="headerlink" title="实验思路"></a>实验思路</h2><p>为了对每一个<strong>物理页面</strong>进行映射计数，我们首先在kalloc.c中设置一个对所有<strong>物理页面</strong>计数的全局数组，对该数组的操作需要互斥，我们用一个锁解决。</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-12%2014.31.22.png" alt="截屏2024-03-12 14.31.22"></p>
+<p>从xv6的内核物理地址空间图可以看到，从PHYSTOP到KERNBASE的虚拟地址空间映射带的是物理地址用于RAM的空间，所以我们可以直接计算出最大页面的大小。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">lock</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">ref_lock</span>;</span> <span class="comment">// 锁</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">freelist</span>;</span></span><br><span class="line">&#125; kmem;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXPAGES (PHYSTOP - KERNBASE) / PGSIZE</span></span><br><span class="line"><span class="type">int</span> ref_count[MAXPAGES]; </span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">index_ref</span><span class="params">(uint64 pa)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (pa - KERNBASE) / PGSIZE;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">incr_ref</span><span class="params">(uint64 pa)</span> &#123;</span><br><span class="line">    acquire(&amp;kmem.ref_lock);</span><br><span class="line">    ref_count[index_ref(pa)]++;</span><br><span class="line">    release(&amp;kmem.ref_lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">decr_ref</span><span class="params">(uint64 pa)</span> &#123;</span><br><span class="line">    acquire(&amp;kmem.ref_lock);</span><br><span class="line">    ref_count[index_ref(pa)]--;</span><br><span class="line">    release(&amp;kmem.ref_lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">set_ref</span><span class="params">(uint64 pa, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    acquire(&amp;kmem.ref_lock);</span><br><span class="line">    ref_count[index_ref(pa)] = n;</span><br><span class="line">    release(&amp;kmem.ref_lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">get_ref</span><span class="params">(uint64 pa)</span> &#123;</span><br><span class="line">    <span class="type">int</span> res;</span><br><span class="line">    acquire(&amp;kmem.ref_lock);</span><br><span class="line">    res = ref_count[index_ref(pa)];</span><br><span class="line">    release(&amp;kmem.ref_lock);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>接着我们在<code>kinit()</code>函数中初始化锁：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">kinit</span><span class="params">()</span> &#123;</span><br><span class="line">  initlock(&amp;kmem.lock, <span class="string">&quot;kmem&quot;</span>);</span><br><span class="line">  initlock(&amp;kmem.ref_lock, <span class="string">&quot;reflock&quot;</span>);</span><br><span class="line">  freerange(end, (<span class="type">void</span>*)PHYSTOP);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当<code>kalloc()</code>一个页面的时候，我们将页面对应的映射计数初始化为1，当<code>kfree()</code>一个物理地址对应的页面时，我们减少页面对应的映射计数，当且仅当页面计数为0时，才真正的释放掉这个内存。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">kfree(<span class="type">void</span> *pa) &#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">r</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查pa的值是否合法</span></span><br><span class="line">  <span class="keyword">if</span>(((uint64)pa % PGSIZE) != <span class="number">0</span> || (<span class="type">char</span>*)pa &lt; end || (uint64)pa &gt;= PHYSTOP)</span><br><span class="line">    panic(<span class="string">&quot;kfree&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// pa 对应的索引减 1</span></span><br><span class="line">  decr_ref((uint64)pa);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 只有 pa 的计数为 0 时，才能把该页释放掉</span></span><br><span class="line">  <span class="keyword">if</span>(get_ref((uint64)pa) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Fill with junk to catch dangling refs.</span></span><br><span class="line">  <span class="built_in">memset</span>(pa, <span class="number">1</span>, PGSIZE);</span><br><span class="line"></span><br><span class="line">  r = (<span class="keyword">struct</span> run*)pa;</span><br><span class="line"></span><br><span class="line">  acquire(&amp;kmem.lock);</span><br><span class="line">  r-&gt;next = kmem.freelist;</span><br><span class="line">  kmem.freelist = r;</span><br><span class="line">  release(&amp;kmem.lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Allocate one 4096-byte page of physical memory.</span></span><br><span class="line"><span class="comment">// Returns a pointer that the kernel can use.</span></span><br><span class="line"><span class="comment">// Returns 0 if the memory cannot be allocated.</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">kalloc</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">r</span>;</span></span><br><span class="line"></span><br><span class="line">  acquire(&amp;kmem.lock);</span><br><span class="line">  r = kmem.freelist;</span><br><span class="line">  <span class="keyword">if</span>(r)</span><br><span class="line">    kmem.freelist = r-&gt;next;</span><br><span class="line">  release(&amp;kmem.lock);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(r)</span><br><span class="line">    <span class="built_in">memset</span>((<span class="type">char</span>*)r, <span class="number">5</span>, PGSIZE); <span class="comment">// fill with junk</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化时置计数位1</span></span><br><span class="line">  <span class="keyword">if</span>(r) &#123;</span><br><span class="line">      set_ref((uint64)r, <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (<span class="type">void</span>*)r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，我们在<code>kinit()</code>的时候调用了<code>freerange()</code>，同时又在<code>freerange()</code>函数中调用了<code>kfree()</code>函数，所以我们需要在<code>freerange()</code>中将计数数组初始化为1，放置计数变为负数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">freerange</span><span class="params">(<span class="type">void</span> *pa_start, <span class="type">void</span> *pa_end)</span> &#123;</span><br><span class="line">  <span class="type">char</span> *p;</span><br><span class="line">  p = (<span class="type">char</span>*)PGROUNDUP((uint64)pa_start);</span><br><span class="line">	<span class="comment">// 初始化计数数组</span></span><br><span class="line">  acquire(&amp;kmem.ref_lock);</span><br><span class="line">  <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; MAXPAGES; ++i) &#123;</span><br><span class="line">    ref_count[i] = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  release(&amp;kmem.ref_lock);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span>(; p + PGSIZE &lt;= (<span class="type">char</span>*)pa_end; p += PGSIZE)</span><br><span class="line">    kfree(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后我们在<code>defs.h</code>中注册这些函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">index_ref</span><span class="params">(uint64 pa)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">incr_ref</span><span class="params">(uint64 pa)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">decr_ref</span><span class="params">(uint64 pa)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">set_ref</span><span class="params">(uint64 pa, <span class="type">int</span> n)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">get_ref</span><span class="params">(uint64 pa)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们修改<code>uvmcopy()</code>函数，将子进程的page table中的page table entry 直接映射到父进程的page中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line"><span class="title function_">uvmcopy</span><span class="params">(<span class="type">pagetable_t</span> old, <span class="type">pagetable_t</span> new, uint64 sz)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pte_t</span> *pte;</span><br><span class="line">  uint64 pa, i;</span><br><span class="line">  uint flags;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; sz; i += PGSIZE)&#123;</span><br><span class="line">    <span class="keyword">if</span>((pte = walk(old, i, <span class="number">0</span>)) == <span class="number">0</span>)</span><br><span class="line">      panic(<span class="string">&quot;uvmcopy: pte should exist&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>((*pte &amp; PTE_V) == <span class="number">0</span>)</span><br><span class="line">      panic(<span class="string">&quot;uvmcopy: page not present&quot;</span>);</span><br><span class="line">    pa = PTE2PA(*pte);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果父进程的页表页是可写的，我们不允许它可写</span></span><br><span class="line">    <span class="comment">// 并且 PTE_COW 位 = 1</span></span><br><span class="line">    <span class="comment">// 如果父进程的页表本身就是不可写的，那就不需要修改PTE 的 flag</span></span><br><span class="line">    <span class="keyword">if</span>(*pte &amp; PTE_W) &#123;</span><br><span class="line">        *pte |= PTE_COW;</span><br><span class="line">        *pte &amp;= ~PTE_W;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    flags = PTE_FLAGS(*pte);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(mappages(new, i, PGSIZE, (uint64)pa, flags) != <span class="number">0</span>)&#123;</span><br><span class="line">      <span class="keyword">goto</span> err;</span><br><span class="line">    &#125;</span><br><span class="line">    incr_ref((uint64)pa); <span class="comment">// 增加物理页面的映射计数</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"> err:</span><br><span class="line">  uvmunmap(new, <span class="number">0</span>, i / PGSIZE, <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改<code>usertrap()</code>函数处理load page fault：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">usertrap</span><span class="params">()</span> &#123;</span><br><span class="line">...</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>((which_dev = devintr()) != <span class="number">0</span>)&#123;</span><br><span class="line">    <span class="comment">// ok</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (r_scause() == <span class="number">15</span>) &#123; <span class="comment">// load page fault</span></span><br><span class="line">    		<span class="comment">// 使用 cowalloc 函数分配一个新的页</span></span><br><span class="line">        <span class="keyword">if</span>(cowalloc(p-&gt;pagetable, r_stval()) != <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="built_in">printf</span>(<span class="string">&quot;usertrap(): cowalloc failed\n&quot;</span>);</span><br><span class="line">          setkilled(p);</span><br><span class="line">        &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;usertrap(): unexpected scause %p pid=%d\n&quot;</span>, r_scause(), p-&gt;pid);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;            sepc=%p stval=%p\n&quot;</span>, r_sepc(), r_stval());</span><br><span class="line">    setkilled(p);</span><br><span class="line">  &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>cowalloc()</code>函数的实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">cowalloc</span><span class="params">(<span class="type">pagetable_t</span> pagetable, uint64 va)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (va &gt;= MAXVA) &#123; <span class="comment">// 判断虚拟地址是否越界</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;va cannot be greater than MAXVA: %p\n&quot;</span>, va);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    va = PGROUNDDOWN(va);</span><br><span class="line">    <span class="comment">// 拿到 va 对应的 pte</span></span><br><span class="line">    <span class="type">pte_t</span> *pte = walk(pagetable, va, <span class="number">0</span>);</span><br><span class="line">    uint64 pa = PTE2PA(*pte); <span class="comment">// 拿到虚拟地址对应的物理地址</span></span><br><span class="line">    <span class="comment">// 抽取 pte flags</span></span><br><span class="line">    uint64 flags = PTE_FLAGS(*pte);</span><br><span class="line">    <span class="keyword">if</span> (!(*pte &amp; PTE_COW))&#123; <span class="comment">// check if page is COW page</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Not a COW page. Invalid va: %p\n&quot;</span>, va);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 分配一个新的页</span></span><br><span class="line">    <span class="type">void</span> *mem = kalloc();</span><br><span class="line">    <span class="keyword">if</span> (mem == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;cowalloc: alloc mem runs out of memory\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 把原始页的内容拷贝到 mem 中</span></span><br><span class="line">    memmove(mem, (<span class="type">void</span>*)pa, PGSIZE);</span><br><span class="line">    <span class="comment">// 置 PTE_COW 为 0，PTE_W 为 1</span></span><br><span class="line">    flags |= PTE_W;   <span class="comment">// 0 | 1 = 1</span></span><br><span class="line">    flags ^= PTE_COW; <span class="comment">// 1 ^ 1 = 0</span></span><br><span class="line">    <span class="comment">// 对原先页取消映射并释放页</span></span><br><span class="line">    uvmunmap(pagetable, va, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 映射当前mem</span></span><br><span class="line">    <span class="keyword">if</span> (mappages(pagetable, va, PGSIZE, (uint64) mem, flags) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;cowalloc: mappages failed\n&quot;</span>);</span><br><span class="line">        kfree((<span class="type">void</span>*)mem);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后我们要修改<code>copyout</code>函数，这是因为当我们将内核空间的数据拷贝到用户空间时，目标地址可能为子进程的空间，这片空间在<code>uvmcopy</code>的时候被置为unwriteable，所以我们要为其分配一个新的page。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">copyout</span><span class="params">(<span class="type">pagetable_t</span> pagetable, uint64 dstva, <span class="type">char</span> *src, uint64 len)</span> &#123;</span><br><span class="line">  uint64 n, va0, pa0;</span><br><span class="line">  <span class="keyword">while</span>(len &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    va0 = PGROUNDDOWN(dstva); <span class="comment">// 拿到对应的page address</span></span><br><span class="line">    <span class="keyword">if</span>(va0 &gt;= MAXVA) &#123; <span class="comment">// 判断是否越界</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;copyout: va0 cannot be greater than MAXVA\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">pte_t</span> *pte = walk(pagetable, va0, <span class="number">0</span>); <span class="comment">// 拿到 pte</span></span><br><span class="line">    <span class="keyword">if</span>(pte == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;copyout: pte cannot be 0\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">		<span class="comment">// 判断pte映射到的page是否合法</span></span><br><span class="line">    <span class="keyword">if</span> ((*pte &amp; PTE_V) == <span class="number">0</span> || (*pte &amp; PTE_U) == <span class="number">0</span> ||</span><br><span class="line">        ((*pte &amp; PTE_W) == <span class="number">0</span> &amp;&amp; (*pte &amp; PTE_COW) == <span class="number">0</span>))</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>((*pte &amp; PTE_W) == <span class="number">0</span> &amp;&amp; (*pte &amp; PTE_COW) != <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// 只有当 PTE_W == 0 且 PTE_COW == 1时，才能cowalloc</span></span><br><span class="line">      <span class="keyword">if</span>(cowalloc(pagetable, va0) != <span class="number">0</span>)&#123;</span><br><span class="line">          <span class="built_in">printf</span>(<span class="string">&quot;copyout cowalloc failed\n&quot;</span>);</span><br><span class="line">          <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pa0 = walkaddr(pagetable, va0);</span><br><span class="line">    <span class="keyword">if</span>(pa0 == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;copyout: pa0 cannot be 0\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    n = PGSIZE - (dstva - va0);</span><br><span class="line">    <span class="keyword">if</span>(n &gt; len)</span><br><span class="line">      n = len;</span><br><span class="line">    memmove((<span class="type">void</span> *)(pa0 + (dstva - va0)), src, n);</span><br><span class="line">    len -= n;</span><br><span class="line">    src += n;</span><br><span class="line">    dstva = va0 + PGSIZE;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>记得在<code>defs.h</code>中注册新加的函数<code>cowalloc()</code></p>
+<p>测试结果：</p>
+<p><img src="/../images/Lab-Copy-on-Write-Fork-for-xv6/%E6%88%AA%E5%B1%8F2024-03-12%2014.57.58.png" alt="截屏2024-03-12 14.57.58"></p>
+<p>没有time.txt。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/03/06/6-5840-Lab-1-MapReduce/" rel="prev" title="6.5840 Lab 1: MapReduce">
+      <i class="fa fa-chevron-left"></i> 6.5840 Lab 1: MapReduce
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#title-%E2%80%98Lab-Copy-on-Write-Fork-for-xv6%E2%80%99-date-2024-03-08-16-31-49-tags"><span class="nav-number">1.</span> <span class="nav-text">  title: ‘Lab: Copy-on-Write Fork for xv6’  date: 2024-03-08 16:31:49  tags:</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lab-Copy-on-Write-Fork-for-xv6"><span class="nav-number"></span> <span class="nav-text">Lab: Copy-on-Write Fork for xv6</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Code-Console-input"><span class="nav-number">1.1.</span> <span class="nav-text">5.1 Code: Console input</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kernelvec-S"><span class="nav-number">1.2.</span> <span class="nav-text">kernelvec.S:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kernelvec"><span class="nav-number">1.2.1.</span> <span class="nav-text">kernelvec</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#timervec"><span class="nav-number">1.2.2.</span> <span class="nav-text">timervec:</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#plic-c-the-RISC-V-Platform-Level-Interrupt-Controller-PLIC"><span class="nav-number">1.3.</span> <span class="nav-text">plic.c: the RISC-V Platform Level Interrupt Controller (PLIC)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#plicinit"><span class="nav-number">1.3.1.</span> <span class="nav-text">plicinit():</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#plicinithart"><span class="nav-number">1.3.2.</span> <span class="nav-text">plicinithart():</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#plic-claim"><span class="nav-number">1.3.3.</span> <span class="nav-text">plic_claim()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#plic-complete"><span class="nav-number">1.3.4.</span> <span class="nav-text">plic_complete()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#console-c"><span class="nav-number">1.4.</span> <span class="nav-text">console.c:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#void-consputc"><span class="nav-number">1.4.1.</span> <span class="nav-text">void consputc()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8uartputc"><span class="nav-number">1.5.</span> <span class="nav-text">使用uartputc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8uartputc-sync"><span class="nav-number">1.6.</span> <span class="nav-text">使用uartputc_sync</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.7.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#struct-cons"><span class="nav-number">1.7.1.</span> <span class="nav-text">struct cons:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#consolewrite"><span class="nav-number">1.7.2.</span> <span class="nav-text">consolewrite()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#consoleread"><span class="nav-number">1.7.3.</span> <span class="nav-text">consoleread()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#consoleintr"><span class="nav-number">1.7.4.</span> <span class="nav-text">consoleintr()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#consoleinit"><span class="nav-number">1.7.5.</span> <span class="nav-text">consoleinit()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#uart-c"><span class="nav-number">1.8.</span> <span class="nav-text">uart.c</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">1.8.1.</span> <span class="nav-text">宏定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UART-control-registers"><span class="nav-number">1.8.2.</span> <span class="nav-text">UART control registers</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uartinit"><span class="nav-number">1.8.3.</span> <span class="nav-text">uartinit()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uartstart"><span class="nav-number">1.8.4.</span> <span class="nav-text">uartstart()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uartputc-sync"><span class="nav-number">1.8.5.</span> <span class="nav-text">uartputc_sync()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uartgetc"><span class="nav-number">1.8.6.</span> <span class="nav-text">uartgetc()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uartintr"><span class="nav-number">1.8.7.</span> <span class="nav-text">uartintr()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#printf-c"><span class="nav-number">1.9.</span> <span class="nav-text">printf.c</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pr-struct"><span class="nav-number">1.9.1.</span> <span class="nav-text">pr struct</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#printint"><span class="nav-number">1.9.2.</span> <span class="nav-text">printint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#printptr"><span class="nav-number">1.9.3.</span> <span class="nav-text">printptr</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#printf"><span class="nav-number">1.9.4.</span> <span class="nav-text">printf</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#panic"><span class="nav-number">1.9.5.</span> <span class="nav-text">panic</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#printfinit"><span class="nav-number">1.9.6.</span> <span class="nav-text">printfinit</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E9%83%A8%E5%88%86"><span class="nav-number">2.</span> <span class="nav-text">实验部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">解决办法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implement-copy-on-write-fork"><span class="nav-number">2.3.</span> <span class="nav-text">Implement copy-on-write fork</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%96%E7%95%A5"><span class="nav-number">2.4.</span> <span class="nav-text">策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E7%A4%BA"><span class="nav-number">2.5.</span> <span class="nav-text">提示</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%80%9D%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">实验思路</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">335k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:05</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
