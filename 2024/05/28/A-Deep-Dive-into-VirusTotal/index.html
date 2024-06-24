@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="A Deep Dive into VirusTotal: Characterizing and Clustering a Massive File Feed摘要：论文回答的问题：  这个源的多样性如何？ 这个问题询问VT文件源中样本的多样性程度。多样性包括不同类型的恶意软件、不同的攻击技术、不同操作系统的恶意软件等。多样性高意味着数据源可以提供广泛的恶意软件样本，有助于研究和测试不同的防御机制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Deep Dive into VirusTotal">
+<meta property="og:url" content="http://example.com/2024/05/28/A-Deep-Dive-into-VirusTotal/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="A Deep Dive into VirusTotal: Characterizing and Clustering a Massive File Feed摘要：论文回答的问题：  这个源的多样性如何？ 这个问题询问VT文件源中样本的多样性程度。多样性包括不同类型的恶意软件、不同的攻击技术、不同操作系统的恶意软件等。多样性高意味着数据源可以提供广泛的恶意软件样本，有助于研究和测试不同的防御机制。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2014.46.12.png">
+<meta property="og:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2016.21.28.png">
+<meta property="og:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2017.17.45.png">
+<meta property="og:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2018.02.59.png">
+<meta property="og:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-30%2013.58.19.png">
+<meta property="article:published_time" content="2024-05-28T07:10:11.000Z">
+<meta property="article:modified_time" content="2024-05-30T05:58:45.569Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2014.46.12.png">
+
+<link rel="canonical" href="http://example.com/2024/05/28/A-Deep-Dive-into-VirusTotal/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>A Deep Dive into VirusTotal | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/05/28/A-Deep-Dive-into-VirusTotal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A Deep Dive into VirusTotal
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-05-28 15:10:11" itemprop="dateCreated datePublished" datetime="2024-05-28T15:10:11+08:00">2024-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-05-30 13:58:45" itemprop="dateModified" datetime="2024-05-30T13:58:45+08:00">2024-05-30</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="A-Deep-Dive-into-VirusTotal-Characterizing-and-Clustering-a-Massive-File-Feed"><a href="#A-Deep-Dive-into-VirusTotal-Characterizing-and-Clustering-a-Massive-File-Feed" class="headerlink" title="A Deep Dive into VirusTotal: Characterizing and Clustering a Massive File Feed"></a>A Deep Dive into VirusTotal: Characterizing and Clustering a Massive File Feed</h1><h2 id="摘要："><a href="#摘要：" class="headerlink" title="摘要："></a>摘要：</h2><p>论文回答的问题：</p>
+<ul>
+<li><p>这个源的多样性如何？</p>
+<p>这个问题询问VT文件源中样本的多样性程度。多样性包括不同类型的恶意软件、不同的攻击技术、不同操作系统的恶意软件等。多样性高意味着数据源可以提供广泛的恶意软件样本，有助于研究和测试不同的防御机制。</p>
+</li>
+<li><p>它是否允许构建针对不同文件类型的恶意软件数据集？</p>
+<p>这个问题探讨VT文件源是否包含足够多的不同文件类型（如可执行文件、脚本、文档等），以便研究人员可以构建专门针对特定文件类型的恶意软件数据集。这对于开发针对特定类型文件的专门安全工具和策略尤为重要。</p>
+</li>
+<li><p>它提供的样本有多新鲜？</p>
+<p>这里询问的是VT文件源中样本的新鲜度，即样本从被捕获到上传到VT并可供研究的时间间隔有多短。新鲜度高的样本可以让研究人员和安全专家及时了解并对抗最新的恶意软件威胁。</p>
+</li>
+<li><p>它所见的恶意软件家族的分布是怎样的？</p>
+<p>这个问题关注的是VT文件源中恶意软件家族的分布情况。家族分布可以反映出哪些类型的恶意软件最常见，哪些正在增加，这有助于安全研究人员和行业了解当前恶意软件的趋势和动态。</p>
+</li>
+<li><p>这种分布真的能代表用户设备上的恶意软件吗？</p>
+<p>这个问题询问VT文件源中的恶意软件家族分布是否能准确反映普通用户设备上遭遇的恶意软件的实际情况。这是评估VT数据源在现实世界安全应用中有效性的重要方面，因为如果数据源的分布与实际情况相差甚远，那么基于这些数据的研究和解决方案可能无法有效应对真实的威胁。</p>
+</li>
+</ul>
+<p>探索了如何通过研究可扩展的方法，在2.35亿样本的数据源上产生高纯度的聚类来进行大规模的威胁猎捕。</p>
+<p>三种聚类方法：</p>
+<ul>
+<li>层次聚合聚类（HAC）</li>
+<li>适用于TLSH摘要的更可扩展的HAC变体（HAC-T）</li>
+<li>简单的特征值分组（FVG）</li>
+</ul>
+<p>最后，使用生成的聚类进行威胁猎捕，具体是用来检测那些被认为是良性的19万样本（即，检测结果为零的样本），这些样本可能实际上是恶意的，因为它们属于2.9万个聚类，其中大多数样本被检测为恶意。</p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><ul>
+<li>如何在不采用极端激进的过滤策略的情况下，将威胁猎捕扩展到文件源的内容上。</li>
+</ul>
+<h3 id="贡献："><a href="#贡献：" class="headerlink" title="贡献："></a>贡献：</h3><p>以下是对上文中提到的三个主要贡献的总结：</p>
+<ol>
+<li><p><strong>VT文件源的特性分析</strong>：</p>
+<ul>
+<li>我们利用一年内收集的2.35亿样本的3.28亿份分析报告，以及同期安全供应商的遥测数据，对VT文件源进行了详细的特性分析。</li>
+<li>我们发现，尽管VT文件源的数据量是遥测数据的1&#x2F;17，但观测到的恶意软件数量却是遥测数据的8倍，显示出VT文件源在捕捉恶意软件方面的高效性。</li>
+<li>文件源非常新鲜，每天接收超过一百万个新样本，这些样本在用户设备上出现后平均4.4小时就会出现在文件源中。</li>
+<li>在新样本中，62%可以立即被标记为已知家族的变体，但有38%未被标记。0.3%的新样本最初完全未被检测到，但随后多个杀毒引擎开始标记它们。</li>
+<li>文件源包含丰富的文件类型和至少有100个样本的4.9千个家族，但这种多样性主要由Windows和Android家族驱动。家族分布与遥测数据的观察结果显著不同，表明VT文件源可能不适合推断家族对真实用户的影响。</li>
+</ul>
+</li>
+<li><p><strong>可扩展的聚类方法探索</strong>：</p>
+<ul>
+<li>我们评估了三种能够处理VT文件源中数亿样本的聚类方法：层次聚合聚类（HAC）、针对TLSH摘要的更高效的HAC版本（HAC-T）以及简单的按特征值分组（FVG）。</li>
+<li>首先，我们使用Windows和Android的真实数据集来评估这些方法的准确性。</li>
+<li>接着，我们评估了这些方法的可扩展性，发现只有FVG能够适应文件源的庞大数据量。</li>
+</ul>
+</li>
+<li><p><strong>应用FVG聚类来检测完全未被发现的恶意软件</strong>：</p>
+<ul>
+<li>使用FVG，我们对2.35亿个样本进行聚类，不考虑它们是否已被杀毒引擎检测到。</li>
+<li>我们识别出了29,000个FVG-vhash聚类，这些聚类中的多数样本被多个杀毒引擎检测到，包含了190,000个可能是恶意的、但未被检测到的样本。这表明FVG聚类方法在识别潜在恶意软件方面具有有效性。</li>
+</ul>
+</li>
+</ol>
+<h2 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h2><h2 id="数据特征"><a href="#数据特征" class="headerlink" title="数据特征"></a>数据特征</h2><ul>
+<li>样本特征</li>
+<li>扫描特征</li>
+<li>派生特征</li>
+</ul>
+<p><img src="/../images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2014.46.12.png" alt="截屏2024-05-29 14.46.12"></p>
+<p>加密哈希 crypto-graphic hashes</p>
+<ul>
+<li>应用于整个文件的: sha256、sha1、md5</li>
+<li>计算文件部分的：imphash、richpe_hash、cert_thumbprint、authentihash、icon_hash</li>
+</ul>
+<p>模糊哈希 fuzzy hashes</p>
+<ul>
+<li>tlsh 研究表明tlsh比ssdeep好；tlsh使用哈希值上的汉明距离来确定两个输入是否相似</li>
+<li>ssdeep</li>
+</ul>
+<p>结构哈希</p>
+<ul>
+<li><strong>vhash:</strong> <ul>
+<li>它考虑了样本属性，如导入、导出、段和文件大小。</li>
+<li>vhash似乎是不同文件类型的一组结构哈希的通用名称。</li>
+<li>VT为许多文件类型计算vhash（例如，PE可执行文件、APKs、PDFs、Office文档），但并非全部（例如，JPEG和PNG图像没有vhash）。</li>
+<li>VT使用vhash为文件提供每日聚类。我们已经确认同一聚类中的样本具有相同的vhash值，因此我们使用等值比较两个vhash值。尽管是专有的且大部分未被文档记录，我们在第5节的实验评估显示vhash是一个用于聚类的良好特征。</li>
+</ul>
+</li>
+</ul>
+<p>时间戳（time stamp）</p>
+<ul>
+<li>scan_date</li>
+<li>fseen_date</li>
+<li>cert_valid_from</li>
+<li>cert_valid_to</li>
+</ul>
+<p>杀毒扫描 AV scan</p>
+<ul>
+<li>我们提取检测到样本的引擎数量（即给出非空标签的引擎数量）（vt_score）</li>
+</ul>
+<p>程序 package_name</p>
+<ul>
+<li><code>package_name</code> 是Android应用的包标识符</li>
+<li><code>vt_meaningful_name</code> 是VT为样本选择的最有意义的文件名（例如，在提交给VT时样本的所有文件名中选择）。</li>
+</ul>
+<p>派生特征 Derived Features</p>
+<p>文件类型：</p>
+<p>通过 trid_file_type、vt_tags、vt_meaningful_name</p>
+<ul>
+<li>trid_file_type 是使用TrID工具识别的文件类型</li>
+<li>vt_tag：<img src="/../images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2016.21.28.png" alt="截屏2024-05-29 16.21.28"></li>
+<li>当vt_meaningful_name可用时，我们从文件名中提取扩展名，并将该扩展名映射到一个文件类型。</li>
+</ul>
+<p>AVClass 特征：</p>
+<p>AVCLASS2 是一个病毒标记工具，</p>
+<h2 id="文件源分析-Feed-Analysis"><a href="#文件源分析-Feed-Analysis" class="headerlink" title="文件源分析 Feed Analysis"></a>文件源分析 Feed Analysis</h2><p>回答了以下问题：</p>
+<ul>
+<li><p>(1) VT文件源与AV遥测数据相比有多大？</p>
+<p>VT文件源包含的恶意软件数量是遥测数据的八倍，使其成为获取恶意样本的重要来源。</p>
+</li>
+<li><p>(2) 文件源中的样本有多新鲜？</p>
+<p>在收集到的样本中，有89%是新样本，即之前VT未知的样本，而且文件源每天提供超过一百万个新样本。</p>
+</li>
+<li><p>(3) 文件源在文件类型方面有多样化吗？</p>
+<p>文件源中三分之二的样本是Windows PE文件，但该源对于多种文件类型来说都是一个很好的样本来源。文件源缺乏统一的文件类型字段，对于大量样本来说，文件类型的识别是具有挑战性的。</p>
+<p><img src="/../images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2017.17.45.png" alt="截屏2024-05-29 17.17.45"></p>
+</li>
+<li><p>(4) 有多少比例的样本在首次扫描时可以被检测为恶意的？</p>
+<p>VT文件源是一个文件源而不是恶意软件源。其一半的数据量是未被检测到的样本，而53%的样本在首次观察时没有被检测到。另一方面，由于这些样本与之前看到的恶意软件具有相似特征（即匹配现有的签名），有41%至47%的样本在首次被杀毒引擎检测时可以被识别为恶意软件。</p>
+</li>
+<li><p>(5) 文件源在家族方面有多样化吗？</p>
+<p>该数据源具有多样性，拥有至少100个样本的家族达4.9千个。然而，这种多样性主要是由于peexe和apk家族。对于这两种文件类型，该数据源是构建大规模家族分类数据集的良好来源。AVCLASS2在首次观察时就能为62%的样本进行标记。因此，它可以用作过滤器，移除那些已被良好检测的家族的样本，使分析师可以专注于38%未标记的样本。</p>
+</li>
+<li><p>(6) 有多少比例的恶意样本在首次扫描时完全未被检测到？</p>
+<p>至少有0.3%提交给VT的样本最初是完全未被检测到的（FUD），即它们在首次VT观察时没有被检测到，但后来至少有4个引擎认为它们是恶意的。与其他文件类型相比，PDF文档更有可能是FUD。</p>
+</li>
+<li><p>(7) 有多少比例的样本是签名的？</p>
+<p>VT支持提取多种文件类型的代码签名，但整个文件源的样本中只有一小部分（5.6%）以及peexe样本中的3.7%拥有代码签名。</p>
+</li>
+<li><p>(8) 文件源和AV遥测数据在恶意样本上的重叠情况如何？哪一个更快地看到样本？</p>
+<p>遥测数据和VT文件源观察到的恶意样本集大部分是不相交的（共有的样本只占文件源的1.2%到1.8%）。因此，即使是最大的安全供应商也只能看到恶意样本全域的一小部分。VT文件源中的家族分布与遥测观察到的显著不同，这表明VT可能不是一个好的资源来推断家族对真实用户的影响。两个数据集中的新样本在设备上平均提前4.4小时被看到，因此文件源中的新恶意样本相当新近。此外，有39%的新样本在VT中被观察到之前还未在用户设备中出现，所以VT可能为安全供应商提供有用的早期警报。</p>
+</li>
+</ul>
+<h2 id="聚类-Clustering"><a href="#聚类-Clustering" class="headerlink" title="聚类 Clustering"></a>聚类 Clustering</h2><p><strong>聚类特征 Clustering features</strong></p>
+<p>检查9个可以识别相似样本的特征。</p>
+<p><img src="/../images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-29%2018.02.59.png" alt="截屏2024-05-29 18.02.59"></p>
+<p><strong>聚类方法  Clustering approaches</strong></p>
+<ul>
+<li>特征值分组（FVG）：通过在单一特征的值上使用等值关系对样本进行分组，例如，所有具有相同vhash值的样本形成一个聚类。使用FVG进行聚类时，特征向量按照（特征值，样本哈希，扫描日期）的三元组排序。特征值的变化表明一个新的聚类。FVG是一种极具可扩展性的方法。我们使用不同的特征评估FVG，以了解哪些特征提供高精度，并且这些特征能达到什么召回率。</li>
+<li>单一链接的层次聚合聚类（HAC）：</li>
+<li>基于阈值的层次聚合聚类（HAC-T）：这是一种使用TLSH哈希值聚类样本的可扩展方法。</li>
+</ul>
+<p><strong>精确度评估</strong></p>
+<p><strong>可扩展性</strong></p>
+<p>FVG-vhash：1.4h 分类效率最高</p>
+<p>HAC-T：22.4h</p>
+<p><strong>聚类整个数据集</strong> Clustering the whole dataset.</p>
+<p>使用FVG-vhash，特征为：</p>
+<ul>
+<li>Avc2_family:</li>
+<li>vhash</li>
+<li>Cert_thumbprint</li>
+<li>imphash</li>
+</ul>
+<h2 id="检测不太良性的样本-Detecting-Not-so-Benign-Samples"><a href="#检测不太良性的样本-Detecting-Not-so-Benign-Samples" class="headerlink" title="检测不太良性的样本 Detecting Not-so-Benign Samples"></a>检测不太良性的样本 Detecting Not-so-Benign Samples</h2><p>在图表中描述的聚类分类基于两个比率，即r1和r4，这两个比率定义如下：</p>
+<ul>
+<li><strong>r1</strong>: 聚类中至少被检测到一次的样本占聚类中所有样本的百分比。</li>
+<li><strong>r4</strong>: 聚类中至少被检测到四次的样本占聚类中所有样本的百分比。</li>
+</ul>
+<p>这两个比率用来判断聚类中样本的检测频率，从而将聚类分为以下几种类型：</p>
+<ol>
+<li><strong>完全恶意聚类（Fully malicious clusters）</strong>:<ul>
+<li>这种类型的聚类中，所有样本（100%）都至少被检测到一次或四次，即r1或r4等于1。这表示聚类中的每一个样本都被视为恶意。</li>
+</ul>
+</li>
+<li><strong>完全良性聚类（Fully benign clusters）</strong>:<ul>
+<li>在这种聚类中，没有样本被检测到，即r1和r4都为0。这表示聚类中的所有样本都未被任何检测工具标记为恶意。</li>
+</ul>
+</li>
+<li><strong>混合聚类（Mixed clusters）</strong>:<ul>
+<li>混合聚类包含既被检测到也未被检测到的样本，即0 &lt; r1 &lt; 1 和 0 &lt; r4 &lt; 1。这意味着聚类中的一部分样本被检测为恶意，而另一部分没有被检测到。</li>
+</ul>
+</li>
+<li><strong>恶意多数聚类（Malicious majority clusters）</strong>:<ul>
+<li>这类聚类中，大部分但不是全部的样本至少被检测到一次或四次，但未达到完全恶意的标准。通常，这意味着超过半数的样本显示出恶意特征，但仍有少数样本未被检测到。</li>
+</ul>
+</li>
+</ol>
+<p><img src="/../images/A-Deep-Dive-into-VirusTotal/%E6%88%AA%E5%B1%8F2024-05-30%2013.58.19.png" alt="截屏2024-05-30 13.58.19"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/04/25/PracticalMalwareAnalysis-Lab01/" rel="prev" title="PracticalMalwareAnalysis-Lab01">
+      <i class="fa fa-chevron-left"></i> PracticalMalwareAnalysis-Lab01
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/06/02/AVCLASS2/" rel="next" title="AVCLASS2">
+      AVCLASS2 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Deep-Dive-into-VirusTotal-Characterizing-and-Clustering-a-Massive-File-Feed"><span class="nav-number">1.</span> <span class="nav-text">A Deep Dive into VirusTotal: Characterizing and Clustering a Massive File Feed</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">摘要：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.2.</span> <span class="nav-text">Introduction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%A1%E7%8C%AE%EF%BC%9A"><span class="nav-number">1.2.1.</span> <span class="nav-text">贡献：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%94%B6%E9%9B%86"><span class="nav-number">1.3.</span> <span class="nav-text">数据收集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%89%B9%E5%BE%81"><span class="nav-number">1.4.</span> <span class="nav-text">数据特征</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%BA%90%E5%88%86%E6%9E%90-Feed-Analysis"><span class="nav-number">1.5.</span> <span class="nav-text">文件源分析 Feed Analysis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E7%B1%BB-Clustering"><span class="nav-number">1.6.</span> <span class="nav-text">聚类 Clustering</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E4%B8%8D%E5%A4%AA%E8%89%AF%E6%80%A7%E7%9A%84%E6%A0%B7%E6%9C%AC-Detecting-Not-so-Benign-Samples"><span class="nav-number">1.7.</span> <span class="nav-text">检测不太良性的样本 Detecting Not-so-Benign Samples</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">362k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:29</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
