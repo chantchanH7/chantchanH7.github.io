@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Estimation on black-box PE adversarial-attack1. 黑盒PE对抗性攻击的评估实验计划 论文是怎么选的 paper selection 画个表 复现代码，参数调整是怎么做的， sok的工作 记录跑代码时的issue，什么方法遇到什么问题 setting 商用软件的选择的理由 把评判基准选出来  1.1 Attacker 的选择问题 首先是要找开源的、攻击黑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="estimation on black-box adversarial-attack">
+<meta property="og:url" content="http://example.com/2024/07/05/estimation-on-black-box-adversarial-attack/index.html">
+<meta property="og:site_name" content="talk is cheap, show me the code.">
+<meta property="og:description" content="Estimation on black-box PE adversarial-attack1. 黑盒PE对抗性攻击的评估实验计划 论文是怎么选的 paper selection 画个表 复现代码，参数调整是怎么做的， sok的工作 记录跑代码时的issue，什么方法遇到什么问题 setting 商用软件的选择的理由 把评判基准选出来  1.1 Attacker 的选择问题 首先是要找开源的、攻击黑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-05%2016.01.05.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.05.50.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.05.58.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.00.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.27.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.00-1813762.png">
+<meta property="og:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-24%2017.35.49.png">
+<meta property="article:published_time" content="2024-07-05T07:42:27.000Z">
+<meta property="article:modified_time" content="2024-08-07T10:58:15.809Z">
+<meta property="article:author" content="theLonging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-05%2016.01.05.png">
+
+<link rel="canonical" href="http://example.com/2024/07/05/estimation-on-black-box-adversarial-attack/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>estimation on black-box adversarial-attack | talk is cheap, show me the code.</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">talk is cheap, show me the code.</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/07/05/estimation-on-black-box-adversarial-attack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/touxiang.JPG">
+      <meta itemprop="name" content="theLonging">
+      <meta itemprop="description" content="不捨晝夜。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="talk is cheap, show me the code.">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          estimation on black-box adversarial-attack
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-07-05 15:42:27" itemprop="dateCreated datePublished" datetime="2024-07-05T15:42:27+08:00">2024-07-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-08-07 18:58:15" itemprop="dateModified" datetime="2024-08-07T18:58:15+08:00">2024-08-07</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Estimation-on-black-box-PE-adversarial-attack"><a href="#Estimation-on-black-box-PE-adversarial-attack" class="headerlink" title="Estimation on black-box PE adversarial-attack"></a>Estimation on black-box PE adversarial-attack</h1><h2 id="1-黑盒PE对抗性攻击的评估实验计划"><a href="#1-黑盒PE对抗性攻击的评估实验计划" class="headerlink" title="1. 黑盒PE对抗性攻击的评估实验计划"></a>1. 黑盒PE对抗性攻击的评估实验计划</h2><ol>
+<li>论文是怎么选的 paper selection 画个表</li>
+<li>复现代码，参数调整是怎么做的，</li>
+<li>sok的工作</li>
+<li>记录跑代码时的issue，什么方法遇到什么问题</li>
+<li>setting</li>
+<li>商用软件的选择的理由</li>
+<li>把评判基准选出来</li>
+</ol>
+<h3 id="1-1-Attacker-的选择问题"><a href="#1-1-Attacker-的选择问题" class="headerlink" title="1.1 Attacker 的选择问题"></a>1.1 Attacker 的选择问题</h3><ul>
+<li>首先是要找<strong>开源的</strong>、<strong>攻击黑盒检测器</strong>的Attacker</li>
+<li>按照<strong>学习方法</strong>（strategy）分类</li>
+<li>按照<strong>突变操作</strong>（Manipulation）分类</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Attacker</th>
+<th>Manipulation</th>
+<th>strategy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Generating Adversarial Malware Examples for Black-Box Attacks Based on GAN</strong>. <em>Weiwei Hu, Ying Tan</em>. Arxiv 2017. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1702.05983.pdf">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/yanminglai/Malware-GAN">code</a>]</td>
+<td>Add irrelevant API calls</td>
+<td>GAN</td>
+</tr>
+<tr>
+<td align="left"><strong>Learning to Evade Static PE Machine Learning Malware Models via Reinforcement Learning</strong>. <em>Hyrum S. Anderson, Anant Kharkar, Bobby Filar, David Evans, Phil Roth</em>. Arxiv 2018. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1801.08917.pdf">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/endgameinc/gym-malware">code</a>]</td>
+<td>format-preserving modifications</td>
+<td>Reinforcement Learning</td>
+</tr>
+<tr>
+<td align="left"><strong>ARMED: How Automatic Malware Modifications Can Evade Static Detection?</strong>. <em>Raphael Labaca Castro, Corinna Schmitt, Gabi Dreo Rodosek</em>. International Conference on Information Management 2019. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8714698">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zRapha/AIMED">code</a>]</td>
+<td>format-preserving modifications</td>
+<td>Randomization</td>
+</tr>
+<tr>
+<td align="left"><strong>AIMED: Evolving Malware with Genetic Programming to Evade Detection</strong>. <em>Raphael Labaca Castro, Corinna Schmitt, Gabi Dreo Rodosek</em>. IEEE International Conference On Trust, Security And Privacy In Computing And Communications&#x2F;IEEE International Conference On Big Data Science And Engineering (TrustCom&#x2F;BigDataSE) 2019. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8887384">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zRapha/AIMED">code</a>]</td>
+<td>format-preserving modifications</td>
+<td>Genetic Programming</td>
+</tr>
+<tr>
+<td align="left"><strong>Shallow Security: on the Creation of Adversarial Variants to Evade Machine Learning-Based Malware Detectors</strong>. <em>Fabricio Ceschin, Marcus Botacin, Heitor Murilo Gomes, L. S. Oliveira, A. Grégio</em>. Reversing and Offensive-Oriented Trends Symposium (ROOTS) 2019. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://github.com/marcusbotacin/Dropper/tree/master/paper">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/marcusbotacin/Dropper">code</a>]</td>
+<td>Append strings from goodware  &amp; Packing</td>
+<td>Randomization</td>
+</tr>
+<tr>
+<td align="left"><strong>Malware Makeover: Breaking ML-based Static Analysis by Modifying Executable Bytes</strong>. <em>Keane Lucas, Mahmood Sharif, Lujo Bauer, Michael K. Reiter, Saurabh Shintre</em>. Arxiv 2019. <code>Black-box and White-box</code> [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1912.09064.pdf">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/pwwl/enhanced-binary-diversification">code</a>]</td>
+<td>Binary diversification techniques</td>
+<td>Hill-climbing algorithm</td>
+</tr>
+<tr>
+<td align="left"><strong>MAB-Malware: A Reinforcement Learning Framework for Attacking Static Malware Classifiers</strong>. <em>Wei Song, Xuezixiang Li, Sadia Afroz, Deepali Garg, Dmitry Kuznetsov, Heng Yin</em>. Arxiv 2020. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2003.03100.pdf">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/bitsecurerlab/adversarial_malware.git">code</a>]</td>
+<td>format-preserving (macro &amp; micro) modifications</td>
+<td>Weighted Randomization</td>
+</tr>
+<tr>
+<td align="left"><strong>AIMED-RL: Exploring Adversarial Malware Examples with Reinforcement Learning</strong>. <em>Labaca-Castro, Raphael, Sebastian Franz, Gabi Dreo Rodosek</em>. Joint European Conference on Machine Learning and Knowledge Discovery in Databases (ECML-PKDD) 2021.</td>
+<td>format-preserving modifications</td>
+<td>Reinforcement Learning</td>
+</tr>
+<tr>
+<td align="left"><strong>Functionality-preserving Black-box Optimization of Adversarial Windows Malware</strong>. <em>Luca Demetrio, Battista Biggio, Giovanni Lagorio, Fabio Roli, Alessandro Armando1</em>. IEEE Transactions on Information Forensics and Security 2021. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/abstract/document/9437194">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
+<td>Inject and pad sections from benign PE files</td>
+<td>Genetic Algorithm</td>
+</tr>
+<tr>
+<td align="left"><strong>Adversarial EXEmples: A Survey and Experimental Evaluation of Practical Attacks on Machine Learning for Windows Malware Detection</strong>. <em>Luca Demetrio, Scott E. Coull, Battista Biggio, Giovanni Lagorio, Alessandro Armando, Fabio Roli</em>. ACM Transactions on Privacy and Security 2021. <code>Black-box and White-box</code> [<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3473039">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
+<td>DOS Header Extension, Content Shifting</td>
+<td>Gradient-based（这里不一定对，因为它是黑盒白盒都有的）</td>
+</tr>
+<tr>
+<td align="left"><strong>MalwareTotal: Multi-Faceted and Sequence-Aware Bypass Tactics Against Static Malware Detection.</strong> <em>Shuai He and Cai Fu and Hong Hu and Jiahe Chen and Jianqiang Lv and Shuai Jiang Proceedings of the 46th International Conference on Software Engineering (ICSE 2024)</em></td>
+<td>\</td>
+<td>\</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-Detector-的选择问题"><a href="#1-2-Detector-的选择问题" class="headerlink" title="1.2 Detector 的选择问题"></a>1.2 Detector 的选择问题</h3><p><del>这是个好问题、我也不知道怎么选</del></p>
+<p><strong>问题：商用杀毒软件没有提供自动化检测的接口、且商用杀毒软件是要付费的</strong></p>
+<ul>
+<li>首先一定要能很好自动化检测的Detector（这是由于我们要集成到不同attacker的接口上）</li>
+<li>Detector的选择一定要多样化，比如不能全是基于机器学习的</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Detector</th>
+<th>Paper</th>
+<th>Category</th>
+<th>Architectures</th>
+<th>Features</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EMBER</td>
+<td>Anderson, H. S., Roth, P., 2018. EMBER: an open dataset for training static PE mal- ware machine learning models. ArXiv preprint arXiv:1804.04637.</td>
+<td>static</td>
+<td>LightGBM</td>
+<td>Byte Sequence&amp;Readable String&amp;Header Information</td>
+</tr>
+<tr>
+<td>MalConv</td>
+<td>Raff, E., Barker, J., Sylvester, J., Brandon, R., Catanzaro, B., Nicholas, C., 2017. Malware detection by eating a whole EXE. ArXiv preprint arXiv:1710.09435.</td>
+<td>static</td>
+<td>CNN</td>
+<td>Byte Sequence</td>
+</tr>
+<tr>
+<td>MalGraph</td>
+<td>Ling, X., Wu, L., Deng, W., Qu, Z., Zhang, J., Zhang, S., Ma, T., Wang, B., Wu, C., Ji, S., 2022. MalGraph: Hierarchical graph neural networks for robust Windows mal- ware detection. In: IEEE Conference on Computer Communications. IEEE, Virtual Event, pp. 1998–2007.</td>
+<td>Static &amp; dynamic</td>
+<td></td>
+<td>Control Flow Graph&amp;Function Call Graph</td>
+</tr>
+<tr>
+<td>ClamAV（开源的反病毒软件）</td>
+<td>\</td>
+<td>ClamAV 依赖签名来区分干净文件和恶意&#x2F;不需要的文件。</td>
+<td>\</td>
+<td>signature based</td>
+</tr>
+<tr>
+<td>AvastNet（要花钱、而且我也不知道该怎么实现上传）</td>
+<td>Krcˇál, M., Švec, O., Bálek, M., Jašek, O., 2018. Deep convolutional malware classifiers can learn from raw executables and labels only. In: International Conference on Learning Representations – Workshop Track. OpenReview.net, Vancouver, BC, Canada, pp. 1–4.</td>
+<td>\</td>
+<td>DNN</td>
+<td>\</td>
+</tr>
+<tr>
+<td>Magic</td>
+<td>Jiaqi Yan, Guanhua Yan, and Dong Jin. Classifying malware represented as control flow graphs using deep graph convolutional neural network. In <em>DSN</em>, 2019.</td>
+<td>\</td>
+<td>CNN</td>
+<td>control flow graphs</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-Dataset的选择问题"><a href="#1-3-Dataset的选择问题" class="headerlink" title="1.3 Dataset的选择问题"></a>1.3 Dataset的选择问题</h3><ul>
+<li>首先是要多样化，要包含足够丰富的病毒家族</li>
+</ul>
+<p>但是选择多大的Dataset合适？</p>
+<h3 id="1-4-评价的指标问题"><a href="#1-4-评价的指标问题" class="headerlink" title="1.4 评价的指标问题"></a>1.4 评价的指标问题</h3><p>我们评价一个黑盒对抗性攻击器好坏的指标是什么？</p>
+<ol>
+<li><strong>逃逸效率</strong>：能逃逸的检测器越多越好，能逃逸的比例越高越好</li>
+<li>是否<strong>保持PE格式</strong>、<strong>可执行</strong>、<strong>恶意功能</strong>：生成的可以保持恶意功能的对抗性样本的比率越高越好</li>
+<li>生成<strong>对抗性样本的时间效率</strong>：时间越快越好</li>
+<li><strong>生成对抗性样本的大小</strong>和<strong>原始病毒样本的大小</strong>比较</li>
+<li>在<strong>哈希狩猎</strong>的表现下如何？</li>
+</ol>
+<h3 id="1-5-实验设计"><a href="#1-5-实验设计" class="headerlink" title="1.5 实验设计"></a>1.5 实验设计</h3><p>针对评价指标设计实验</p>
+<ol>
+<li><strong>逃逸效率</strong>：<ul>
+<li>针对基于机器学习的检测器的逃逸效率</li>
+<li>针对商用检测器的逃逸效率（<strong>既然是黑盒攻击，尝试直接将商用软件集成到攻击模型中</strong>）</li>
+<li>最后是不是将生成的对抗性样本上传到VirusTotal上获取结果？</li>
+</ul>
+</li>
+<li>是否<strong>保持PE格式</strong>、<strong>可执行</strong>、<strong>恶意功能</strong>：<ul>
+<li>检测PE格式：使用python脚本检测PE格式</li>
+<li>检测可执行性：使用沙盒检测生成样本的可执行性（计划使用开源的Cuckoo Sandbox）</li>
+<li>检测恶意功能：使用沙盒检测生成样本的恶意功能（计划使用开源的Cuckoo Sandbox、方法采用<em>A Wolf in Sheep’s Clothing</em>中提到的方法：<strong>通过在 Cuckoo 沙盒中运行 z 和 zadv 时收集和比较两者调用的 API 序列 (即 APIz 和 APIzadv) 来判断其语义保留率。</strong>）</li>
+</ul>
+</li>
+<li>生成对抗性样本的<strong>时间效率</strong>：<ul>
+<li>这个没啥好说的，直接统计时间就可以了</li>
+<li>值得注意的是、可以比较一下什么是更高效的搜索算法</li>
+</ul>
+</li>
+<li><strong>样本大小</strong>的比较<ul>
+<li>这个直接比较大小就好</li>
+</ul>
+</li>
+<li><strong>哈希狩猎</strong>下的表现<ul>
+<li>使用TLSH、SSDEEP比较相似性得分</li>
+</ul>
+</li>
+</ol>
+<h3 id="1-6-一些我认为是以前的文章没有做过的工作"><a href="#1-6-一些我认为是以前的文章没有做过的工作" class="headerlink" title="1.6 一些我认为是以前的文章没有做过的工作"></a>1.6 一些我认为是以前的文章没有做过的工作</h3><ol>
+<li>既然对抗性样本和原始病毒样本具有相同的语义、那么在基于<strong>哈希值的病毒狩猎</strong>中、对抗性样本的表现如何？<ul>
+<li>例如 TLSH、ImpHash、SSDeep等</li>
+</ul>
+</li>
+<li>对恶意软件样本进行<strong>分类</strong>、查看不同类别的表现如何、是否有特定的操作对于特定的类别的病毒样本效果很好？</li>
+<li><del>据我所知，这是第一个对黑盒对抗攻击的评估，最终目标是可以做成一个benchmark platform</del></li>
+</ol>
+<h3 id="1-7-实验平台搭建："><a href="#1-7-实验平台搭建：" class="headerlink" title="1.7 实验平台搭建："></a>1.7 实验平台搭建：</h3><h4 id="1-7-1-保持PE格式、可执行、恶意功能的检测模块"><a href="#1-7-1-保持PE格式、可执行、恶意功能的检测模块" class="headerlink" title="1.7.1 保持PE格式、可执行、恶意功能的检测模块"></a>1.7.1 <strong>保持PE格式</strong>、<strong>可执行</strong>、<strong>恶意功能</strong>的检测模块</h4><ul>
+<li><p>编写python脚本检查PE文件是否保持PE格式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：PE二进制文件</span><br><span class="line">输出：是否符合PE文件格式</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用Cuckoo 沙盒检查对抗性样本是否可执行？</p>
+</li>
+<li><p>使用Cuckoo 沙盒检查对抗性样本是否维持恶意功能</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通过在 Cuckoo 沙盒中运行 z 和 zadv 时收集和比较两者调用的 API 序列 (即 APIz 和 APIzadv) 来判断其语义保留率。</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="1-7-2-数据集模块"><a href="#1-7-2-数据集模块" class="headerlink" title="1.7.2 数据集模块"></a>1.7.2 数据集模块</h4><p>编写python脚本，使用AVCLASS2对数据集进行分类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：PE二进制文件</span><br><span class="line">输出：分类</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-7-3-哈希狩猎检测模块"><a href="#1-7-3-哈希狩猎检测模块" class="headerlink" title="1.7.3 哈希狩猎检测模块"></a>1.7.3 哈希狩猎检测模块</h4><p>编写python脚本，计算对抗性样本和原始病毒样本的相似性得分</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：对抗性样本，原始病毒样本</span><br><span class="line">输出：得分</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，<strong>判断两个文件相似的阈值</strong>应该设置为多少？</p>
+<h4 id="1-7-4-文件大小比较模块"><a href="#1-7-4-文件大小比较模块" class="headerlink" title="1.7.4 文件大小比较模块"></a>1.7.4 文件大小比较模块</h4><p>编写python脚本，计算对抗性样本和原始病毒样本的大小差异</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：对抗性样本，原始病毒样本</span><br><span class="line">输出：两个文件的大小差异</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-7-5-攻击器的生成效率"><a href="#1-7-5-攻击器的生成效率" class="headerlink" title="1.7.5 攻击器的生成效率"></a>1.7.5 攻击器的生成效率</h4><p>这个直接计算生成样本消耗的时间就可以了</p>
+<p>控制变量法：相同的数据集，攻击相同的检测器，迭代次数是不是要相同？最终生成的对抗性样本数量肯定是不同的，这个问题该如何解决？</p>
+<h4 id="1-7-6-黑盒检测器接口模块"><a href="#1-7-6-黑盒检测器接口模块" class="headerlink" title="1.7.6 黑盒检测器接口模块"></a>1.7.6 黑盒检测器接口模块</h4><p>修改不同攻击器攻击的黑盒检测器模块，使其成为一个接口，能向攻击器返回不同检测器反馈的结果。（这一部分应该是最难的点）</p>
+<h2 id="2-现有survey的优缺点"><a href="#2-现有survey的优缺点" class="headerlink" title="2. 现有survey的优缺点"></a>2. 现有survey的优缺点</h2><h3 id="2-1-Adversarial-Attacks-against-Windows-PE-Malware-Detection-A-Survey-of-the-State-of-the-Art-Computer-amp-Security-2023"><a href="#2-1-Adversarial-Attacks-against-Windows-PE-Malware-Detection-A-Survey-of-the-State-of-the-Art-Computer-amp-Security-2023" class="headerlink" title="2.1 Adversarial Attacks against Windows PE Malware Detection: A Survey of the State-of-the-Art; Computer &amp; Security 2023"></a>2.1 Adversarial Attacks against Windows PE Malware Detection: A Survey of the State-of-the-Art; <code>Computer &amp; Security 2023</code></h3><p><strong>论文贡献</strong></p>
+<ol>
+<li>强调了<strong>保持PE格式</strong>、<strong>保持可执行性</strong>、<strong>保持恶意性</strong></li>
+<li>提出了一个<strong>完整的分类法</strong></li>
+<li>总结了现有针对<strong>PE恶意软件检测的对抗性攻击</strong>和<strong>防御措施</strong></li>
+</ol>
+<h4 id="2-1-1-Pros"><a href="#2-1-1-Pros" class="headerlink" title="2.1.1 Pros:"></a>2.1.1 Pros:</h4><p>分别对attacker和detector进行了分类和总结：</p>
+<ul>
+<li><p>对检测器的分类（基于特征工程）：</p>
+<ul>
+<li>静态特征：<ul>
+<li>字节序列</li>
+<li>可读字符串</li>
+<li>头信息</li>
+<li>灰度图像</li>
+</ul>
+</li>
+<li>动态特征：<ul>
+<li>系统资源状态</li>
+<li>文件状态</li>
+<li>注册表状态</li>
+<li>网络状态</li>
+</ul>
+</li>
+<li>混合特征：<ul>
+<li>操作码</li>
+<li>系统&#x2F;API调用</li>
+<li>控制流程图（CFG）</li>
+<li>函数调用图</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>对抗性攻击的分类</strong>：</p>
+<p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-05%2016.01.05.png" alt="截屏2024-07-05 16.01.05"></p>
+</li>
+</ul>
+<p>提出了未来的研究方向：</p>
+<ol>
+<li>Strong Demands for Robust PE Malware Detection</li>
+<li>Practical and Efficient Adversarial Attacks against Commercial Anti-viruses in the Wild</li>
+<li>Lack of Benchmark Platforms for Research</li>
+</ol>
+<h4 id="2-1-2-Cons"><a href="#2-1-2-Cons" class="headerlink" title="2.1.2 Cons:"></a>2.1.2 Cons:</h4><ul>
+<li>贡献中提到的<strong>保持PE格式</strong>、<strong>保持可执行性</strong>、<strong>保持恶意性</strong>并没有通过<strong>实验数据的佐证</strong></li>
+<li>survey没有衡量attacker得各项指标</li>
+</ul>
+<h4 id="2-1-3-Argue"><a href="#2-1-3-Argue" class="headerlink" title="2.1.3 Argue:"></a>2.1.3 Argue:</h4><ul>
+<li>Benchmark Platform for Research 是一个很好的工作（<strong>但这个工作可能比较遥远</strong>）</li>
+<li>除了Attack Strategy的总结、是否要对attack manipulation进行总结、对attack manipulation的细化到什么程度</li>
+</ul>
+<h3 id="2-2-A-comparison-of-adversarial-malware-generators-Journal-of-Computer-Virology-and-Hacking-Techniques-2024"><a href="#2-2-A-comparison-of-adversarial-malware-generators-Journal-of-Computer-Virology-and-Hacking-Techniques-2024" class="headerlink" title="2.2 A comparison of adversarial malware generators;Journal of Computer Virology and Hacking Techniques 2024"></a>2.2 A comparison of adversarial malware generators;<code>Journal of Computer Virology and Hacking Techniques 2024</code></h3><p><strong>论文贡献</strong></p>
+<ol>
+<li>我们将一些现有的对抗性学习方法应用于选定的恶意软件检测系统。</li>
+<li>我们结合这些方法创建了更复杂的对抗性生成器，能够绕过顶级的杀毒产品。</li>
+<li>我们从准确性和实际可用性方面评估了单一和组合生成器。</li>
+</ol>
+<p><strong>攻击的选择</strong></p>
+<ol>
+<li>基于梯度的技术：部分DOS；完全DOS</li>
+<li>基于进化的算法：GAMMA填充；GAMMA注入</li>
+<li>基于强化学习的技术：Gym-malware</li>
+</ol>
+<p><strong>实验设计</strong></p>
+<p><strong>数据集：</strong></p>
+<p>3625个来自windows11的无害PE文件</p>
+<p>3625个从VirusShare库中获得的文件</p>
+<p><strong>攻击设计：</strong></p>
+<ul>
+<li>部分DOS；完全DOS — 最大迭代次数：50 —&gt; Malconv <em>白盒</em></li>
+<li>GAMMA填充；GAMMA注入 — 最大迭代次数：500；正则化参数：10^-5 —&gt; Malconv <em>黑盒</em></li>
+<li>Gym-malware ——&gt; GDBT <em>黑盒</em></li>
+</ul>
+<h4 id="2-2-1-Pros"><a href="#2-2-1-Pros" class="headerlink" title="2.2.1 Pros"></a>2.2.1 Pros</h4><ul>
+<li><p>第一篇评估当前对抗性攻击生成器的文章</p>
+</li>
+<li><p>评估的指标选用了<strong>样本大小变化</strong>（这项是我们的评估方法中可以采取的）：</p>
+<blockquote>
+<p>通常，攻击者的目标是将生成的对抗性文件大小的增加最小化，使其更难与原始恶意软件样本分开</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="2-2-2-Cons"><a href="#2-2-2-Cons" class="headerlink" title="2.2.2 Cons"></a>2.2.2 Cons</h4><ul>
+<li>并未说明选择攻击的理由是什么</li>
+<li>排列组合已有的对抗性攻击生成器并不新颖</li>
+<li>对商业杀毒软件的实验，并没有将商业杀毒软件作为直接的攻击对象，而是使用以及生成的样本进行检测</li>
+<li>攻击的设计混乱：黑盒白盒均有且比较时同时比较，不同生成器攻击的检测器也不同</li>
+<li>并未对生成的样本进行<strong>保持性检测</strong></li>
+</ul>
+<h4 id="2-2-3-Argue"><a href="#2-2-3-Argue" class="headerlink" title="2.2.3 Argue"></a>2.2.3 Argue</h4><ul>
+<li><strong>数据集的代表性和多样性：</strong>使用更大且多样化的数据集，涵盖更多类型的恶意软件和更多种类的杀毒程序，以验证结果的广泛适用性。</li>
+<li><strong>对抗性样本的功能性：</strong>在评估对抗性样本时，不仅要考虑其规避检测的能力，还应评估其功能性和可用性。</li>
+</ul>
+<h2 id="3-实验用到的工具"><a href="#3-实验用到的工具" class="headerlink" title="3.  实验用到的工具"></a>3.  实验用到的工具</h2><h3 id="3-1-Cuckoo-Sandbox"><a href="#3-1-Cuckoo-Sandbox" class="headerlink" title="3.1 Cuckoo Sandbox"></a>3.1 Cuckoo Sandbox</h3><p>Cuckoo 是一个开源的自动恶意软件分析系统。</p>
+<p>它可以检索以下类型的结果：</p>
+<ul>
+<li><p>恶意软件生成的所有进程执行的调用痕迹。</p>
+</li>
+<li><p>恶意软件在执行期间创建、删除和下载的文件。</p>
+</li>
+<li><p>恶意软件进程的内存转储。</p>
+</li>
+<li><p>PCAP格式的网络流量跟踪。</p>
+</li>
+<li><p>在执行恶意软件期间拍摄的屏幕截图。</p>
+</li>
+<li><p>机器的全内存转储。</p>
+</li>
+</ul>
+<blockquote>
+<p>虽然推荐的设置是GNU&#x2F;Linux（最好是Debian或Ubuntu），但Cuckoo也已证明在Mac OS X和Microsoft Windows 7上作为主机运行得很顺畅。推荐和测试的客机设置是Windows分析使用Windows XP和64位Windows 7，Mac OS X分析使用Mac OS X Yosemite，Linux分析使用Debian，尽管Cuckoo也应该可以在其他版本的客操作系统上工作。不要使用Windows Linux子系统（WLS）来运行Cuckoo Sandbox。</p>
+</blockquote>
+<h2 id="4-过程记录"><a href="#4-过程记录" class="headerlink" title="4. 过程记录"></a>4. 过程记录</h2><h3 id="4-1-如何判断一个PE文件格式合法"><a href="#4-1-如何判断一个PE文件格式合法" class="headerlink" title="4.1 如何判断一个PE文件格式合法"></a>4.1 如何判断一个PE文件格式合法</h3><p>使用pefile库作为工具</p>
+<ol>
+<li><code>DOS_HEADER</code>：	<ul>
+<li>检查<code>DOS_HEADER.e_magic</code> 字段是否为<code>MZ</code></li>
+</ul>
+</li>
+<li><code>IMAGE_NT_HEADER</code>: 包含文件头<code>FILE_HEADER</code>和可选头<code>OPTIONAL_HEADER</code><ul>
+<li>文件头<code>FILE_HEADER</code>:<ul>
+<li>检查文件头<code>FILE_HEADER</code>是否以<code>PE\0\0</code>开始</li>
+<li>从可选头<code>OPTIONAL_HEADER</code>中获取文件的物理信息，例如<code>SizeOfImage</code>、<code>SizeOfCode</code></li>
+</ul>
+</li>
+<li>可选头<code>OPTIONAL_HEADER</code><ul>
+<li>检查<code>pe.OPTIONAL_HEADER.Magic</code>是否为<code>0x10B or 0x20B</code></li>
+<li>检查<code>pe.OPTIONAL_HEADER.DATA_DIRECTORY</code>，确定虚拟地址是否在节中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>SECTIONS</code>：<ul>
+<li>节名称检查</li>
+<li>节大小检查</li>
+<li>节虚拟地址对齐检查</li>
+<li>节原始数据指针对齐检查</li>
+<li>实际节数量和<code>pe.FILE_HEADER.NumberOfSections</code>是否相等</li>
+<li>检查实际section数量与<code>pe.FILE_HEADER.NumberOfSections</code>的值是否相等</li>
+</ul>
+</li>
+<li><del>检查PE文件在磁盘上的实际大小和预期大小是否相同</del>（暂时不用这个作为判断PE格式的规则）<ul>
+<li>预期大小：<code>expected_size = pe.OPTIONAL_HEADER.SizeOfHeaders + sum(section.SizeOfRawData for section in pe.sections)</code>、实际大小<code>len(pe.__data__)</code></li>
+</ul>
+</li>
+<li>引入函数节<code>.idata</code><ul>
+<li>检查 <code>IMAGE_IMPORT_DESCRIPTOR</code> 结构的数量是否与实际<code>DLL</code>的数量相对应</li>
+</ul>
+</li>
+<li>导出函数节<code>.edata</code><ul>
+<li>检查<code>NumberOfFunctions</code>是否和实际导出函数的数量相等</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-2-使用-cuckoo-Sandbox-检查是否可执行和保持恶意功能"><a href="#4-2-使用-cuckoo-Sandbox-检查是否可执行和保持恶意功能" class="headerlink" title="4.2 使用 cuckoo Sandbox 检查是否可执行和保持恶意功能"></a>4.2 使用 cuckoo Sandbox 检查是否可执行和保持恶意功能</h3><p>卡住了，安装不了。现在打算试一下用<code>Hybrid analysis</code>这个工具</p>
+<h3 id="4-3-ClamAV"><a href="#4-3-ClamAV" class="headerlink" title="4.3 ClamAV"></a>4.3 ClamAV</h3><p>完成的部分：</p>
+<ul>
+<li><p>已经安装并了解ClamAV的使用方法 clamdcan</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">parallels@ubuntu-linux-22-04-02-desktop:~$ clamscan detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e </span><br><span class="line">Loading:    14s, ETA:   0s [========================&gt;]    8.70M/8.70M sigs       </span><br><span class="line">Compiling:   5s, ETA:   0s [========================&gt;]       41/41 tasks </span><br><span class="line"></span><br><span class="line">/home/parallels/detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e: Win.Trojan.Delf-2345 FOUND</span><br><span class="line"></span><br><span class="line">----------- SCAN SUMMARY -----------</span><br><span class="line">Known viruses: 8696388</span><br><span class="line">Engine version: 1.3.1</span><br><span class="line">Scanned directories: 0</span><br><span class="line">Scanned files: 1</span><br><span class="line">Infected files: 1</span><br><span class="line">Data scanned: 0.29 MB</span><br><span class="line">Data read: 0.19 MB (ratio 1.49:1)</span><br><span class="line">Time: 25.619 sec (0 m 25 s)</span><br><span class="line">Start Date: 2024:07:21 13:33:09</span><br><span class="line">End Date:   2024:07:21 13:33:34</span><br><span class="line">parallels@ubuntu-linux-22-04-02-des</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>计划：</p>
+<ul>
+<li>尝试将ClamAV集成到各个attacker的代码中</li>
+</ul>
+<h2 id="5-Attacker的实验复现记录"><a href="#5-Attacker的实验复现记录" class="headerlink" title="5. Attacker的实验复现记录"></a>5. Attacker的实验复现记录</h2><h3 id="5-1-malware-rl-实验复现"><a href="#5-1-malware-rl-实验复现" class="headerlink" title="5.1 malware_rl 实验复现"></a>5.1 malware_rl 实验复现</h3><p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.05.50.png" alt="截屏2024-07-23 15.05.50"></p>
+<p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.05.58.png" alt="截屏2024-07-23 15.05.58"></p>
+<p><strong>针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</strong></p>
+<ul>
+<li><p>❗️源代码中显示攻击的<code>detection</code>为<code>ember</code>、<code>sorel</code>、<code>malconv。</code></p>
+</li>
+<li><p>❗️源代码中并没有实现对对抗性样本的<code>Format Preservation</code>、<code>Executability Preservation</code>、<code>Maliciousness Preservation</code>的验证。</p>
+</li>
+<li><p>❗️虽然是基于<code>gym</code>提供的强化学习的框架，但是实际的动作选择是随机的。</p>
+<blockquote>
+<p><em><code>RandomAgent</code> 仅仅是一个随机选择动作的简单代理，它在每次需要选择动作时，都从动作空间中随机采样。这个过程不涉及任何学习或策略优化，因此不属于强化学习的范畴。</em></p>
+</blockquote>
+</li>
+<li><p><code>Transformation</code>的具体<code>action</code>如下</p>
+<ol>
+<li><code>modify_machine_type</code></li>
+<li><code>pad_overlay</code></li>
+<li><code>append_benign_data_overlay</code></li>
+<li><code>append_benign_binary_overlay</code></li>
+<li><code>add_bytes_to_section_cave</code></li>
+<li><code>add_section_strings</code></li>
+<li><code>add_section_benign_data</code></li>
+<li><code>add_strings_to_overlay</code></li>
+<li><code>add_imports</code></li>
+<li><code>rename_section</code></li>
+<li><code>remove_debug</code></li>
+<li><code>modify_optional_header</code></li>
+<li><code>modify_timestamp</code></li>
+<li><code>break_optional_header_checksum</code></li>
+<li><code>upx_unpack</code></li>
+<li><code>upx_pack</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>代码的整体逻辑</strong></p>
+<ul>
+<li><code>random_agent.py:</code>是主函数，使用gym提供的强化学习方法实现攻击，总计250次训练回合</li>
+<li><code>malware/env</code>中实现了强化学习中的各种环境</li>
+<li><code>malware/env/utils</code>中检测器模型和文件接口</li>
+<li><code>malware/env/controls/modifier.py</code>中是对二进制文件的修改操作</li>
+</ul>
+<p>完成的部分：</p>
+<ul>
+<li>阅读完源码</li>
+<li>已经把源代码跑起来了</li>
+<li>添加了对ClamAV的攻击</li>
+</ul>
+<p><strong>出现的问题：</strong></p>
+<ul>
+<li><p>❗️<strong>获取不了<code>sorel</code>模型</strong>：因为需要亚马逊账号，但注册亚马逊账号需要一张VISA卡。</p>
+</li>
+<li><p>❗️<strong>源码逃逸率的计算很奇怪，并不是 逃逸的样本数量 &#x2F; 总样本数量</strong></p>
+</li>
+<li><p>❗️<strong>源码接受的病毒样本大小最大为1MB</strong></p>
+</li>
+<li><p>❗️**<code>lief</code>库无法处理大小超过<code>1073741824 bytes</code>的section**：这个问题目前来说是无法解决的，因为要修改第三方库</p>
+<blockquote>
+<p><em>某些PE样本在被LIEF解析时返回错误，因为该库不使用任何反汇编器，导致在导入地址表上实现的LEA指令导入过程中出现损坏。为了解决这个问题，需要进行初步过滤，以隔离正确解析的功能性样本。并不是所有生成的变种都是有效的，因为扰动可能会使文件损坏。我们的实验表明，通常需要创建至少两倍于预期有效文件数量的变种。</em></p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Sample: d33e6b41a890d73d656e2bdd0663a9d28c75226796a069b861f63afe790d4ee2</span><br><span class="line">DEBUG clamav_gym FUNC step</span><br><span class="line">DEBUG clamav_gym FUNC _take_action</span><br><span class="line">DEBUG modifier FUNC modify_sample, action modify_machine_type</span><br><span class="line">DEBUG modifier FUNC modify_machine_type</span><br><span class="line">The padding size of section <span class="string">&#x27;.pdata&#x27;</span> is huge. Only the first 1073741824 bytes will be taken into account</span><br><span class="line">Can<span class="string">&#x27;t read the padding content of section &#x27;</span>.pdata<span class="string">&#x27;</span></span><br><span class="line"><span class="string">Section #4 (��) is corrupted</span></span><br><span class="line"><span class="string">The padding size of section &#x27;</span>��<span class="string">&#x27; is huge. Only the first 1073741824 bytes will be taken into account</span></span><br><span class="line"><span class="string">Can&#x27;</span>t <span class="built_in">read</span> the padding content of section <span class="string">&#x27;��&#x27;</span></span><br><span class="line">     parse ok</span><br><span class="line"></span><br><span class="line">output <span class="keyword">done</span></span><br><span class="line">Killed</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-ARMED-实验复现"><a href="#5-2-ARMED-实验复现" class="headerlink" title="5.2 ARMED 实验复现"></a>5.2 ARMED 实验复现</h3><h4 id="ARMED的finding"><a href="#ARMED的finding" class="headerlink" title="ARMED的finding:"></a>ARMED的finding:</h4><p>评估显示，与原始样本S的检测相比，随机二进制级别的修改使得变种S’的恶意软件引擎检测率降低了最多80%。生成功能性变种在很大程度上取决于随机注入的扰动的具体顺序。我们的实验表明，平均约18%的变种是功能性的且未被破坏。</p>
+<ol>
+<li><p>测试样本生成的有效性验证：</p>
+<ul>
+<li>某些PE样本在通过LIEF解析时会返回错误，这是因为该库在导入LEA指令期间没有使用反汇编器，导致导入地址表损坏。</li>
+<li>通常需要生成至少两倍于预期有效文件数量的变种 。</li>
+</ul>
+</li>
+<li><p>检测率评估：使用VirusTotal平台评估了ARMED生成新的变种样本的检测率。❗️</p>
+<ul>
+<li><p>注入少量扰动就可以显著降低新变种的检测率：只注入五个扰动，也能使变种的检测率显著下降，反而更长的扰动不一定有效</p>
+</li>
+<li><p>在注入扰动后的几天内，大多数引擎开始检测到新变种，表明新的变种上传后，检测引擎会调整其检测策略 。</p>
+<blockquote>
+<p>❗️<em>argue</em></p>
+<p><em>使用 VirusTotal 进行杀毒软件比较分析的人应当知道，他们在方法论上犯了许多隐含的错误，其中最明显的错误包括：</em></p>
+<ol>
+<li><em><strong>命令行版本的差异</strong>：VirusTotal 的杀毒引擎是命令行版本，因此根据产品的不同，它们的行为可能与桌面版本不完全相同。例如，桌面解决方案可能使用基于行为分析的技术，并配有个人防火墙，这些都会减少入口点并缓解传播等问题。</em></li>
+<li><em><strong>桌面和外围解决方案的共存</strong>：在 VirusTotal 中，面向桌面的解决方案与面向外围的解决方案共存；后者的启发式算法可能更具攻击性和偏执，因为在外围环境中，误报的影响不太明显。因此，将这两类解决方案进行比较是不公平的。</em></li>
+<li><em><strong>不同的启发式&#x2F;攻击性参数</strong>：VirusTotal 中的一些解决方案根据开发公司意愿被配置了与官方终端用户默认配置不同的启发式&#x2F;攻击性级别。</em></li>
+</ol>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>序列结构评估：</p>
+<ul>
+<li><p>特定数量的扰动比其他数量更能有效降低检测率，表明扰动序列的顺序可能比序列长度更为重要 。</p>
+</li>
+<li><p>注入较少扰动的序列在某些情况下会导致较高的检测率，这可能是因为这些变种与原始样本非常相似，检测引擎能够更好地调整其检测 。❗️</p>
+<blockquote>
+<p><em>❗️argue，没有回答检测引擎是通过什么来判断它们的相似性并调整检测的？</em></p>
+<p><em>哈希狩猎</em></p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>处理时间评估：</p>
+<ul>
+<li>创建变种平均需要5分钟；使用第三方分类器对时间的影响较大。</li>
+</ul>
+</li>
+<li><p>局限性：</p>
+<ul>
+<li><strong>序列长度与哈希冲突</strong>：当注入的扰动序列长度为1或2时，许多变种最终会与原始样本S重复，导致两者的加密哈希值相同。</li>
+<li><strong>安全层的影响</strong>：尽管生成的变种S’检测率较低，但安全层（如防火墙配置）仍然可以帮助防止感染。例如，如果S’是由恶意软件下拉器或下载器生成的，这些下拉或投放的有效载荷可以被检测到，或者新的样本可能已经为恶意软件引擎所知。</li>
+<li><strong>综合规避策略</strong>：ARMED框架可以应用于不同类型的恶意软件样本（如下拉器、下载器和有效载荷），并结合额外的规避层（如打包器）来提高逃避率。这表明，仅依靠单一方法可能不足以完全逃避检测，需要综合使用多种技术来提高成功率。</li>
+</ul>
+</li>
+</ol>
+<h4 id="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正："><a href="#针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：" class="headerlink" title="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正："></a>针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</h4><p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.00.png" alt="截屏2024-07-23 15.38.00"></p>
+<p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.27.png" alt="截屏2024-07-23 15.38.27"></p>
+<h4 id=""><a href="#" class="headerlink" title=""></a></h4><ul>
+<li><p><code>Transformation</code>的操作</p>
+<blockquote>
+<p><em>发现FAME仓库里对malware的manipulation与gym-malware（现在新仓库为malware_rl）相同，<code>FAME/data/manipulate.py</code></em></p>
+<p>❗️**<code>imports_append</code>和<code>create_entry</code>未被使用，因为实验表明它们可能无法正确修补样本，并且很可能由于入口点错误而创建损坏的文件。**</p>
+<p>❓但是源代码中有<code>imports_append</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># List of actions</span></span><br><span class="line">ACTION_TABLE = &#123;</span><br><span class="line">    <span class="string">&#x27;overlay_append&#x27;</span>: <span class="string">&#x27;overlay_append&#x27;</span>,     <span class="comment"># 0</span></span><br><span class="line">    <span class="string">&#x27;imports_append&#x27;</span>: <span class="string">&#x27;imports_append&#x27;</span>,     <span class="comment"># 1</span></span><br><span class="line">    <span class="string">&#x27;section_rename&#x27;</span>: <span class="string">&#x27;section_rename&#x27;</span>,     <span class="comment"># 2</span></span><br><span class="line">    <span class="string">&#x27;section_add&#x27;</span>: <span class="string">&#x27;section_add&#x27;</span>,           <span class="comment"># 3</span></span><br><span class="line">    <span class="string">&#x27;section_append&#x27;</span>: <span class="string">&#x27;section_append&#x27;</span>,     <span class="comment"># 4</span></span><br><span class="line">    <span class="string">&#x27;remove_signature&#x27;</span>: <span class="string">&#x27;remove_signature&#x27;</span>, <span class="comment"># 5</span></span><br><span class="line">    <span class="string">&#x27;remove_debug&#x27;</span>: <span class="string">&#x27;remove_debug&#x27;</span>,         <span class="comment"># 6</span></span><br><span class="line">    <span class="string">&#x27;upx_pack&#x27;</span>: <span class="string">&#x27;upx_pack&#x27;</span>,                 <span class="comment"># 7</span></span><br><span class="line">    <span class="string">&#x27;upx_unpack&#x27;</span>: <span class="string">&#x27;upx_unpack&#x27;</span>,             <span class="comment"># 8</span></span><br><span class="line">    <span class="string">&#x27;break_optional_header_checksum&#x27;</span>: <span class="string">&#x27;break_optional_header_checksum&#x27;</span>  <span class="comment"># 9</span></span><br><span class="line"><span class="comment">#   &#x27;create_new_entry&#x27;: &#x27;create_new_entry&#x27;, # generates often entry point errors</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ol>
+<li><code>overlay_append</code></li>
+<li><code>imports_append</code></li>
+<li><code>section_rename</code></li>
+<li><code>section_add</code></li>
+<li><code>section_append</code></li>
+<li><code>remove_signature</code></li>
+<li><code>remove_debug</code></li>
+<li><code>upx_pack</code></li>
+<li><code>upx_unpack</code></li>
+<li><code>break_optional_header_checksum</code></li>
+</ol>
+</li>
+<li><p>❗️<code>functionality</code>的检测方法不具备说服力</p>
+<ol>
+<li>函数<code>malware_analysis</code>：样本在沙盒中运行时间超过<code>15s</code>且报告中没有<code>err</code>，则为<code>functionality</code></li>
+<li>函数<code>malware_analysis_HA</code>：样本报告中含有<code>domains</code>或<code>compromised_hosts</code>，则为<code>functionality</code></li>
+</ol>
+</li>
+</ul>
+<h3 id="5-3-AIMED-实验复现"><a href="#5-3-AIMED-实验复现" class="headerlink" title="5.3 AIMED 实验复现"></a>5.3 AIMED 实验复现</h3><h4 id="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：-1"><a href="#针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：-1" class="headerlink" title="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正："></a>针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</h4><p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-23%2015.38.00-1813762.png" alt="截屏2024-07-23 15.38.00"></p>
+<p><img src="/../images/estimation-on-black-box-adversarial-attack/%E6%88%AA%E5%B1%8F2024-07-24%2017.35.49.png" alt="截屏2024-07-24 17.35.49"></p>
+<ul>
+<li><p><code>AIMED</code>攻击的检测器：<code>GBDT (static)</code>、<code>Sophos</code>、<code>ESET</code>和<code>Kaspersky</code></p>
+<blockquote>
+<p>所有扫描器都使用默认配置的静态检测进行测试，版本如下：Kaspersky 19、ESET NOD32 Antivirus 11和Sophos Endpoint Security 10.8，并在实验进行时保持最新。</p>
+</blockquote>
+</li>
+<li></li>
+</ul>
+<h3 id="5-4-Shallow-Security-on-the-Creation-of-Adversarial-Variants-to-Evade-Machine-Learning-Based-Malware-Detectors-实验复现"><a href="#5-4-Shallow-Security-on-the-Creation-of-Adversarial-Variants-to-Evade-Machine-Learning-Based-Malware-Detectors-实验复现" class="headerlink" title="5.4 Shallow Security: on the Creation of Adversarial Variants to Evade Machine Learning-Based Malware Detectors 实验复现"></a>5.4 Shallow Security: on the Creation of Adversarial Variants to Evade Machine Learning-Based Malware Detectors 实验复现</h3><h4 id="Shallow-Security的findings-amp-contribution"><a href="#Shallow-Security的findings-amp-contribution" class="headerlink" title="Shallow Security的findings &amp; contribution"></a>Shallow Security的findings &amp; contribution</h4><ul>
+<li><p>基于原始二进制数据的ML模型可以通过在二进制文件中追加数据来绕过。</p>
+</li>
+<li><p>基于频率的ML模型可以通过在恶意软件二进制文件中嵌入良性字符串来绕过。</p>
+</li>
+<li><p>了解PE格式的分类器可能更倾向于检测打包器，而不是实际学习恶意二进制文件的概念。</p>
+<p>提出了三种方法来缓解我们发现的缺点：</p>
+<ol>
+<li>操作系统加载器在加载文件时应更关注二进制不一致性，以避免加载由二进制数据插入产生的格式错误的二进制文件。</li>
+<li>ML模型应更关注恶意特征的存在，而不是其频率，以更能抵抗数据追加。</li>
+<li>我们主张在评估未来提出的基于ML的恶意软件检测器时，应考虑恶意软件变体的鲁棒性。</li>
+</ol>
+</li>
+</ul>
+<p>贡献如下：</p>
+<ol>
+<li>我们描述了参与对基于ML的恶意软件检测器进行对抗性攻击挑战的经历。</li>
+<li>我们描述了在实验中发现的模型弱点。</li>
+<li>我们提出了未来基于ML的恶意软件检测研究的措施。</li>
+</ol>
+<h4 id="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：-2"><a href="#针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：-2" class="headerlink" title="针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正："></a>针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</h4>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/06/24/malware-classification/" rel="prev" title="malware-classification">
+      <i class="fa fa-chevron-left"></i> malware-classification
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Estimation-on-black-box-PE-adversarial-attack"><span class="nav-number">1.</span> <span class="nav-text">Estimation on black-box PE adversarial-attack</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%BB%91%E7%9B%92PE%E5%AF%B9%E6%8A%97%E6%80%A7%E6%94%BB%E5%87%BB%E7%9A%84%E8%AF%84%E4%BC%B0%E5%AE%9E%E9%AA%8C%E8%AE%A1%E5%88%92"><span class="nav-number">1.1.</span> <span class="nav-text">1. 黑盒PE对抗性攻击的评估实验计划</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Attacker-%E7%9A%84%E9%80%89%E6%8B%A9%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 Attacker 的选择问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Detector-%E7%9A%84%E9%80%89%E6%8B%A9%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 Detector 的选择问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Dataset%E7%9A%84%E9%80%89%E6%8B%A9%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 Dataset的选择问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E8%AF%84%E4%BB%B7%E7%9A%84%E6%8C%87%E6%A0%87%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.4.</span> <span class="nav-text">1.4 评价的指标问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.1.5.</span> <span class="nav-text">1.5 实验设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-%E4%B8%80%E4%BA%9B%E6%88%91%E8%AE%A4%E4%B8%BA%E6%98%AF%E4%BB%A5%E5%89%8D%E7%9A%84%E6%96%87%E7%AB%A0%E6%B2%A1%E6%9C%89%E5%81%9A%E8%BF%87%E7%9A%84%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.1.6.</span> <span class="nav-text">1.6 一些我认为是以前的文章没有做过的工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-7-%E5%AE%9E%E9%AA%8C%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA%EF%BC%9A"><span class="nav-number">1.1.7.</span> <span class="nav-text">1.7 实验平台搭建：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-1-%E4%BF%9D%E6%8C%81PE%E6%A0%BC%E5%BC%8F%E3%80%81%E5%8F%AF%E6%89%A7%E8%A1%8C%E3%80%81%E6%81%B6%E6%84%8F%E5%8A%9F%E8%83%BD%E7%9A%84%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9D%97"><span class="nav-number">1.1.7.1.</span> <span class="nav-text">1.7.1 保持PE格式、可执行、恶意功能的检测模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-2-%E6%95%B0%E6%8D%AE%E9%9B%86%E6%A8%A1%E5%9D%97"><span class="nav-number">1.1.7.2.</span> <span class="nav-text">1.7.2 数据集模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-3-%E5%93%88%E5%B8%8C%E7%8B%A9%E7%8C%8E%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9D%97"><span class="nav-number">1.1.7.3.</span> <span class="nav-text">1.7.3 哈希狩猎检测模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-4-%E6%96%87%E4%BB%B6%E5%A4%A7%E5%B0%8F%E6%AF%94%E8%BE%83%E6%A8%A1%E5%9D%97"><span class="nav-number">1.1.7.4.</span> <span class="nav-text">1.7.4 文件大小比较模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-5-%E6%94%BB%E5%87%BB%E5%99%A8%E7%9A%84%E7%94%9F%E6%88%90%E6%95%88%E7%8E%87"><span class="nav-number">1.1.7.5.</span> <span class="nav-text">1.7.5 攻击器的生成效率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-6-%E9%BB%91%E7%9B%92%E6%A3%80%E6%B5%8B%E5%99%A8%E6%8E%A5%E5%8F%A3%E6%A8%A1%E5%9D%97"><span class="nav-number">1.1.7.6.</span> <span class="nav-text">1.7.6 黑盒检测器接口模块</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E7%8E%B0%E6%9C%89survey%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">2. 现有survey的优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Adversarial-Attacks-against-Windows-PE-Malware-Detection-A-Survey-of-the-State-of-the-Art-Computer-amp-Security-2023"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 Adversarial Attacks against Windows PE Malware Detection: A Survey of the State-of-the-Art; Computer &amp; Security 2023</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-Pros"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">2.1.1 Pros:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-2-Cons"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">2.1.2 Cons:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-3-Argue"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">2.1.3 Argue:</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-A-comparison-of-adversarial-malware-generators-Journal-of-Computer-Virology-and-Hacking-Techniques-2024"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 A comparison of adversarial malware generators;Journal of Computer Virology and Hacking Techniques 2024</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-Pros"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">2.2.1 Pros</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-Cons"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">2.2.2 Cons</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-3-Argue"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">2.2.3 Argue</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AE%9E%E9%AA%8C%E7%94%A8%E5%88%B0%E7%9A%84%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.</span> <span class="nav-text">3.  实验用到的工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Cuckoo-Sandbox"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 Cuckoo Sandbox</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E8%BF%87%E7%A8%8B%E8%AE%B0%E5%BD%95"><span class="nav-number">1.4.</span> <span class="nav-text">4. 过程记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AAPE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E5%90%88%E6%B3%95"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 如何判断一个PE文件格式合法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E4%BD%BF%E7%94%A8-cuckoo-Sandbox-%E6%A3%80%E6%9F%A5%E6%98%AF%E5%90%A6%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%92%8C%E4%BF%9D%E6%8C%81%E6%81%B6%E6%84%8F%E5%8A%9F%E8%83%BD"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 使用 cuckoo Sandbox 检查是否可执行和保持恶意功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-ClamAV"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 ClamAV</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Attacker%E7%9A%84%E5%AE%9E%E9%AA%8C%E5%A4%8D%E7%8E%B0%E8%AE%B0%E5%BD%95"><span class="nav-number">1.5.</span> <span class="nav-text">5. Attacker的实验复现记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-malware-rl-%E5%AE%9E%E9%AA%8C%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 malware_rl 实验复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-ARMED-%E5%AE%9E%E9%AA%8C%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 ARMED 实验复现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ARMED%E7%9A%84finding"><span class="nav-number">1.5.2.1.</span> <span class="nav-text">ARMED的finding:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%92%88%E5%AF%B9adversarial-attacks-and-defenses-for-windows-pe-malware-detection%E4%B8%AD%E6%80%BB%E7%BB%93%E7%9A%84%E8%A1%A5%E5%85%85%E5%92%8C%E7%BA%A0%E6%AD%A3%EF%BC%9A"><span class="nav-number">1.5.2.2.</span> <span class="nav-text">针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link"><span class="nav-number">1.5.2.3.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-AIMED-%E5%AE%9E%E9%AA%8C%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.5.3.</span> <span class="nav-text">5.3 AIMED 实验复现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%92%88%E5%AF%B9adversarial-attacks-and-defenses-for-windows-pe-malware-detection%E4%B8%AD%E6%80%BB%E7%BB%93%E7%9A%84%E8%A1%A5%E5%85%85%E5%92%8C%E7%BA%A0%E6%AD%A3%EF%BC%9A-1"><span class="nav-number">1.5.3.1.</span> <span class="nav-text">针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-Shallow-Security-on-the-Creation-of-Adversarial-Variants-to-Evade-Machine-Learning-Based-Malware-Detectors-%E5%AE%9E%E9%AA%8C%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.5.4.</span> <span class="nav-text">5.4 Shallow Security: on the Creation of Adversarial Variants to Evade Machine Learning-Based Malware Detectors 实验复现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Shallow-Security%E7%9A%84findings-amp-contribution"><span class="nav-number">1.5.4.1.</span> <span class="nav-text">Shallow Security的findings &amp; contribution</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%92%88%E5%AF%B9adversarial-attacks-and-defenses-for-windows-pe-malware-detection%E4%B8%AD%E6%80%BB%E7%BB%93%E7%9A%84%E8%A1%A5%E5%85%85%E5%92%8C%E7%BA%A0%E6%AD%A3%EF%BC%9A-2"><span class="nav-number">1.5.4.2.</span> <span class="nav-text">针对adversarial-attacks-and-defenses-for-windows-pe-malware-detection中总结的补充和纠正：</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="theLonging"
+      src="/images/touxiang.JPG">
+  <p class="site-author-name" itemprop="name">theLonging</p>
+  <div class="site-description" itemprop="description">不捨晝夜。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chantchanH7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chantchanH7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/562879980@qq.com" title="E-Mail → 562879980@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2023-07 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">theLonging</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">420k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:22</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
