@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-09-08 17:16:33" itemprop="dateModified" datetime="2024-09-08T17:16:33+08:00">2024-09-08</time>
+                <time title="修改时间：2024-09-13 11:10:15" itemprop="dateModified" datetime="2024-09-13T11:10:15+08:00">2024-09-13</time>
               </span>
 
           <br>
@@ -204,14 +204,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>27k</span>
+              <span>29k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>25 分钟</span>
+              <span>26 分钟</span>
             </span>
 
         </div>
@@ -223,7 +223,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="Evaluation-of-Black-box-Portable-Executable-PE-Adversarial-Attack"><a href="#Evaluation-of-Black-box-Portable-Executable-PE-Adversarial-Attack" class="headerlink" title="Evaluation of Black-box Portable Executable (PE) Adversarial Attack"></a>Evaluation of Black-box Portable Executable (PE) Adversarial Attack</h1><h2 id="1-黑盒PE对抗性攻击的评估实验计划"><a href="#1-黑盒PE对抗性攻击的评估实验计划" class="headerlink" title="1. 黑盒PE对抗性攻击的评估实验计划"></a>1. 黑盒PE对抗性攻击的评估实验计划</h2><ol>
+          <p>Evaluation of Black-box Portable Executable (PE) Adversarial Attack</p>
+<h2 id="1-黑盒PE对抗性攻击的评估实验计划"><a href="#1-黑盒PE对抗性攻击的评估实验计划" class="headerlink" title="1. 黑盒PE对抗性攻击的评估实验计划"></a>1. 黑盒PE对抗性攻击的评估实验计划</h2><ol>
 <li>论文是怎么选的 paper selection 画个表</li>
 <li>复现代码，参数调整是怎么做的，</li>
 <li>sok的工作</li>
@@ -282,17 +283,17 @@
 <td>Weighted Randomization</td>
 </tr>
 <tr>
-<td align="left"><strong>AIMED-RL: Exploring Adversarial Malware Examples with Reinforcement Learning</strong>. <em>Labaca-Castro, Raphael, Sebastian Franz, Gabi Dreo Rodosek</em>. Joint European Conference on Machine Learning and Knowledge Discovery in Databases (ECML-PKDD) 2021.</td>
+<td align="left">✅<strong>AIMED-RL: Exploring Adversarial Malware Examples with Reinforcement Learning</strong>. <em>Labaca-Castro, Raphael, Sebastian Franz, Gabi Dreo Rodosek</em>. Joint European Conference on Machine Learning and Knowledge Discovery in Databases (ECML-PKDD) 2021.</td>
 <td>format-preserving modifications</td>
 <td>Reinforcement Learning</td>
 </tr>
 <tr>
-<td align="left"><strong>Functionality-preserving Black-box Optimization of Adversarial Windows Malware</strong>. <em>Luca Demetrio, Battista Biggio, Giovanni Lagorio, Fabio Roli, Alessandro Armando1</em>. IEEE Transactions on Information Forensics and Security 2021. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/abstract/document/9437194">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
+<td align="left">✅<strong>Functionality-preserving Black-box Optimization of Adversarial Windows Malware</strong>. <em>Luca Demetrio, Battista Biggio, Giovanni Lagorio, Fabio Roli, Alessandro Armando1</em>. IEEE Transactions on Information Forensics and Security 2021. <code>Black-box</code> [<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/abstract/document/9437194">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
 <td>Inject and pad sections from benign PE files</td>
 <td>Genetic Algorithm</td>
 </tr>
 <tr>
-<td align="left"><strong>Adversarial EXEmples: A Survey and Experimental Evaluation of Practical Attacks on Machine Learning for Windows Malware Detection</strong>. <em>Luca Demetrio, Scott E. Coull, Battista Biggio, Giovanni Lagorio, Alessandro Armando, Fabio Roli</em>. ACM Transactions on Privacy and Security 2021. <code>Black-box and White-box</code> [<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3473039">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
+<td align="left">✅<strong>Adversarial EXEmples: A Survey and Experimental Evaluation of Practical Attacks on Machine Learning for Windows Malware Detection</strong>. <em>Luca Demetrio, Scott E. Coull, Battista Biggio, Giovanni Lagorio, Alessandro Armando, Fabio Roli</em>. ACM Transactions on Privacy and Security 2021. <code>Black-box and White-box</code> [<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3473039">pdf</a>] [<a target="_blank" rel="noopener" href="https://github.com/zangobot/secml_malware">code</a>]</td>
 <td>DOS Header Extension, Content Shifting</td>
 <td>Gradient-based（这里不一定对，因为它是黑盒白盒都有的）</td>
 </tr>
@@ -302,9 +303,9 @@
 <td>近端策略优化（PPO）（这个是直接调用api.learn学习）</td>
 </tr>
 <tr>
-<td align="left"><strong>A Wolf in Sheep’s Clothing: Practical Black-box Adversarial Attacks for Evading Learning-based Windows Malware Detection in the Wild.</strong> <em>USENIX Security Symposium 2024.</em></td>
-<td></td>
-<td></td>
+<td align="left">✅<strong>A Wolf in Sheep’s Clothing: Practical Black-box Adversarial Attacks for Evading Learning-based Windows Malware Detection in the Wild.</strong> <em>USENIX Security Symposium 2024.</em></td>
+<td>Slack_space &amp; new_section</td>
+<td>MCTS</td>
 </tr>
 </tbody></table>
 <h3 id="1-2-Detector-的选择问题"><a href="#1-2-Detector-的选择问题" class="headerlink" title="1.2 Detector 的选择问题"></a>1.2 Detector 的选择问题</h3><p><del>这是个好问题、我也不知道怎么选</del></p>
@@ -338,7 +339,7 @@
 <td>Byte Sequence</td>
 </tr>
 <tr>
-<td>MalGraph</td>
+<td>✅MalGraph</td>
 <td>Ling, X., Wu, L., Deng, W., Qu, Z., Zhang, J., Zhang, S., Ma, T., Wang, B., Wu, C., Ji, S., 2022. MalGraph: Hierarchical graph neural networks for robust Windows mal- ware detection. In: IEEE Conference on Computer Communications. IEEE, Virtual Event, pp. 1998–2007.</td>
 <td>Static &amp; dynamic</td>
 <td></td>
@@ -633,7 +634,7 @@
 </ol>
 <h3 id="4-2-使用-cuckoo-Sandbox-检查是否可执行和保持恶意功能"><a href="#4-2-使用-cuckoo-Sandbox-检查是否可执行和保持恶意功能" class="headerlink" title="4.2 使用 cuckoo Sandbox 检查是否可执行和保持恶意功能"></a>4.2 使用 cuckoo Sandbox 检查是否可执行和保持恶意功能</h3><p><del>卡住了，安装不了。现在打算试一下用<code>Hybrid analysis</code>这个工具</del></p>
 <p>2024.8.24终于安装好了</p>
-<p>sudo setcap cap_net_raw,cap_net_admin&#x3D;eip &#x2F;usr&#x2F;bin&#x2F;tcpdump 解决下面的问题</p>
+<p><code>sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump </code>解决下面的问题</p>
 <blockquote>
 <p>2020-12-22 16:31:25,236 [cuckoo.core.plugins] ERROR: Unable to stop auxiliary module: Sniffer Traceback (most recent call last): File “&#x2F;usr&#x2F;local&#x2F;lib&#x2F;python2.7&#x2F;dist-packages&#x2F;cuckoo&#x2F;core&#x2F;plugins.py”, line 164, in stop module.stop() File “&#x2F;usr&#x2F;local&#x2F;lib&#x2F;python2.7&#x2F;dist-packages&#x2F;cuckoo&#x2F;auxiliary&#x2F;sniffer.py”, line 156, in stop (out, err, faq(“permission-denied-for-tcpdump”)) CuckooOperationalError: Error running tcpdump to sniff the network traffic during the analysis; stdout &#x3D; ‘’ and stderr &#x3D; ‘tcpdump: vboxnet0: That device is not up\n’. Did you enable the extra capabilities to allow running tcpdump as non-root user and disable AppArmor properly (the latter only applies to Ubuntu-based distributions with AppArmor, see also <a target="_blank" rel="noopener" href="https://cuckoo.sh/docs/faq/index.html#permission-denied-for-tcpdump">https://cuckoo.sh/docs/faq/index.html#permission-denied-for-tcpdump</a>)?</p>
 </blockquote>
@@ -710,6 +711,41 @@
 <p>2022-07-02 03:09:17,187 [cuckoo.core.guest] DEBUG: cuckoo2: not ready yet<br>这个问题基本都是因为cuckoo的客户机中重启的时候agent没有启动成功。或者是保存快照的时候没有成功设置好开机自动启动agent（我参照的两个链接中用了不同的方法，我采用的是官方的办法），或者就是没安装python导致启动失败（安装python2.7就解决了）。</p>
 <p>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_40976667/article/details/125574007">https://blog.csdn.net/qq_40976667/article/details/125574007</a></p>
 </blockquote>
+<p>⚠️ </p>
+<blockquote>
+<p>≈ 你遇到的问题是由于 <code>m2crypto</code> 依赖于 OpenSSL 库的头文件和 SWIG，而当前的环境缺少这些头文件或不兼容的版本。要在 Python 2.7 上安装 <code>m2crypto==0.24.0</code>，可以尝试以下步骤：</p>
+<h3 id="1-安装兼容的-OpenSSL-版本"><a href="#1-安装兼容的-OpenSSL-版本" class="headerlink" title="1. 安装兼容的 OpenSSL 版本"></a>1. 安装兼容的 OpenSSL 版本</h3><h3 id="重新编译-OpenSSL-以生成动态库"><a href="#重新编译-OpenSSL-以生成动态库" class="headerlink" title="重新编译 OpenSSL 以生成动态库"></a>重新编译 OpenSSL 以生成动态库</h3><ol>
+<li><p>进入 OpenSSL 的源代码目录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">cd /path/to/openssl-1.0.2u/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>清理之前的构建：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">make clean</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新配置编译并生成动态库（<code>libssl.so</code> 和 <code>libcrypto.so</code>）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">./config --prefix=/usr/local/ssl shared</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>shared</code> 选项将确保 OpenSSL 构建包含动态库。</p>
+</li>
+<li><p>验证是否生成了动态库：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">ls /usr/local/ssl/lib/libcrypto.so</span><br><span class="line">ls /usr/local/ssl/lib/libssl.so</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="2-设置-OpenSSL-环境变量"><a href="#2-设置-OpenSSL-环境变量" class="headerlink" title="2. 设置 OpenSSL 环境变量"></a>2. 设置 OpenSSL 环境变量</h3><p>在编译和安装 <code>m2crypto</code> 时，需要确保使用正确的 OpenSSL 版本。你需要设置 <code>LDFLAGS</code> 和 <code>CPPFLAGS</code> 以指向你安装的 OpenSSL 路径。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LDFLAGS=<span class="string">&quot;-L/usr/local/ssl/lib&quot;</span></span><br><span class="line"><span class="built_in">export</span> CPPFLAGS=<span class="string">&quot;-I/usr/local/ssl/include&quot;</span></span><br><span class="line"><span class="built_in">export</span> PATH=<span class="string">&quot;/usr/local/ssl/bin:<span class="variable">$PATH</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-安装-SWIG-3-x"><a href="#3-安装-SWIG-3-x" class="headerlink" title="3. 安装 SWIG 3.x"></a>3. 安装 SWIG 3.x</h3><p>你可能需要安装较旧的 SWIG 版本（如 3.x 系列），以确保与 Python 2.7 的兼容性：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get remove swig</span><br><span class="line">wget https://sourceforge.net/projects/swig/files/swig/swig-3.0.12/swig-3.0.12.tar.gz</span><br><span class="line">tar -xvf swig-3.0.12.tar.gz</span><br><span class="line"><span class="built_in">cd</span> swig-3.0.12</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-安装-m2crypto-0-24-0"><a href="#4-安装-m2crypto-0-24-0" class="headerlink" title="4. 安装 m2crypto==0.24.0"></a>4. 安装 <code>m2crypto==0.24.0</code></h3><ol>
+<li><p>进入 <code>M2Crypto-0.24.0</code> 目录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">cd ~/estimation_on_attacker/cuckoo_sandbox/M2Crypto-0.24.0/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>设置环境变量，确保链接到正确的 OpenSSL 路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">export LDFLAGS=&quot;-L/usr/local/ssl/lib&quot;</span><br><span class="line">export CPPFLAGS=&quot;-I/usr/local/ssl/include&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>运行安装命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bash</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制代码</span><br><span class="line">python setup.py install</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
 <h3 id="4-3-ClamAV"><a href="#4-3-ClamAV" class="headerlink" title="4.3 ClamAV"></a>4.3 ClamAV</h3><p>完成的部分：</p>
 <ul>
 <li><p>首先使用<code>sudo clamd</code>启动<code>clamd</code>进程</p>
@@ -717,7 +753,14 @@
 <li><p>然后使用<code>sudo clamdscan</code>扫描</p>
 </li>
 <li><p>已经安装并了解ClamAV的使用方法 clamdcan</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">parallels@ubuntu-linux-22-04-02-desktop:~$ clamscan detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e </span><br><span class="line">Loading:    14s, ETA:   0s [========================&gt;]    8.70M/8.70M sigs       </span><br><span class="line">Compiling:   5s, ETA:   0s [========================&gt;]       41/41 tasks </span><br><span class="line"></span><br><span class="line">/home/parallels/detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e: Win.Trojan.Delf-2345 FOUND</span><br><span class="line"></span><br><span class="line">----------- SCAN SUMMARY -----------</span><br><span class="line">Known viruses: 8696388</span><br><span class="line">Engine version: 1.3.1</span><br><span class="line">Scanned directories: 0</span><br><span class="line">Scanned files: 1</span><br><span class="line">Infected files: 1</span><br><span class="line">Data scanned: 0.29 MB</span><br><span class="line">Data read: 0.19 MB (ratio 1.49:1)</span><br><span class="line">Time: 25.619 sec (0 m 25 s)</span><br><span class="line">Start Date: 2024:07:21 13:33:09</span><br><span class="line">End Date:   2024:07:21 13:33:34</span><br><span class="line">parallels@ubuntu-linux-22-04-02-des</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">parallels@ubuntu-linux-22-04-02-desktop:~$ clamscan detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e </span><br><span class="line">Loading:    14s, ETA:   0s [========================&gt;]    8.70M/8.70M sigs       </span><br><span class="line">Compiling:   5s, ETA:   0s [========================&gt;]       41/41 tasks </span><br><span class="line"></span><br><span class="line">/home/parallels/detector_repo/dateset_large_size/VirusShare_0b346b201da259377ba11438504bbd9e: Win.Trojan.Delf-2345 FOUND</span><br><span class="line"></span><br><span class="line">----------- SCAN SUMMARY -----------</span><br><span class="line">Known viruses: 8696388</span><br><span class="line">Engine version: 1.3.1</span><br><span class="line">Scanned directories: 0</span><br><span class="line">Scanned files: 1</span><br><span class="line">Infected files: 1</span><br><span class="line">Data scanned: 0.29 MB</span><br><span class="line">Data read: 0.19 MB (ratio 1.49:1)</span><br><span class="line">Time: 25.619 sec (0 m 25 s)</span><br><span class="line">Start Date: 2024:07:21 13:33:09</span><br><span class="line">End Date:   2024:07:21 13:33:34</span><br><span class="line">parallels@ubuntu-linux-22-04-02-des</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用<code>sudo systemctl unmask clamav-daemon</code>解除对 <code>clamav-daemon.service</code> 的屏蔽状态</p>
+</li>
+<li><p><code>sudo systemctl start clamav-daemon</code>解除屏蔽之后，尝试启动 <code>clamav-daemon</code> 服务：</p>
+</li>
+<li><p><code>sudo systemctl status clamav-daemon</code>查看 <code>clamav-daemon</code> 是否已经启动成功</p>
+</li>
 </ul>
 <p>计划：</p>
 <ul>
@@ -1035,6 +1078,21 @@
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 执行动作并检查样本是否被跳过</span></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">_take_action</span>(<span class="params">self, action_ix</span>):</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		bin_size = sys.getsizeof(self.bytez)/<span class="number">1048576</span> <span class="comment"># 1024**2</span></span><br><span class="line">		<span class="keyword">if</span>  bin_size &gt;= self.max_file_size:</span><br><span class="line">			crash_prompt(<span class="string">f&#x27;In taking actions, file size is larger than the max_file_size, thereby skipped&#x27;</span>)</span><br><span class="line">			<span class="keyword">return</span>  <span class="literal">True</span>  </span><br><span class="line">		<span class="keyword">try</span> :</span><br><span class="line">			binary = pefile.PE(self.file_path)</span><br><span class="line">			is_skipped = <span class="literal">False</span></span><br><span class="line">		<span class="keyword">except</span> Exception <span class="keyword">as</span> e :</span><br><span class="line">			crash_prompt(<span class="string">f&#x27;in parsing pe... &#x27;</span>)</span><br><span class="line">			<span class="keyword">return</span>  <span class="literal">True</span>  </span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> <span class="keyword">not</span> is_skipped :</span><br><span class="line">	</span><br><span class="line">			action = ACTION_LOOKUP[action_ix]</span><br><span class="line">			<span class="comment"># action = &quot;add_imports&quot;</span></span><br><span class="line"></span><br><span class="line">			self.curr_action = action</span><br><span class="line">			<span class="comment"># crash_prompt(f&#x27;taking action name:  &#123;action&#125;&#x27;)</span></span><br><span class="line">			self.history[self.sha256][<span class="string">&quot;actions&quot;</span>].append(action)</span><br><span class="line">			<span class="keyword">try</span> :</span><br><span class="line">				self.bytez, is_skipped = mt_action.modify_sample(self.bytez, action, self.sha256, self.pe, self.file_path)</span><br><span class="line">			<span class="keyword">except</span> Exception <span class="keyword">as</span> e :</span><br><span class="line">				crash_prompt(<span class="string">f&#x27;Exception in _take_action <span class="subst">&#123;self.curr_action&#125;</span>&#x27;</span>)</span><br><span class="line">				<span class="comment"># crash_prompt(f&#x27;&#x27;)</span></span><br><span class="line">				crash_prompt(<span class="string">f&#x27;Error is : <span class="subst">&#123;e&#125;</span>&#x27;</span>)</span><br><span class="line">				<span class="keyword">return</span>  <span class="literal">True</span> </span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> self.turns == self.maxturns  : ❗️❗️❗️❗️❗️❗️</span><br><span class="line">				action = <span class="string">&quot;obsi_pack&quot;</span></span><br><span class="line">				<span class="keyword">try</span> :</span><br><span class="line">					<span class="comment"># 执行修改操作，并返回修改后的样本和是否跳过的标志</span></span><br><span class="line">					self.bytez, is_skipped = mt_action.modify_sample(self.bytez, action, self.sha256, self.pe, self.file_path)</span><br><span class="line">				<span class="keyword">except</span> Exception <span class="keyword">as</span> e :</span><br><span class="line">					<span class="comment"># crash_prompt(f&#x27;Exception in _take_action obsi_pack: &#123;e&#125;&#x27;)</span></span><br><span class="line">					crash_prompt(<span class="string">f&#x27;Exception in _take_action obsi_pack:&#x27;</span>)</span><br><span class="line">					<span class="keyword">return</span>  <span class="literal">True</span> </span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> is_skipped</span><br><span class="line">		</span><br></pre></td></tr></table></figure>
 
+<h3 id="MalGuise-实验复现记录："><a href="#MalGuise-实验复现记录：" class="headerlink" title="MalGuise 实验复现记录："></a>MalGuise 实验复现记录：</h3><p>MalGuise实现了两个操作<code>slack_space</code>和’new_section’，也即将无语义操作<code>semnop</code>插入到PE文件的空闲位置，在第一个可执行段的末尾除插入跳转指令到无语义操作，执行完成后返回。并通过<code>mcts</code>求解。</p>
+<p><strong>代码中存在的问题:</strong></p>
+<ul>
+<li>在计算<code>rva_to_be_injected</code>时没有<strong>越界检查</strong>，会导致覆盖有效内容段</li>
+<li>无法使用作者给的办法部署<code>MalGuise troch serve</code></li>
+<li>当前还一次还只能处理一个病毒样本</li>
+<li>❗️注意：只支持输入32位PE文件</li>
+</ul>
+<p><strong>我对代码修改的部分</strong>：</p>
+<ul>
+<li>在<code>patch.py</code>中增加了段越界检查，并在<code>ClASS mcts_state</code>中增加<code>rva_to_be_injected_exceed_section</code>用于终端该结点往下的搜索。</li>
+<li>新增<code>malgraph_handler.py</code>、<code>load_malgraph_model.py</code>和<code>test_deployed_server.py</code>用于部署<code>Malgraph Torch Serve</code>，详细的部署过程记录在 <code>README</code>中。</li>
+</ul>
+<p><strong>如何加入新的检测器</strong>:</p>
+<p>在<code>classfier.py</code>的<code>Classifier</code>类中增加新的检测器的判断，在<code>models</code>文件夹下新建<code>ClamAV</code>文件夹并实现一个<code>ClamAV</code>的类。</p>
 
       
     </div>
@@ -2604,12 +2662,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">450k</span>
+    <span title="站点总字数">452k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:49</span>
+    <span title="站点阅读时长">6:51</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
